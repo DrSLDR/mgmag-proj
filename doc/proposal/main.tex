@@ -1,0 +1,111 @@
+\documentclass[a4paper]{llncs}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+%\usepackage{amsmath,amsthm,amssymb,MnSymbol}
+%\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{hyperref}
+\usepackage{bussproofs}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{lipsum}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{MGMAG Project}
+\subtitle{Project Proposition}
+%
+%\titlerunning{}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{Jonas A. Hultén\inst{1} \and Jappie Klooster\inst{2} \and Eva Linssen\inst{3} \and Deliang Wu\inst{4}}
+%
+%\authorrunning{} % abbreviated author list (for running head)
+%
+\institute{
+  (5742722) \email{j.a.hulten@students.uu.nl}
+\and
+  (5771803) \email{j.t.klooster@students.uu.nl}
+\and
+  (3902749) \email{e.linssen@students.uu.nl}
+\and
+  (5622182) \email{d.wu@students.uu.nl}\\
+Universiteit Utrecht, 3584 CS Utecht, The Netherlands}
+
+\maketitle              % typeset the title of the contribution
+
+\pagestyle{headings}
+
+\section*{Project Goal}
+
+We want to implement the board game ``Gravwell: Escape from the 9th Dimension'' in a simple graphical setting,
+with the possibility of playing one human player versus AI players,
+or all AI players against each other. The AI should be able to perform
+better -- on long-run average -- than a player choosing random actions at
+each turn.
+
+We chose Gravwell as our game as, being an existing board game,
+it allows us to focus more on the AI implementation,
+since good gameplay is more-or-less already given. Furthermore,
+we are not aware of any digital implementations of this game, so the
+project will thus tread new ground. The game rules will be taken from the
+official manual
+\footnote{
+	\url{http://www.cryptozoic.com/sites/default/files/icme/u2793/gvw_rulebook_final.pdf}
+}.
+
+\section*{Agent Qualities}
+
+Fundamentally, the agent(s) must be able to play Gravwell.
+In its most simplistic version, this will mean an agent which can select
+and play a random card from its hand. However, our aim is to create an
+agent which is capable of learning from its previous plays --
+possibly across multiple games -- so that it can optimize its strategy.
+
+The method of learning is not fixed; we are considering approaches ranging
+from relatively simple reinforcement learning to evolutionary neural networks,
+working either off- or online. If this is successful,
+rudimentary agent-agent interaction such as taunting may be implemented.
+
+Lastly, as Gravwell supports 2-4 players, our agent platform must support
+1-4 agents, each with its own strategy and knowledge.
+
+\section*{Planning Outline}
+We'll use SCRUM as a project management tool.
+
+\subsection*{Important dates}
+The final deadline is July 1. Prior to that, a presentation of our project
+must be ready by June 21 or 23. Additionally, since some team members are
+leaving early, the final deadline for the project as a whole will be moved
+back to June~27.
+
+\subsection*{Planning of sprints}
+\begin{tabular}{l l l}
+	What & Date & Day \\ \toprule
+	Finish startup sprint & 2016-05-10 & Tuesday\\
+	Sprint planning Sprint II & 2016-05-11 & Wednesday\\
+	Finish Sprint II, hand in result/present & 2016-05-24 & Tuesday\\
+	Sprint planning Sprint III & 2016-05-25 & Wednesday\\
+	Finish Sprint III, hand in result/present & 2016-06-7 & Tuesday\\
+	Sprint planning Sprint IV& 2016-06-8 & Wednesday\\
+	Finish Sprint IV, hand in result/present & 2016-06-21 & Tuesday\\ \bottomrule
+\end{tabular} \\
+
+\subsubsection*{First sprint}
+The sprint planning for the first contains the GUI-development and
+gathering of research material. Our strategy will be to gather as
+many papers and other resources as we can in this sprint so we will
+already have all the references we need.
+The first sprint also contains creating the initial backlog.
+
+As shown in the table above, our sprints will finish exactly on the first
+date of final presentations. The end-of-sprint presentations may
+be informal, directed at either just the teacher or the team.
+The remaining time after the final presentations can be used to
+resolve documentation.
+
+\subsubsection*{Other sprints} The content of the other sprints will be
+decided at their respective sprint plannings.
+\end{document}
