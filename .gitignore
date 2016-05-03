@@ -1,0 +1,85 @@
+
+.gradle
+
+# ignore vim files
+*.swp
+*.swo
+#vimdiff
+*.orig
+
+#JADE generated
+APDescription.txt
+MTPs-Main-Container.txt
+
+#InteliJ
+*.iml
+.idea
+
+#archives
+*.jar
+*.zip
+
+#To prevent eclipse from making crazy merge requests,
+#I did a bazooka approach
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# PyDev specific (Python IDE for Eclipse)
+*.pydevproject
+
+# CDT-specific (C/C++ Development Tooling)
+.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# Java annotation processor (APT)
+.factorypath
+
+# PDT-specific (PHP Development Tools)
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# Tern plugin
+.tern-project
+
+# TeXlipse plugin
+.texlipse
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# Code Recommenders
+# ignore yunlu start file
+a.bat
+/5_jade/.nb-gradle/
+/5_jade/build/
+
+# LaTeX shenanigans
+# Note that this kills standard log files, but they shouldn't be version 
+# controlled anyway
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
