@@ -1,0 +1,53 @@
+Spronck, Pieter, et al. "Adaptive game AI with dynamic scripting." Machine
+Learning 63.3 (2006): 217-248. 
+[Added by Hultén, suggested by Dignum]
+
+Automatically Acquiring Adaptive Real-Time Strategy Game Opponents Using
+Evolutionary Learning. Marc J.V. Ponsen, Hector Munoz-Avila, Pieter Spronck, and
+David W. Aha (2005). Proceedings, The Twentieth National Conference on
+Artificial Intelligence and the Seventeenth Innovative Applications of
+Artificial Intelligence Conference, pp. 1535-1540. AAAI Pre Menlo Park,
+CA. (Presented at the IAAI-05). 
+[Added by Hultén, suggested by Dignum]
+
+Automatic Rule Ordering for Dynamic Scripting. Timor Timuri, Pieter Spronck, and
+Jaap van den Herik (2007). Proceedings, The Third Artificial Intelligence and
+Interactive Digital Entertainment Conference (AIIDE07) (eds. Jonathan Schaeffer
+and Michael Mateas), pp. 49-54. AAAI Press, Menlo Park,CA.
+[Added by Hultén, suggested by Dignum]
+
+Laird, John E. "It knows what you're going to do: adding anticipation to a
+Quakebot." Proceedings of the fifth international conference on Autonomous
+agents. ACM, 2001.
+[Added by Hultén, suggested by Dignum]
+
+Westra, Joost. "Evolutionary neural networks applied in first person shooters."
+Master's thesis, University Utrecht (2007).
+[Added by Hultén, suggested by Dignum]
+
+Adaptive reinforcement learning agents in RTS games, Eric Kok (2008).
+[Added by Hultén, suggested by Dignum. Note that these are presentation slides]
+
+Cavazza, Marc. "Al in computer games: Survey and perspectives." Virtual Reality
+5.4 (2000): 223-235.
+[Added by Hultén, suggested by Dignum]
+
+Laird, John, and Michael VanLent. "Human-level AI's killer application:
+Interactive computer games." AI magazine 22.2 (2001): 15.
+[Added by Hultén, suggested by Dignum]
+
+Nareyek, Alexander. "AI in computer games." Queue 1.10 (2004): 58.
+[Added by Hultén, suggested by Dignum]
+
+Dignum, Frank, et al. "Games and agents: Designing intelligent gameplay."
+International Journal of Computer Games Technology 2009 (2009).
+[Added by Hultén, suggested (and written) by Dignum]
+
+van Oijen, Joost, Loïs Vanhée, and Frank Dignum. "CIGA: A middleware for
+intelligent agents in virtual environments." Agents for Educational Games and
+Simulations. Springer Berlin Heidelberg, 2011. 22-37.
+[Added by Hultén, suggested (and written) by Dignum]
+
+Millington, Ian, and John Funge. Artificial intelligence for games. CRC Press,
+2009.
+[Added by Hultén, on the topic of AI in board games (see chapter 8)]
