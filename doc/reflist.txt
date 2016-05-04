@@ -51,3 +51,9 @@ Simulations. Springer Berlin Heidelberg, 2011. 22-37.
 Millington, Ian, and John Funge. Artificial intelligence for games. CRC Press,
 2009.
 [Added by Hultén, on the topic of AI in board games (see chapter 8)]
+
+Jacob Schrum and Risto Miikkulainen. "Evolving Multi-modal Behavior in NPCs".
+In IEEE Symposium on Computational Intelligence and Games (CIG 2009),
+325--332, Milan, Italy, September 2009. (Best Student Paper Award).
+[Added by Jappie, Neuro evolution stuff]
+
