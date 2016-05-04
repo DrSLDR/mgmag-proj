@@ -59,6 +59,17 @@ In IEEE Symposium on Computational Intelligence and Games (CIG 2009),
 imagas, and is written very well, also it introduces an important mutation for
 reducing complexity)]
 
+S. Whiteson, P. Stone, K. O. Stanley, R. Miikkulainen, and N. Kohl,
+“Automatic feature selection in neuroevolution,” in Proceedings of the
+Genetic and Evolutionary Computation Conference, 2005. [Online].
+Available: http://nn.cs.utexas.edu/keyword?whiteson:gecco05
+[Added by Jappie, explains FS-NEAT better than evolving multi-modal behavior]
+
+K. O. Stanley and R. Miikkulainen. "Evolving neural networks through
+augmenting topologies".  Evolutionary Computation , 10(2):99–127, 2002.
+Available: http://nn.cs.utexas.edu/?stanley:ec02
+[Added by Jappie, explains NEAT in tedious detail]
+
 Kenneth O. Stanly, Bobby D. Bryant and Risto Miikulainen. "Real-Time
 Neuroevolution in the NERO Video Game". IEEE Transactions on Evolutionary
 Computation (Special Issue on Evolutionary Computation and Games), Vol.9, 
