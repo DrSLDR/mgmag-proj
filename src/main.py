@@ -152,7 +152,6 @@ class GameEngine(object):
 
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
-        print(rect.width)
         self.ballrect = self.ballrect.move(self.speed)
         if self.ballrect.left < 0 or self.ballrect.right > width:
             self.speed[0] = -self.speed[0]
