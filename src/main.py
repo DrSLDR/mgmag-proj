@@ -1,88 +1,146 @@
-import sys, pygame
-from pgu import gui
+#!/usr/bin/env python
 
-class UserInterface(gui.Desktop):
-    def __init__(self,display):
-        from dialogs import HelpDialog, QuitDialog, WelcomeDialog
+# This is not needed if you have PGU installed
+import sys
+sys.path.insert(0, "..")
+
+import math
+import time
+import pygame
+import pgu
+from pgu import gui, timer
+
+
+class DrawingArea(gui.Widget):
+    def __init__(self, width, height):
+        gui.Widget.__init__(self, width=width, height=height)
+        self.imageBuffer = pygame.Surface((width, height))
+
+    def paint(self, surf):
+        # Paint whatever has been captured in the buffer
+        surf.blit(self.imageBuffer, (0, 0))
+
+    # Call self function to take a snapshot of whatever has been rendered
+    # onto the display over self widget.
+    def save_background(self):
+        disp = pygame.display.get_surface()
+        self.imageBuffer.blit(disp, self.get_abs_rect())
+
+class TestDialog(gui.Dialog):
+    def __init__(self):
+        title = gui.Label("Some Dialog Box")
+        label = gui.Label("Close self window to resume.")
+        gui.Dialog.__init__(self, title, label)
+
+class MainGui(gui.Desktop):
+    gameAreaHeight = 500
+    gameArea = None
+    menuArea = None
+    # The game engine
+    engine = None
+
+    def __init__(self, disp):
         gui.Desktop.__init__(self)
 
-        self.connect(gui.QUIT,self.quit,None)
+        # Setup the 'game' area where the action takes place
+        self.gameArea = DrawingArea(disp.get_width(),
+                                    self.gameAreaHeight)
+        # Setup the gui area
+        self.menuArea = gui.Container(
+            height=disp.get_height()-self.gameAreaHeight)
 
-        c = gui.Container(width=940,height=980)
-        spacer = 8
+        tbl = gui.Table(height=disp.get_height())
+        tbl.tr()
+        tbl.td(self.gameArea)
+        tbl.tr()
+        tbl.td(self.menuArea)
 
-        self.fname = 'untitled.tga'
+        self.setup_menu()
 
-        self.quit_d = QuitDialog()
-        self.quit_d.connect(gui.QUIT,self.quit,None)
+        self.init(tbl, disp)
 
-        self.help_d = HelpDialog()
+    def setup_menu(self):
+        tbl = gui.Table(vpadding=5, hpadding=2)
+        tbl.tr()
 
-        ##Initializing the Menus, we connect to a number of Dialog.open methods for each of the dialogs.
-        ##::
-        menus = gui.Menus([
-            ('File/Exit',self.quit_d.open,None),
-            ('Help/Help',self.help_d.open,None)
-            ])
-        ##
-        c.add(menus,0,0)
-        menus.rect.w,menus.rect.h = menus.resize()
-        #print 'menus',menus.rect
+        dlg = TestDialog()
 
-        ##We utilize a Toolbox.  The value of this widget determins how drawing is done in the Painter class.
-        ##::
-        self.mode = mode = gui.Toolbox([
-            ('Draw','draw'),
-            ('Box','box'),
-            ('Circle','circle'),
-            ('Cuzco','cuzco'),
-            ],cols=1,value='draw')
-        ##
-        c.add(mode,0,menus.rect.bottom+spacer)
-        mode.rect.x,mode.rect.y = mode.style.x,mode.style.y
-        mode.rect.w,mode.rect.h = mode.resize()
-        #mode._resize()
+        def dialog_cb():
+            dlg.open()
 
-        self.color = "#000000"
+        btn = gui.Button("Modal dialog", height=50)
+        btn.connect(gui.CLICK, dialog_cb)
+        tbl.td(btn)
 
-        self.painter = Painter(width=c.rect.w-mode.rect.w-spacer*2,height=c.rect.h-menus.rect.h-spacer*2,style={'border':1})
-        c.add(self.painter,mode.rect.w+spacer,menus.rect.h+spacer)
-        self.painter.init({'width':956,'height':956,'color':'#ffffff'})
-        self.painter.rect.w,self.painter.rect.h = self.painter.resize()
-        #self.painter._resize()
+        # Add a button for pausing / resuming the game clock
+        def pause_cb():
+            if (self.engine.clock.paused):
+                self.engine.resume()
+            else:
+                self.engine.pause()
 
-        welcome_d = WelcomeDialog()
-        self.connect(gui.INIT,welcome_d.open,None)
+        btn = gui.Button("Pause/resume clock", height=50)
+        btn.connect(gui.CLICK, pause_cb)
+        tbl.td(btn)
 
-        self.widget = c
+        # Add a slider for adjusting the game clock speed
+        tbl2 = gui.Table()
 
-    def action_new(self,value):
-        self.new_d.close()
-        self.fname = 'untitled.tga'
-        self.painter.init(self.new_d.value.results())
+        timeLabel = gui.Label("Clock speed")
 
-    def action_save(self,value):
-        pygame.image.save(self.painter.surface,self.fname)
+        tbl2.tr()
+        tbl2.td(timeLabel)
 
-    def action_saveas(self,value):
-        self.save_d.close()
-        self.fname = self.save_d.value['fname'].value
-        pygame.image.save(self.painter.surface,self.fname)
+        slider = gui.HSlider(value=23,min=0,max=100,size=20,height=16,width=120)
 
-    def action_open(self,value):
-        self.open_d.close()
-        self.fname = self.open_d.value['fname']
-        self.painter.surface = pygame.image.load(self.fname)
-        self.painter.repaint()
+        def update_speed():
+            self.engine.clock.set_speed(slider.value/10.0)
+
+        slider.connect(gui.CHANGE, update_speed)
+
+        tbl2.tr()
+        tbl2.td(slider)
+
+        tbl.td(tbl2)
+
+        self.menuArea.add(tbl, 0, 0)
+
+    def open(self, dlg, pos=None):
+        # Gray out the game area before showing the popup
+        rect = self.gameArea.get_abs_rect()
+        dark = pygame.Surface(rect.size).convert_alpha()
+        dark.fill((0,0,0,150))
+        pygame.display.get_surface().blit(dark, rect)
+        # Save whatever has been rendered to the 'game area' so we can
+        # render it as a static image while the dialog is open.
+        self.gameArea.save_background()
+        # Pause the gameplay while the dialog is visible
+        running = not(self.engine.clock.paused)
+        self.engine.pause()
+        gui.Desktop.open(self, dlg, pos)
+        while (dlg.is_open()):
+            for ev in pygame.event.get():
+                self.event(ev)
+            rects = self.update()
+            if (rects):
+                pygame.display.update(rects)
+        if (running):
+            # Resume gameplay
+            self.engine.resume()
+
+    def get_render_area(self):
+        return self.gameArea.get_abs_rect()
+
 
 class GameEngine(object):
     def __init__(self, disp):
         self.disp = disp
-        self.app = UserInterface(self.disp)
+        self.app = MainGui(self.disp)
         self.app.engine = self
-
-        self.logo = pygame.image.load(Logo.game)
+        from strings import Logo
+        self.logo = pygame.transform.scale(pygame.image.load(Logo.game), (200,200))
         self.ballrect = self.logo.get_rect()
+        self.speed = [1, 2]
 
     # Pause the game clock
     def pause(self):
@@ -93,18 +151,18 @@ class GameEngine(object):
         self.clock.resume()
 
     def render(self, dest, rect):
-        size = width, height = 920, 840
-        speed = [1, 2]
-        self.ballrect = self.ballrect.move(speed)
+        size = width, height = rect.width, rect.height
+        print(rect.width)
+        self.ballrect = self.ballrect.move(self.speed)
         if self.ballrect.left < 0 or self.ballrect.right > width:
-            speed[0] = -speed[0]
+            self.speed[0] = -self.speed[0]
         if self.ballrect.top < 0 or self.ballrect.bottom > height:
-            speed[1] = -speed[1]
+            self.speed[1] = -self.speed[1]
 
         black = 0, 0, 255 # which is blue
         dest.fill(black)
         # YOU JUST GOT RECT!
-        dest.blit(self.cuzco, self.ballrect)
+        dest.blit(self.logo, self.ballrect)
 
         def draw_clock(name, pt, radius, col, angle):
             pygame.draw.circle(dest, col, pt, radius)
@@ -160,6 +218,8 @@ class GameEngine(object):
             pygame.display.update(updates)
             pygame.time.wait(10)
 
+
+###
 disp = pygame.display.set_mode((800, 600))
 eng = GameEngine(disp)
 eng.run()
