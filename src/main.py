@@ -3,36 +3,13 @@ pygame.init()
 
 size = width, height = 920, 840
 speed = [1, 2]
-black = 0, 0, 0
+black = 0, 0, 255
 
 screen = pygame.display.set_mode(size)
 
-ball = pygame.image.load("/tmp/ball.gif")
+ball = pygame.image.load("../img/gravitas_logo.png")
 ballrect = ball.get_rect()
-from pgu import gui
 
-app = gui.Desktop()
-app.connect(gui.QUIT,app.quit,None)
-
-c = gui.Table(width=200,height=120)
-
-##::
-class Quit(gui.Button):
-    def __init__(self,**params):
-        params['value'] = 'Quit'
-        gui.Button.__init__(self,**params)
-        self.connect(gui.CLICK,app.quit,None)
-##
-
-##Adding the button to the container.  By using the td method to add it, the button
-##is placed in a sub-container, and it will not have to fill the whole cell.
-##::
-c.tr()
-e = Quit()
-c.td(e)
-##
-
-app.run(c)
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
