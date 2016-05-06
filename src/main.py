@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """This file starts the game"""
 
-import math
-import time
 import pygame
 import pgu
 from pgu import gui, timer
@@ -167,6 +165,7 @@ class GameEngine(object):
         # YOU JUST GOT RECT!
         dest.blit(self.logo, self.ballrect)
 
+        import math
         def draw_clock(name, pt, radius, col, angle):
             pygame.draw.circle(dest, col, pt, radius)
             pygame.draw.line(dest, (0,0,0), pt, 
