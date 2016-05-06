@@ -2,7 +2,6 @@
 """This file starts the game"""
 
 import pygame
-import pgu
 from pgu import gui, timer
 
 
