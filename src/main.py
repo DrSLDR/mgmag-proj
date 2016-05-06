@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-
-# This is not needed if you have PGU installed
-import sys
-sys.path.insert(0, "..")
+"""This file starts the game"""
 
 import math
 import time
@@ -32,6 +29,8 @@ class TestDialog(gui.Dialog):
         label = gui.Label("Close self window to resume.")
         gui.Dialog.__init__(self, title, label)
 
+"""It describes all the buttons and stuff like that. This is
+where pgu comes in,"""
 class MainGui(gui.Desktop):
     gameAreaHeight = 500
     gameArea = None
@@ -132,6 +131,11 @@ class MainGui(gui.Desktop):
         return self.gameArea.get_abs_rect()
 
 
+"""In our main drawing are we don't want to use pgu because
+its event driven, so you can't do any movement (since you need
+events to move, so you'll get stupid stuff like only movement
+on mouse move). The game engine punches a hole in the pgu
+interface and keeps updating that hole."""
 class GameEngine(object):
     def __init__(self, disp):
         self.disp = disp
