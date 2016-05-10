@@ -77,3 +77,7 @@ No. 6, December 2005
 [Added by Jappie, this is the online variant, which learns every round to play
 better I think]
 
+Martın Abadi et all. "Large-Scale Machine Learning on Heterogeneous
+Distributed Systems", November 9, 2015. Google Research.
+Available: http://download.tensorflow.org/paper/whitepaper2015.pdf
+[Added by Jappie, want to use this to do neuro evolution]
