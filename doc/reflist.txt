@@ -77,3 +77,6 @@ No. 6, December 2005
 [Added by Jappie, this is the online variant, which learns every round to play
 better I think]
 
+Micheal Buro, Jeffrey R. Long, Timothy Furtak and Nathan Sturtevant, 'Improving State Evaluation, Inference, and Search in Trich-Based Card Games', IJCAI-09, 2009 [Added by Eva]
+
+Imran Ghory, 'Reinforcement learning in board games', May 2004 [Added by Eva]
