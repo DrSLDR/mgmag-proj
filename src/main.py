@@ -142,6 +142,13 @@ class GameEngine(object):
         self.logo = pygame.transform.scale(pygame.image.load(Logo.game), (200,200))
         self.ballrect = self.logo.get_rect()
         self.speed = [1, 2]
+        from board import Renderer
+        from collections import namedtuple
+        Size = namedtuple('Size', ['width', 'height'])
+        self.renderBoard = Renderer(Size(
+            self.app.gameArea.rect.width,
+            self.app.gameArea.rect.height
+        )).render # a function
 
     # Pause the game clock
     def pause(self):
@@ -183,12 +190,7 @@ class GameEngine(object):
         # Now draw the game clock
         angle = self.clock.get_time()*2*math.pi/10.0
         draw_clock("Game time", (90,30), 25, (255,100,255), angle)
-
-        import board
-        for i in board.tiles:
-            pos = board.calculate(i)
-            pos = (pos[0]+100, pos[1]+100)
-            font("%i"%i, pos)
+        self.renderBoard(font)
 
         return (rect,)
 
