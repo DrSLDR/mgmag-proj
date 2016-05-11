@@ -165,13 +165,16 @@ class GameEngine(object):
         dest.blit(self.logo, self.ballrect)
 
         import math
+        def font(text, position):
+            tmp = self.font.render(text, True, (255,255,255))
+            dest.blit(tmp, position)
+
         def draw_clock(name, pt, radius, col, angle):
             pygame.draw.circle(dest, col, pt, radius)
             pygame.draw.line(dest, (0,0,0), pt, 
                              (pt[0]+radius*math.cos(angle),
                               pt[1]+radius*math.sin(angle)), 2)
-            tmp = self.font.render(name, True, (255,255,255))
-            dest.blit(tmp, (pt[0]-radius, pt[1]+radius+5))
+            font(name,(pt[0]-radius, pt[1]+radius+5))
 
         # Draw the real time clock
         angle = self.clock.get_real_time()*2*math.pi/10.0
@@ -181,7 +184,14 @@ class GameEngine(object):
         angle = self.clock.get_time()*2*math.pi/10.0
         draw_clock("Game time", (90,30), 25, (255,100,255), angle)
 
+        import board
+        for i in board.tiles:
+            pos = board.calculate(i)
+            pos = (pos[0]+100, pos[1]+100)
+            font("%i"%i, pos)
+
         return (rect,)
+
 
     def run(self):
         self.app.update()
