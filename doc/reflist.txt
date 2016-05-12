@@ -82,5 +82,8 @@ Distributed Systems", November 9, 2015. Google Research.
 Available: http://download.tensorflow.org/paper/whitepaper2015.pdf
 [Added by Jappie, want to use this to do neuro evolution]
 
-Micheal Buro, Jeffrey R. Long, Timothy Furtak and Nathan Sturtevant, 'Improving State Evaluation, Inference, and Search in Trich-Based Card Games', IJCAI-09, 2009 [Added by Eva]
+Micheal Buro, Jeffrey R. Long, Timothy Furtak and Nathan Sturtevant, 'Improving
+State Evaluation, Inference, and Search in Trich-Based Card Games', IJCAI-09,
+2009 [Added by Eva]
+
 Imran Ghory, 'Reinforcement learning in board games', May 2004 [Added by Eva]
