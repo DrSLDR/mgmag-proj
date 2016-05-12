@@ -1,4 +1,6 @@
-tiles = range(0,56)
+# start from 1, because calcPosition(0), doesn't work well
+tiles = range(1,57) 
+specialTiles = [29,39]
 
 from collections import namedtuple
 import math
@@ -40,10 +42,23 @@ class Renderer:
             y=scale(screenSize.height)
         )
 
-    def render(self, font):
+    def calcScreenPos(self, tileNumber):
+        pos = calcPosition(tileNumber)
+        pos = Point(
+            x=pos.x*self.scale.x+self.screenSize.width*(0.5-self.borderpadding),
+            y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
+        return pos
+    def render(self, font, disp):
+        import pygame
+        black = (0,0,0)
+        points = map(lambda x: self.calcScreenPos(x), tiles)
+        pygame.draw.lines(disp, black, False, list(points), 5)
         for i in tiles:
-            pos = calcPosition(i+1)
-            pos = (
-                pos.x*self.scale.x+self.screenSize.width*(0.5-self.borderpadding),
-                pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
+            color = black
+            if i in specialTiles:
+                color = (150,0,0) # not red
+            pos = self.calcScreenPos(i)
+            size = Point(x=40,y=40)
+            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             font("%i"%i, pos)
+        

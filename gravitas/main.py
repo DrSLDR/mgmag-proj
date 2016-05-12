@@ -172,8 +172,8 @@ class GameEngine(object):
         dest.blit(self.logo, self.ballrect)
 
         import math
-        def font(text, position):
-            tmp = self.font.render(text, True, (255,255,255))
+        def font(text, position, color=(255,255,255)):
+            tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
 
         def draw_clock(name, pt, radius, col, angle):
@@ -190,7 +190,7 @@ class GameEngine(object):
         # Now draw the game clock
         angle = self.clock.get_time()*2*math.pi/10.0
         draw_clock("Game time", (90,30), 25, (255,100,255), angle)
-        self.renderBoard(font)
+        self.renderBoard(font, disp)
 
         return (rect,)
 
