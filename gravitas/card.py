@@ -12,7 +12,7 @@ class Card:
         tractor = 2
     
     """Creates and returns a full deck of cards, sorted, as a list"""
-    def getFullDeck():
+    def createFullDeck():
         # Master deck configuration list
         DECKCONF = [
             ("Argon", "Ar", 1, Card.Type.normal),
