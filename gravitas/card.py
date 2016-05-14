@@ -86,13 +86,19 @@ class Deck:
             conf = DECKCONF[i]
             self.deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
 
+    """Lay out cards from the deck as a recource field. 
+    Returns cards in sets of 2; the second is the hidden one.
+        (Does not remove the cards from self.deck, only returns the draw result. 
+        This way we don't need to keep rebuilding the cards in the deck) """
     def getCardField(self,playerAmount):
-        # make a card field of 3*playerAmount
+        # make a resource field with size of 3*playerAmount
         import random
-        cardDraws = random.sample(self.deck,2*3*playerAmount)
+        # draw the right amount of (unique) cards
+        cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of the double cards
+        # put them in sets of 2
         field = [None]*(3*playerAmount)
         for i in range(0,3*playerAmount):
-            # each entry contains two cards: assume the second to be the hidden one
+            # each field entry contains two cards: assume the second to be the hidden one
             field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
         return field
 
