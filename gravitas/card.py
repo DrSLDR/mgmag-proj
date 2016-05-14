@@ -86,21 +86,43 @@ class Deck:
             conf = DECKCONF[i]
             self.deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
 
-    """Lay out cards from the deck as a recource field. 
-    Returns cards in sets of 2; the second is the hidden one.
-        (Does not remove the cards from self.deck, only returns the draw result. 
+        # field is empty for now
+        self.field = []
+
+    """make a resource field with size of 3*playerAmount
+        Returns cards in sets of 2; the second is the hidden one.
+
+        (Does not remove the cards from self.deck, only returns the resulting field. 
         This way we don't need to keep rebuilding the cards in the deck) """
-    def getCardField(self,playerAmount):
-        # make a resource field with size of 3*playerAmount
-        import random
+    def createCardField(self,playerAmount):
         # draw the right amount of (unique) cards
+        import random
         cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of the double cards
+
         # put them in sets of 2
-        field = [None]*(3*playerAmount)
+        self.field = [None]*(3*playerAmount)
         for i in range(0,3*playerAmount):
             # each field entry contains two cards: assume the second to be the hidden one
-            field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
-        return field
+            self.field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
+        return self.field
+
+    """Players should only see the top cards in the recourse field"""
+    def percieveCardField(self):
+        perception = []
+        for i in range(len(self.field)):
+            # return for each card set (that has not been taken yet) the index and the shown card
+            if self.field[i] is not None:
+                perception.append( ( i, self.field[i][0]) )
+        return perception
+
+    """Removes selected cardSet of the recource field"""
+    def takeFromField(self, cardIndex):
+        cardSet = self.field[cardIndex]
+        # make item on field None to show it has been taken. 
+        # None instead of removing item, because the field needs to be drawn on screen
+        self.field[cardIndex] = None
+        return cardSet
+
 
 """print a card list"""
 def printCardList(cardList):
