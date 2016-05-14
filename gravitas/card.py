@@ -11,8 +11,45 @@ class Card:
         repulsor = 1
         tractor = 2
     
-    """Creates and returns a full deck of cards, sorted, as a list"""
-    def createFullDeck():
+    """Constructs a card and sets instance variables. Instance variables are to
+    be considered constant."""
+    def __init__(self, cardtype, value, name, longname):
+        self._cardtype = cardtype
+        self._value = value
+        self._name = name
+        self._longname = longname
+
+    """Getters. Accessing the instance variables directly is bad practice. Don't
+    do it.'"""
+    def getType(self):
+        return self._cardtype
+
+    def getValue(self):
+        return self._value
+
+    def getName(self):
+        return self._name
+
+    def getLongName(self):
+        return self._longname
+
+    """Test function to see if the current card resolves before a given
+    card. 
+    Returns true if the card should resolve first, else false."""
+    def resolvesBefore(self, card):
+        return self._name < card.getName()
+
+    """ Return string describing card"""
+    def __str__(self):
+        return self.getName()
+
+##### ENDs OF CARD CLASS ########################################################
+
+"""Deck class; singleton handling the creation of a deck, shuffling and laying out the card field"""
+class Deck:
+
+    """Creates a full deck of cards, sorted, as a list"""
+    def __init__(self):
         # Master deck configuration list
         DECKCONF = [
             ("Argon", "Ar", 1, Card.Type.normal),
@@ -43,37 +80,56 @@ class Card:
             ("Zirconium", "Zr", 7, Card.Type.normal)
         ]
 
-        # Business end of function
-        deck = [None]*len(DECKCONF)
+        # Business end of function; puts actual cards in deck
+        self.deck = [None]*len(DECKCONF)
         for i in range(len(DECKCONF)):
             conf = DECKCONF[i]
-            deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
-        return deck
+            self.deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
 
-    """Constructs a card and sets instance variables. Instance variables are to
-    be considered constant."""
-    def __init__(self, cardtype, value, name, longname):
-        self._cardtype = cardtype
-        self._value = value
-        self._name = name
-        self._longname = longname
+        # field is empty for now
+        self.field = []
 
-    """Getters. Accessing the instance variables directly is bad practice. Don't
-    do it.'"""
-    def getType(self):
-        return self._cardtype
+    """make a resource field with size of 3*playerAmount
+        Returns cards in sets of 2; the second is the hidden one.
 
-    def getValue(self):
-        return self._value
+        (Does not remove the cards from self.deck, only returns the resulting field. 
+        This way we don't need to keep rebuilding the cards in the deck) """
+    def createCardField(self,playerAmount):
+        # draw the right amount of (unique) cards
+        import random
+        cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of the double cards
 
-    def getName(self):
-        return self._name
+        # put them in sets of 2
+        self.field = [None]*(3*playerAmount)
+        for i in range(0,3*playerAmount):
+            # each field entry contains two cards: assume the second to be the hidden one
+            self.field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
+        return self.field
 
-    def getLongName(self):
-        return self._longname
+    """Players should only see the top cards in the recourse field"""
+    def percieveCardField(self):
+        perception = []
+        for i in range(len(self.field)):
+            # return for each card set (that has not been taken yet) the index and the shown card
+            if self.field[i] is not None:
+                perception.append( ( i, self.field[i][0]) )
+        return perception
 
-    """Test function to see if the current card resolves before a given
-    card. 
-    Returns true if the card should resolve first, else false."""
-    def resolvesBefore(self, card):
-        return self._name < card.getName()
+    """Removes selected cardSet of the recource field"""
+    def takeFromField(self, cardIndex):
+        cardSet = self.field[cardIndex]
+        # make item on field None to show it has been taken. 
+        # None instead of removing item, because the field needs to be drawn on screen
+        self.field[cardIndex] = None
+        return cardSet
+
+
+"""print a card list"""
+def printCardList(cardList):
+    for i in range(len(cardList)):
+        print(cardList[i])
+
+"""print a card field"""
+def printCardField(cardField):
+    for i in range(len(cardField)):
+        print( "[ shown: "+str(cardField[i][0])+" , hidden: "+str(cardField[i][1])+" ]")
