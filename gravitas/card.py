@@ -39,43 +39,69 @@ class Card:
     def resolvesBefore(self, card):
         return self._name < card.getName()
 
-##### END OF CARD CLASS ########################################################
-        
-"""Creates and returns a full deck of cards, sorted, as a list"""
-def createFullDeck():
-    # Master deck configuration list
-    DECKCONF = [
-        ("Argon", "Ar", 1, Card.Type.normal),
-        ("Boron", "B", 2, Card.Type.normal),
-        ("Carbon", "C", 3, Card.Type.normal),
-        ("Dysprosium", "Dy", 5, Card.Type.normal),
-        ("Einsteinium", "Es", 2, Card.Type.normal),
-        ("Flourine", "F", 6, Card.Type.normal),
-        ("Gallium", "Ga", 5, Card.Type.normal),
-        ("Hydrogen", "H", 4, Card.Type.normal),
-        ("Iridium", "Ir", 6, Card.Type.normal),
-        ("Jodium", "Jo", 2, Card.Type.tractor),
-        ("Krypton", "Kr", 2, Card.Type.repulsor),
-        ("Lithium", "Li", 4, Card.Type.normal),
-        ("Magnesium", "Mg", 10, Card.Type.normal),
-        ("Neon", "Ne", 6, Card.Type.repulsor),
-        ("Oxygen", "O", 7, Card.Type.normal),
-        ("Plutonium", "Pu", 5, Card.Type.normal),
-        ("Sydnium", "Qt", 3, Card.Type.tractor),
-        ("Radium", "Ra", 9, Card.Type.normal),
-        ("Silicon", "Si", 9, Card.Type.normal),
-        ("Thorium", "Th", 2, Card.Type.normal),
-        ("Uranium", "U", 5, Card.Type.repulsor),
-        ("Vanadium", "V", 7, Card.Type.normal),
-        ("Tungsten", "W", 8, Card.Type.normal),
-        ("Xenon", "Xe", 3, Card.Type.repulsor),
-        ("Yttrium", "Y", 8, Card.Type.normal),
-        ("Zirconium", "Zr", 7, Card.Type.normal)
-    ]
+    """ Return string describing card"""
+    def __str__(self):
+        return self.getName()
 
-    # Business end of function
-    deck = [None]*len(DECKCONF)
-    for i in range(len(DECKCONF)):
-        conf = DECKCONF[i]
-        deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
-        return deck
+##### ENDs OF CARD CLASS ########################################################
+
+"""Deck class; singleton handling the creation of a deck, shuffling and laying out the card field"""
+class Deck:
+
+    """Creates a full deck of cards, sorted, as a list"""
+    def __init__(self):
+        # Master deck configuration list
+        DECKCONF = [
+            ("Argon", "Ar", 1, Card.Type.normal),
+            ("Boron", "B", 2, Card.Type.normal),
+            ("Carbon", "C", 3, Card.Type.normal),
+            ("Dysprosium", "Dy", 5, Card.Type.normal),
+            ("Einsteinium", "Es", 2, Card.Type.normal),
+            ("Flourine", "F", 6, Card.Type.normal),
+            ("Gallium", "Ga", 5, Card.Type.normal),
+            ("Hydrogen", "H", 4, Card.Type.normal),
+            ("Iridium", "Ir", 6, Card.Type.normal),
+            ("Jodium", "Jo", 2, Card.Type.tractor),
+            ("Krypton", "Kr", 2, Card.Type.repulsor),
+            ("Lithium", "Li", 4, Card.Type.normal),
+            ("Magnesium", "Mg", 10, Card.Type.normal),
+            ("Neon", "Ne", 6, Card.Type.repulsor),
+            ("Oxygen", "O", 7, Card.Type.normal),
+            ("Plutonium", "Pu", 5, Card.Type.normal),
+            ("Sydnium", "Qt", 3, Card.Type.tractor),
+            ("Radium", "Ra", 9, Card.Type.normal),
+            ("Silicon", "Si", 9, Card.Type.normal),
+            ("Thorium", "Th", 2, Card.Type.normal),
+            ("Uranium", "U", 5, Card.Type.repulsor),
+            ("Vanadium", "V", 7, Card.Type.normal),
+            ("Tungsten", "W", 8, Card.Type.normal),
+            ("Xenon", "Xe", 3, Card.Type.repulsor),
+            ("Yttrium", "Y", 8, Card.Type.normal),
+            ("Zirconium", "Zr", 7, Card.Type.normal)
+        ]
+
+        # Business end of function; puts actual cards in deck
+        self.deck = [None]*len(DECKCONF)
+        for i in range(len(DECKCONF)):
+            conf = DECKCONF[i]
+            self.deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
+
+    def getCardField(self,playerAmount):
+        # make a card field of 3*playerAmount
+        import random
+        cardDraws = random.sample(self.deck,2*3*playerAmount)
+        field = [None]*(3*playerAmount)
+        for i in range(0,3*playerAmount):
+            # each entry contains two cards: assume the second to be the hidden one
+            field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
+        return field
+
+"""print a card list"""
+def printCardList(cardList):
+    for i in range(len(cardList)):
+        print(cardList[i])
+
+"""print a card field"""
+def printCardField(cardField):
+    for i in range(len(cardField)):
+        print( "[ shown: "+str(cardField[i][0])+" , hidden: "+str(cardField[i][1])+" ]")
