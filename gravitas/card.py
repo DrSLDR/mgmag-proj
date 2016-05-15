@@ -144,5 +144,8 @@ class Deck:
     """print a card field"""
     def printCardField(cardField):
         for i in range(len(cardField)):
-            print( "[ shown: "+str(cardField[i][0])+" , hidden: "
-                   +str(cardField[i][1])+" ]")
+            if cardField[i] is not None:
+                print( "[ shown: "+str(cardField[i][0])+" , hidden: "
+                       +str(cardField[i][1])+" ]")
+            else:
+                print("[ Empty spot ]")
