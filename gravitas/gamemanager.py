@@ -46,15 +46,22 @@ class GameManager:
         f.close()
         return conflist
 
+    """Starts the game; deals cards, prompts for selections, and starts the main
+    game loop"""
     def start(self):
         # Prepare the field and start drawing
         field = self._deck.createCardField(len(self._players))
         for i in range(3):
             for p in self._players:
                 #TODO prompt the players to draw a card
-                # selection = p.promptForChoice(field)
+                # selection = p.promptForChoice(self._deck.percieveCardField())
                 # self._deck.takeFromField(selection)
                 field = self._deck.getField()
                 print("Selection round " + str(i+1) + " for player " +
                       p.getName()) 
                 #TODO either wait for the render loop to catch up or call it
+
+    """Turn resolution. Given a list of cards, will sort and resolve plays"""
+    def resolve(self, plays):
+        #TODO: Things
+        return True
