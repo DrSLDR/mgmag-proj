@@ -57,6 +57,7 @@ class Player(Ship):
         super().__init__(color)
         self._name = name
         self._hand = []
+        self._canEmergencyStop = True
 
     """Getters"""
     def getName(self):
@@ -64,3 +65,6 @@ class Player(Ship):
         
     def getHand(self):
         return self._hand
+
+    def canES(self):
+        return self._canEmergencyStop
