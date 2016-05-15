@@ -1,4 +1,5 @@
 """Module containing the code pertaining to cards"""
+import random
 
 """Master card class. Contains card instance data, type class and comparison
 functionality"""
@@ -43,9 +44,14 @@ class Card:
     def __str__(self):
         return self.getName()
 
+    """Return unambiguos card represenation. Whatever that is."""
+    def __repr__(self):
+        return self.__str__()
+
 ##### ENDs OF CARD CLASS ########################################################
 
-"""Deck class; singleton handling the creation of a deck, shuffling and laying out the card field"""
+"""Deck class; singleton handling the creation of a deck, shuffling and laying
+out the card field"""
 class Deck:
 
     """Creates a full deck of cards, sorted, as a list"""
@@ -90,36 +96,39 @@ class Deck:
         self.field = []
 
     """make a resource field with size of 3*playerAmount
-        Returns cards in sets of 2; the second is the hidden one.
+    Returns cards in sets of 2; the second is the hidden one.
 
-        (Does not remove the cards from self.deck, only returns the resulting field. 
-        This way we don't need to keep rebuilding the cards in the deck) """
+    (Does not remove the cards from self.deck, only returns the resulting field.
+    This way we don't need to keep rebuilding the cards in the deck)
+    """
     def createCardField(self,playerAmount):
         # draw the right amount of (unique) cards
-        import random
-        cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of the double cards
+        cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of
+                                                              # the double cards
 
         # put them in sets of 2
         self.field = [None]*(3*playerAmount)
         for i in range(0,3*playerAmount):
-            # each field entry contains two cards: assume the second to be the hidden one
+            # each field entry contains two cards: assume the second to be the
+            # hidden one
             self.field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
         return self.field
 
-    """Players should only see the top cards in the recourse field"""
+    """Players should only see the top cards in the resource field"""
     def percieveCardField(self):
         perception = []
         for i in range(len(self.field)):
-            # return for each card set (that has not been taken yet) the index and the shown card
+            # return for each card set (that has not been taken yet) the index
+            # and the shown card
             if self.field[i] is not None:
                 perception.append( ( i, self.field[i][0]) )
         return perception
 
-    """Removes selected cardSet of the recource field"""
+    """Removes selected cardSet of the resource field"""
     def takeFromField(self, cardIndex):
         cardSet = self.field[cardIndex]
-        # make item on field None to show it has been taken. 
-        # None instead of removing item, because the field needs to be drawn on screen
+        # make item on field None to show it has been taken. None instead of
+        # removing item, because the field needs to be drawn on screen
         self.field[cardIndex] = None
         return cardSet
 
@@ -132,4 +141,5 @@ def printCardList(cardList):
 """print a card field"""
 def printCardField(cardField):
     for i in range(len(cardField)):
-        print( "[ shown: "+str(cardField[i][0])+" , hidden: "+str(cardField[i][1])+" ]")
+        print( "[ shown: "+str(cardField[i][0])+" , hidden: "
+               +str(cardField[i][1])+" ]")
