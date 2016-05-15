@@ -87,13 +87,13 @@ class Deck:
         ]
 
         # Business end of function; puts actual cards in deck
-        self.deck = [None]*len(DECKCONF)
+        self._deck = [None]*len(DECKCONF)
         for i in range(len(DECKCONF)):
             conf = DECKCONF[i]
-            self.deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
+            self._deck[i] = Card(conf[3], conf[2], conf[1], conf[0])
 
         # field is empty for now
-        self.field = []
+        self._field = []
 
     """make a resource field with size of 3*playerAmount
     Returns cards in sets of 2; the second is the hidden one.
@@ -103,33 +103,37 @@ class Deck:
     """
     def createCardField(self,playerAmount):
         # draw the right amount of (unique) cards
-        cardDraws = random.sample(self.deck,2*3*playerAmount) # 2x, because of
-                                                              # the double cards
+        # 2x, because of the double cards
+        cardDraws = random.sample(self._deck,2*3*playerAmount)
 
         # put them in sets of 2
-        self.field = [None]*(3*playerAmount)
+        self._field = [None]*(3*playerAmount)
         for i in range(0,3*playerAmount):
             # each field entry contains two cards: assume the second to be the
             # hidden one
-            self.field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
-        return self.field
+            self._field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
+        return self._field
 
     """Players should only see the top cards in the resource field"""
     def percieveCardField(self):
         perception = []
-        for i in range(len(self.field)):
+        for i in range(len(self._field)):
             # return for each card set (that has not been taken yet) the index
             # and the shown card
-            if self.field[i] is not None:
-                perception.append( ( i, self.field[i][0]) )
+            if self._field[i] is not None:
+                perception.append( ( i, self._field[i][0]) )
         return perception
+
+    """Gets the field"""
+    def getField(self):
+        return self._field
 
     """Removes selected cardSet of the resource field"""
     def takeFromField(self, cardIndex):
-        cardSet = self.field[cardIndex]
+        cardSet = self._field[cardIndex]
         # make item on field None to show it has been taken. None instead of
         # removing item, because the field needs to be drawn on screen
-        self.field[cardIndex] = None
+        self._field[cardIndex] = None
         return cardSet
 
     """print a card list"""
