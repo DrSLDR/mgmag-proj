@@ -132,14 +132,13 @@ class Deck:
         self.field[cardIndex] = None
         return cardSet
 
+    """print a card list"""
+    def printCardList(cardList):
+        for i in range(len(cardList)):
+            print(cardList[i])
 
-"""print a card list"""
-def printCardList(cardList):
-    for i in range(len(cardList)):
-        print(cardList[i])
-
-"""print a card field"""
-def printCardField(cardField):
-    for i in range(len(cardField)):
-        print( "[ shown: "+str(cardField[i][0])+" , hidden: "
-               +str(cardField[i][1])+" ]")
+    """print a card field"""
+    def printCardField(cardField):
+        for i in range(len(cardField)):
+            print( "[ shown: "+str(cardField[i][0])+" , hidden: "
+                   +str(cardField[i][1])+" ]")
