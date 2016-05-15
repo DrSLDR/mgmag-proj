@@ -274,11 +274,11 @@ class App(gui.Desktop):
             self.c.remove(self.draft_dialog)
             if len(self.play_dialog.cards) <= 4:
                 # append the selected cards in drafting window into playing window
-                self.cards.append(self.draft_dialog.preStacks[self.draft_dialog.selectedItem][0])
-                self.cards.append(self.draft_dialog.preStacks[self.draft_dialog.selectedItem][1])
+                self.play_dialog.cards.append(self.draft_dialog.preStacks[self.draft_dialog.selectedItem][0])
+                self.play_dialog.cards.append(self.draft_dialog.preStacks[self.draft_dialog.selectedItem][1])
                 # re-build the playing window with new cards
                 self.c.remove(self.play_dialog)
-                self.play_dialog = PlayingDialog(self.cards,self.EsUsed)
+                self.play_dialog = PlayingDialog(self.play_dialog.cards,self.EsUsed)
                 self.c.add(self.play_dialog,50,self.ddh + 100)
         self.draft_dialog.b.connect(gui.CLICK,ddq,self)
         
@@ -286,13 +286,8 @@ class App(gui.Desktop):
         
         
         # crate initial playing window without card 
-        self.cards = []
-        self.play_dialog = PlayingDialog(self.cards,self.EsUsed)
+        self.play_dialog = PlayingDialog([],self.EsUsed)
         self.c.add(self.play_dialog,50,self.ddh + 100)
-        def ref_cards(self):
-            self.cards = self.play_dialog.cards
-            print('the len of cards is ', len(self.cards))
-        self.play_dialog.b.connect(gui.CLICK,ref_cards,self)
 
         # create a button to open the drating dialog        
         b = gui.Button('Open Drafting Dialog')
