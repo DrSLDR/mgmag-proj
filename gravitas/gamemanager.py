@@ -47,6 +47,10 @@ class GameManager:
         f.close()
         return conflist
 
+##### END OF ROOT LEVEL ########################################################
+################################################################################
+##### START OF ROUND LEVEL #####################################################
+
     """Sorts the players based on distance to the warp gate. If two or more
     players are in the singularity, their order is randomized."""
     def sortPlayers(self):
@@ -87,6 +91,33 @@ class GameManager:
                 print("Selection round " + str(i+1) + " for player " +
                       p.getName()) 
                 #TODO either wait for the render loop to catch up or call it
+
+##### END OF ROUND LEVEL #######################################################
+################################################################################
+##### START OF TURN LEVEL ######################################################
+
+    """Turn loop function. Waits for all players to play cards, then triggers
+    reveal and resolve"""
+    def turn(self):
+        # Prepares dictionary containing mappings of cards to players
+        plays = {}
+        
+        # Polls all players for a card to play
+        # while len(plays) < len(self._players):
+            # for p in self._players:
+                #TODO: Implement this functionality
+                # card = p.pollPlay()
+                # if card is not None:
+                #     plays[card] = p
+            #TODO: There should probably be a delay here so that the loop isn't
+            # super fast
+        
+        # Reveal
+        self.reveal(plays)
+
+        # Resolve
+        self.resolve(plays)
+
 
     """Turn reveal. Sends revealed cards to all player controllers"""
     def reveal(self, plays):
@@ -221,25 +252,3 @@ class GameManager:
                     break
             else:
                 break
-       
-    """Turn loop function. Waits for all players to play cards, then triggers
-    reveal and resolve"""
-    def turn(self):
-        # Prepares dictionary containing mappings of cards to players
-        plays = {}
-        
-        # Polls all players for a card to play
-        # while len(plays) < len(self._players):
-            # for p in self._players:
-                #TODO: Implement this functionality
-                # card = p.pollPlay()
-                # if card is not None:
-                #     plays[card] = p
-            #TODO: There should probably be a delay here so that the loop isn't
-            # super fast
-        
-        # Reveal
-        self.reveal(plays)
-
-        # Resolve
-        self.resolve(plays)
