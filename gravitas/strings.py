@@ -4,3 +4,7 @@ just use loose variables."""
 class Logo:
     game = "../img/gravitas_logo.png"
     team = "../img/gravyboat_logo_text_alt.png"
+    
+class Audio:
+    click = '../audio/pickup.wav'
+    confirm = '../audio/confirm.wav'
