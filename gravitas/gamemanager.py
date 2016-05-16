@@ -88,7 +88,36 @@ class GameManager:
                       p.getName()) 
                 #TODO either wait for the render loop to catch up or call it
 
+    """Turn reveal. Sends revealed cards to all player controllers"""
+    def reveal(self, plays):
+        cards = plays.keys()
+        #TODO: keep track of player controllers
+        # for pc in self._playerControllers:
+        #     pc.sendReveal(cards)
+
     """Turn resolution. Given a list of cards, will sort and resolve plays"""
     def resolve(self, plays):
         #TODO: Things
         return True
+        
+    """Turn loop function. Waits for all players to play cards, then triggers
+    reveal and resolve"""
+    def turn(self):
+        # Prepares dictionary containing mappings of cards to players
+        plays = {}
+        
+        # Polls all players for a card to play
+        # while len(plays) < len(self._players):
+            # for p in self._players:
+                #TODO: Implement this functionality
+                # card = p.pollPlay()
+                # if card is not None:
+                #     plays[card] = p
+            #TODO: There should probably be a delay here so that the loop isn't
+            # super fast
+        
+        # Reveal
+        self.reveal(plays)
+
+        # Resolve
+        self.resolve(plays)
