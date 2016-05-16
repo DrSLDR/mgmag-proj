@@ -117,11 +117,13 @@ class Deck:
     """Players should only see the top cards in the resource field"""
     def percieveCardField(self):
         perception = []
-        for i in range(len(self._field)):
+        i = 0
+        for f in self._field:
             # return for each card set (that has not been taken yet) the index
             # and the shown card
-            if self._field[i] is not None:
-                perception.append( ( i, self._field[i][0]) )
+            if f is not None:
+                perception.append( ( i, f[0]) )
+            i = i + 1
         return perception
 
     """Gets the field"""
@@ -138,14 +140,13 @@ class Deck:
 
     """print a card list"""
     def printCardList(cardList):
-        for i in range(len(cardList)):
-            print(cardList[i])
+        for c in cardList:
+            print(c)
 
     """print a card field"""
     def printCardField(cardField):
-        for i in range(len(cardField)):
-            if cardField[i] is not None:
-                print( "[ shown: "+str(cardField[i][0])+" , hidden: "
-                       +str(cardField[i][1])+" ]")
+        for c in cardField:
+            if c is not None:
+                print( "[ shown: "+str(c[0])+" , hidden: " +str(c[1])+" ]")
             else:
                 print("[ Empty spot ]")
