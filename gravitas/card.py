@@ -34,12 +34,6 @@ class Card:
     def getLongName(self):
         return self._longname
 
-    """Test function to see if the current card resolves before a given
-    card. 
-    Returns true if the card should resolve first, else false."""
-    def resolvesBefore(self, card):
-        return self._name < card.getName()
-
     """ Return string describing card"""
     def __str__(self):
         return self.getName()
@@ -150,3 +144,7 @@ class Deck:
                 print( "[ shown: "+str(c[0])+" , hidden: " +str(c[1])+" ]")
             else:
                 print("[ Empty spot ]")
+
+    """Sorts a given list by resolution order (alphabetic). Returns sorted list."""
+    def sortByResolution(cardList):
+        return sorted(cardList, key=lambda c: c.getName())
