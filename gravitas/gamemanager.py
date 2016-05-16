@@ -66,9 +66,16 @@ class GameManager:
         # Concatenate
         self._players = self._players + inS
 
-    """Starts the game; deals cards, prompts for selections, and starts the main
-    game loop"""
-    def start(self):
+    """Starts the round; deals cards, prompts for selections, and starts the
+    round loop"""
+    def startRound(self):
+        # Sort the players
+        self.sortPlayers()
+
+        # Reset all players Emergency Stop
+        for p in self._players:
+            p.resetES()
+
         # Prepare the field and start drawing
         field = self._deck.createCardField(len(self._players))
         for i in range(3):

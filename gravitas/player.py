@@ -72,6 +72,9 @@ class Player(Ship):
     def getDistanceToWG(self):
         return 53 - self.getPos()
 
+    def resetES(self):
+        self._canEmergencyStop = True
+
     def __str__(self):
         return self.getName() + " (" + str(self.getPos()) + ")" 
 
