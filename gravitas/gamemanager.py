@@ -97,9 +97,131 @@ class GameManager:
 
     """Turn resolution. Given a list of cards, will sort and resolve plays"""
     def resolve(self, plays):
-        #TODO: Things
-        return True
-        
+        # Get resolve-order sorted list of cards
+        ordered = Deck.sortByResolution(plays)
+
+        # Resolution loop
+        for c in ordered:
+            p = plays[c]
+
+            # Determine if p is even capable of moving
+            target = self._playerCanMove(p)
+            if target is not None or c.getType == Card.Type.tractor:
+                # Wait for Emergency Stop decision
+                while True:
+                    #TODO: implement this
+                    useES = p.pollUseES()
+                    if useES is not None:
+                        break
+
+            # Handle decision
+            if not useES:
+                self._resolvePlay(p, c, target)
+
+    """Determines if the player is stuck or not. If the player is stuck, returns
+    None, else returns the target ship (the one the player will travel towards)"""
+    def _playerCanMove(self, player):
+        # Set up the math
+        nearestAhead = None
+        nearestBehind = None
+        distanceAhead = 100
+        distanceBehind = 100
+        numberAhead = 0
+        numberBehind = 0
+
+        # Loop over all ships on the board
+        for s in (self._players + self._hulks):
+            # Ignore the player being resolved
+            if not s == player:
+                # Ignore ships in the singularity
+                if not s.getPos() == 0:
+                    # The ship is behind the player
+                    if player.directionTo(s) == -1:
+                        numberBehind = numberBehind + 1
+                        if player.distanceTo(s) < distanceBehind:
+                            distanceBehind = player.distanceTo(s)
+                            nearestBehind = s
+                    # The ship is ahead of the player
+                    else:
+                        numberAhead = numberAhead + 1 
+                        if player.distanceTo(s) < distanceAhead:
+                            distanceAhead = player.distanceTo(s)
+                            nearestAhead = s
+
+        # Determine if the player can move
+        if distanceAhead == distanceBehind:
+            # Equidistant. Equal numbers?
+            if numberAhead == numberBehind:
+                # Stuck ship
+                return None
+            else:
+                # Not stuck. Determine target
+                if numberAhead > numberBehind:
+                    return nearestAhead
+                else:
+                    return nearestBehind
+        else:
+            # There is a closest ship. Determine target.
+            if distanceAhead < distanceBehind:
+                return nearestAhead
+            else:
+                return nearestBehind
+    
+    """Resolves an individual play and moves the player accordingly"""
+    def _resolvePlay(self, player, card, target):
+        if card.getType() == Card.Type.normal:
+            # Normal movement
+            d = player.directionTo(target)
+            player.move(card.getValue() * d)
+            self._resolveCollission(player, d)
+        elif card.getType() == Card.Type.repulsor:
+            # Repulsor movement
+            d = player.directionTo(target)
+            player.move(card.getValue() * -d)
+            self._resolveCollission(player, -d)
+        else:
+            # Tractor. Bastard
+            # Build ship list
+            ships = []
+            for s in (self._players + self._hulks):
+                if not s == player:
+                    ships.append(s)
+
+            # First sort (signed, since ships closer to the singularity get
+            # priority in a tie)
+            ships = sorted(ships, key=lambda s: (player.distanceTo(s) *
+                                                 player.directionTo(s)))
+
+            # Second sort (unsigned; preserves relative order due to stable
+            # sort)
+            ships = sorted(ships, key=lambda s: player.distanceTo(s))
+
+            # Loop over sorted ships and resolve tractor
+            for s in ships:
+                d = s.directionTo(player)
+                s.move(card.getValue() * d)
+                self._resolveCollission(s, d)
+
+    """Handles post-resolution placement so that no collissions occur"""
+    def _resolveCollission(self, player, direction):
+        # Loop until all collissions handled
+        while True:
+            # Disregard everything if the player is in the singularity
+            if not player.getPos() == 0:
+                collission = False
+                for s in (self._players + self._hulks):
+                    if not s == player:
+                        if s.getPos() == player.getPos():
+                            # Collission
+                            collission = True
+                            break
+                if collission:
+                    player.move(direction)
+                else:
+                    break
+            else:
+                break
+       
     """Turn loop function. Waits for all players to play cards, then triggers
     reveal and resolve"""
     def turn(self):
