@@ -18,6 +18,7 @@ class GameManager:
         # Bookkeeping
         random.seed()
         self._turn = 0
+        self._round = 0
         self._players = []
         self._deck = Deck()
 
@@ -45,6 +46,25 @@ class GameManager:
             conflist.append((ptype, l[1]))
         f.close()
         return conflist
+
+    """Sorts the players based on distance to the warp gate. If two or more
+    players are in the singularity, their order is randomized."""
+    def sortPlayers(self):
+        # Pull all players in the singularity into a separate list
+        inS = []
+        for p in self._players:
+            if p.getPos() == 0:
+                inS.append(p)
+                self._players.remove(p)
+
+        # Shuffle the players in the singularity
+        random.shuffle(inS)
+
+        # Sort the remaining players
+        self._players = sorted(self._players, key=lambda p: p.getDistanceToWG())
+
+        # Concatenate
+        self._players = self._players + inS
 
     """Starts the game; deals cards, prompts for selections, and starts the main
     game loop"""
