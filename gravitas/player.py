@@ -42,8 +42,8 @@ class Ship:
     sure that the position isn't outside of the board in either direction."""
     def move(self, value):
         self._pos = self._pos + value
-        if self._pos > 55:
-            self._pos = 55
+        if self._pos > 53:
+            self._pos = 53
         elif self._pos < 0:
             self._pos = 0
 
@@ -68,3 +68,12 @@ class Player(Ship):
 
     def canES(self):
         return self._canEmergencyStop
+
+    def getDistanceToWG(self):
+        return 53 - self.getPos()
+
+    def __str__(self):
+        return self.getName() + " (" + str(self.getPos()) + ")" 
+
+    def __repr__(self):
+        return self.__str__()
