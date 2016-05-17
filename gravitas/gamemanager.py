@@ -55,6 +55,14 @@ class GameManager:
 ################################################################################
 ##### START OF ROUND LEVEL #####################################################
 
+    """Round loop function. Prepares a round, then runs six turns."""
+    def round(self):
+        self.startRound()
+        self._turn = 0
+        while self._turn < 6:
+            self.turn()
+            self._turn = self._turn + 1
+
     """Sorts the players based on distance to the warp gate. If two or more
     players are in the singularity, their order is randomized."""
     def sortPlayers(self):
