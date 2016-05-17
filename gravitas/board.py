@@ -49,7 +49,7 @@ class Renderer:
         )
 
     def calcScreenPos(self, tileNumber):
-        pos = calcPosition(tileNumber)
+        pos = _calcPosition(tileNumber)
         pos = Point(
             x=pos.x*self.scale.x+self.screenSize.width*(0.5-self.borderpadding),
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
