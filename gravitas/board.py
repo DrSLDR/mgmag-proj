@@ -1,7 +1,7 @@
 """
 The available tiles
 """
-tiles = range(0,56) 
+tiles = range(0,55) 
 """
 Specially colored tiles
 """

@@ -29,9 +29,9 @@ class GameManager:
             #TODO create and hand over player to player controller
 
         # Create NPC ships ("hulks")
-        self._hulks = [Ship(pos=38)]
+        self._hulks = [Ship(pos=36)]
         if len(self._players) > 2:
-            self._hulks.append(Ship(pos=28))
+            self._hulks.append(Ship(pos=26))
 
         # Starts the game
         self.game()
