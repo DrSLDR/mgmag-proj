@@ -1,6 +1,11 @@
-# start from 1, because calcPosition(0), doesn't work well
-tiles = range(1,57) 
-specialTiles = [29,39]
+"""
+The available tiles
+"""
+tiles = range(0,56) 
+"""
+Specially colored tiles
+"""
+specialTiles = [26,36]
 
 from collections import namedtuple
 import math
@@ -10,7 +15,8 @@ Point=namedtuple('Point',['x','y'])
 In a number
 Out some coordinates (non scaled, just as a grid)
 """
-def calcPosition(tileNumber):
+def _calcPosition(tileNumber):
+    tileNumber = tileNumber + 1 # to start at 0
     # thanks: https://math.stackexchange.com/questions/163080/on-a-two-dimensional-grid-is-there-a-formula-i-can-use-to-spiral-coordinates-in
     # second anwser after spending more than 2 hours on the first.
     k=math.ceil((math.sqrt(tileNumber)-1)/2)
