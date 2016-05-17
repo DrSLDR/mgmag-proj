@@ -15,6 +15,7 @@ class GameManager:
         self._turn = 0
         self._round = 0
         self._players = []
+        self._winner = None
         self._deck = Deck()
         self._initPType()
 
@@ -55,13 +56,16 @@ class GameManager:
 ################################################################################
 ##### START OF ROUND LEVEL #####################################################
 
-    """Round loop function. Prepares a round, then runs six turns."""
+    """Round loop function. Prepares a round, then runs six turns. Returns True
+    immediately if a player has won, else False"""
     def round(self):
         self.startRound()
         self._turn = 0
         while self._turn < 6:
-            self.turn()
+            if self.turn():
+                return True
             self._turn = self._turn + 1
+        return False
 
     """Sorts the players based on distance to the warp gate. If two or more
     players are in the singularity, their order is randomized."""
@@ -109,7 +113,8 @@ class GameManager:
 ##### START OF TURN LEVEL ######################################################
 
     """Turn loop function. Waits for all players to play cards, then triggers
-    reveal and resolve"""
+    reveal and resolve. Returns True immediately if a player has won, else False
+    at the end of turn"""
     def turn(self):
         # Prepares dictionary containing mappings of cards to players
         plays = {}
@@ -128,7 +133,7 @@ class GameManager:
         self.reveal(plays)
 
         # Resolve
-        self.resolve(plays)
+        return self.resolve(plays)
 
 
     """Turn reveal. Sends revealed cards to all player controllers"""
@@ -138,7 +143,8 @@ class GameManager:
         # for pc in self._playerControllers:
         #     pc.sendReveal(cards)
 
-    """Turn resolution. Given a list of cards, will sort and resolve plays"""
+    """Turn resolution. Given a list of cards, will sort and resolve
+    plays. Returns True if a player has entered the Warp Gate, else False"""
     def resolve(self, plays):
         # Get resolve-order sorted list of cards
         ordered = Deck.sortByResolution(plays)
@@ -160,6 +166,12 @@ class GameManager:
             # Handle decision
             if not useES:
                 self._resolvePlay(p, c, target)
+
+            # Check if the player has won the game
+            if p.getDistanceToWG() == 0:
+                self._winner = p
+                return True
+        return False
 
     """Determines if the player is stuck or not. If the player is stuck, returns
     None, else returns the target ship (the one the player will travel towards)"""
