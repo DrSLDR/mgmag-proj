@@ -33,6 +33,9 @@ class GameManager:
         if len(self._players) > 2:
             self._hulks.append(Ship(pos=28))
 
+        # Starts the game
+        self.game()
+
     """Helper function that reads the configuration file"""
     def _parseConfig(self, config):
         f = open(config, 'r')
@@ -54,6 +57,27 @@ class GameManager:
 
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
+##### START OF GAME LEVEL ######################################################
+
+    """Main game loop. Runs the game for six rounds or until someone wins."""
+    def game(self):
+        while self._round < 6:
+            self._round = self._round + 1
+            if self.round():
+                break
+
+        # Figure out non-clear victory
+        if self._winner is None:
+            self.sortPlayers()
+            self._winner = self._players[0]
+
+        print("Got winner at round " + str(self._round) + ", turn " +
+              str(self._turn) + ": " + self._winner.getName())
+
+        # Do teardown or something, or open for another game
+
+##### END OF GAME LEVEL ########################################################
+################################################################################
 ##### START OF ROUND LEVEL #####################################################
 
     """Round loop function. Prepares a round, then runs six turns. Returns True
@@ -62,9 +86,9 @@ class GameManager:
         self.startRound()
         self._turn = 0
         while self._turn < 6:
+            self._turn = self._turn + 1
             if self.turn():
                 return True
-            self._turn = self._turn + 1
         return False
 
     """Sorts the players based on distance to the warp gate. If two or more
