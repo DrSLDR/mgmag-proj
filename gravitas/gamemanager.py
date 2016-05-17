@@ -1,16 +1,11 @@
 """Module containing the game manager class"""
 from player import Player, Ship
 from card import Card, Deck
-import random
+import random, json
 
 """Game manager class. Home to all the game's logic."""
 class GameManager:
 
-    """Nested class enumerating recognized player types"""
-    class PType:
-        human = 0
-        randAI = 1
-    
     """Constructs the game manager. Takes a file pointer to a list of player
     configurations, creates the player and ship objects, hands over control of
     these to the player controllers, then starts the game loop."""
@@ -21,13 +16,14 @@ class GameManager:
         self._round = 0
         self._players = []
         self._deck = Deck()
+        self._initPType()
 
         # Create the player objects
         availColors = [1,2,3,4]
         for p in self._parseConfig(config):
             c = random.choice(availColors)
             availColors.remove(c)
-            player = Player(c, p[1])
+            player = Player(c, p['name'])
             self._players.append(player)
             #TODO create and hand over player to player controller
 
@@ -39,13 +35,21 @@ class GameManager:
     """Helper function that reads the configuration file"""
     def _parseConfig(self, config):
         f = open(config, 'r')
-        conflist = []
-        for l in f:
-            l = l.split()
-            ptype = eval("GameManager.PType." + l[0])
-            conflist.append((ptype, l[1]))
+        conflist = json.load(f)
         f.close()
+        for c in conflist:
+            if not c['type'] in self.__PType:
+                print("ERROR: Unknown agent type " + c['type'])
+                exit(1)
         return conflist
+        
+    """Initializes the player type enumeration dictionary mapping of known player
+    types to the constructor for their respective player controller."""
+    def _initPType(self):
+        self.__PType = {
+            "human": None,
+            "randAI": None
+        }
 
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
