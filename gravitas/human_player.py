@@ -351,6 +351,7 @@ class humanPlayer():
         self.EsUsed = 0                 # whether Emergency Stop card is used, 0: not used, 1: used
         self.stacks = []                # stacks which will be displayed in drafting window
         self.playingCards = []          # current cards which hold by the player
+        self.selectedCard = []          # the card played by the human player in this turn
         self.container = container      # the container
         self.playerName = playerName    # the name of player   
         self.ddx,self.ddy = 160,30      # the left top location of draft dialog
@@ -372,8 +373,8 @@ class humanPlayer():
                 self.container.remove(self.draft_dialog)
                 if len(self.play_dialog.cards) <= 4:
                     # append the selected cards in drafting window into playing window
-                    self.playingCards.append(self.stacks[self.getSelectedStack()][0])
-                    self.playingCards.append(self.stacks[self.getSelectedStack()][1])
+                    self.playingCards.append(self.stacks[self.getSelectedStackIndex()][0])
+                    self.playingCards.append(self.stacks[self.getSelectedStackIndex()][1])
                     print('the latest length of playingCards is ', len(self.playingCards))
                     # update the playing window with new cards
                     self.playDialogUpdate()
@@ -387,7 +388,8 @@ class humanPlayer():
         self.container.add(self.play_dialog,self.pdx,self.pdy)
         def pdq(self):
             if self.play_dialog.getSelectedItem() is not None:
-                self.playingCards = general.delcard(self.playingCards,self.getSelectedCard())
+                self.selectedCard = self.playingCards[self.getSelectedCardIndex()]
+                self.playingCards = general.delcard(self.playingCards,self.getSelectedCardIndex())
                 print('the latest length of playingCards is ', len(self.playingCards))
                 # update the playing window with new cards
                 self.playDialogUpdate()
@@ -411,6 +413,7 @@ class humanPlayer():
     # ***********************************************************
     def setStacks(self,stacks):
         self.stacks = stacks
+        
     def setEsUsed(self,EsUsed):
         self.EsUsed = EsUsed
     
@@ -432,11 +435,14 @@ class humanPlayer():
     def startEsDialog(self):
         self.container.add(self.Es_Dialog,self.esdx,self.esdy)
         
-    def getSelectedStack(self):
+    def getSelectedStackIndex(self):
         return self.draft_dialog.getSelectedItem()
     
-    def getSelectedCard(self):
+    def getSelectedCardIndex(self):
         return self.play_dialog.getSelectedItem()
+    
+    def getSelectedCard(self):
+        return self.selectedCard
         
     def getSelectedEs(self):
         return self.Es_Dialog.getEsUsed()
@@ -492,7 +498,7 @@ class App(gui.Desktop):
         b.connect(gui.CLICK,ddo,self)
         
         def ddq(self):
-            self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStack())
+            self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStackIndex())
             print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
         self.hp0_ddcb = self.humanPlayer_0.getDraftDialogConfirmButton()
         self.hp0_ddcb.connect(gui.CLICK,ddq,self)
@@ -515,6 +521,7 @@ class App(gui.Desktop):
         # -----------------------------------------------
         def pdq(self):
             print('get the confirmation from playing dialog')
+            print(playerName_0, ' played ', self.humanPlayer_0.getSelectedCard().getName(), ' in this turn!')
         self.hp0_pdcb = self.humanPlayer_0.getPlayDialogConfirmButton()
         self.hp0_pdcb.connect(gui.CLICK,pdq,self)
         
