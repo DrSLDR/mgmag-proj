@@ -110,6 +110,9 @@ class GameManager:
         # Concatenate
         self._players = self._players + inS
 
+        # Reverse
+        self._players.reverse()
+
     """Starts the round; deals cards, prompts for selections, and starts the
     round loop"""
     def startRound(self):
