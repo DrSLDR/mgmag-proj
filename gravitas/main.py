@@ -51,7 +51,9 @@ class MainGui(gui.Desktop):
         tbl.tr()
         tbl.td(self.menuArea)
 
-        self.setup_menu()
+        #self.setup_menu()
+        import human_player
+        human_player.App(self.menuArea)
 
         self.init(tbl, disp)
 
@@ -241,6 +243,6 @@ class GameEngine(object):
             pygame.time.wait(10)
 
 ###
-disp = pygame.display.set_mode((800, 600))
+disp = pygame.display.set_mode((1024, 768))
 eng = GameEngine(disp)
 eng.run()

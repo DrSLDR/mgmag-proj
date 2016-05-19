@@ -98,6 +98,7 @@ class DraftingDialog(gui.Dialog):
         def clsDialog(self):
             # get the final selected item 
             self._selectedItem = self.group.value
+            #self.close()
             # play the confirm audio
             self._confirm.play()
             if self._selectedItem is not None:
@@ -304,6 +305,7 @@ class EsDialog(gui.Dialog):
             self.EsUsed = g.value
             print('ES WINDOW SELECTION IS ', self.EsUsed)
             self._confirm.play()
+            self.close()
         self.confirmButton.connect(gui.CLICK,cEsD,self)
         
         # add confirm button to container
@@ -355,7 +357,7 @@ class humanPlayer():
         self.container = container      # the container
         self.playerName = playerName    # the name of player   
         self.ddx,self.ddy = 160,30      # the left top location of draft dialog
-        self.pdx,self.pdy = 40,550      # the left top location of playing dialog
+        self.pdx,self.pdy = 40,50      # the left top location of playing dialog
         self.esdx,self.esdy = 100,100   # the left top location of Emergency Stop dialog
         
         # *******************************************************
@@ -370,7 +372,8 @@ class humanPlayer():
         #    2.3 re-build the playing window with new cards
         def ddq(self):
             if self.draft_dialog.getSelectedItem() != None:
-                self.container.remove(self.draft_dialog)
+                #self.container.remove(self.draft_dialog)
+                self.draft_dialog.close()
                 if len(self.play_dialog.cards) <= 4:
                     # append the selected cards in drafting window into playing window
                     self.playingCards.append(self.stacks[self.getSelectedStackIndex()][0])
@@ -401,7 +404,7 @@ class humanPlayer():
         # *******************************************************
         self.Es_Dialog =  EsDialog(self.playerName)
         def esq(self):
-            self.container.remove(self.Es_Dialog)
+            #self.container.remove(self.Es_Dialog)
             self.EsUsed = self.getSelectedEs()
             # re-build the playing window with new cards
             self.playDialogUpdate()
@@ -421,7 +424,8 @@ class humanPlayer():
         self.stacks = stacks
         self.draft_dialog.setStacks(self.stacks)
         self.draft_dialog.paintStacks()
-        self.container.add(self.draft_dialog,self.ddx,self.ddy)
+        #self.container.add(self.draft_dialog,self.ddx,self.ddy)
+        self.draft_dialog.open()
     
     def playDialogUpdate(self):
         self.play_dialog.paintCards(self.playingCards,self.EsUsed)
@@ -433,7 +437,8 @@ class humanPlayer():
             self.container.remove(self.play_dialog)
     
     def startEsDialog(self):
-        self.container.add(self.Es_Dialog,self.esdx,self.esdy)
+        #self.container.add(self.Es_Dialog,self.esdx,self.esdy)
+        self.Es_Dialog.open()
         
     def getSelectedStackIndex(self):
         return self.draft_dialog.getSelectedItem()
@@ -463,14 +468,15 @@ class humanPlayer():
 # Main
 # ********************************************************* 
 '''the class App is just an example showing how to use humanPlayer class'''
-class App(gui.Desktop):
-    def __init__(self):
+class App():
+    def __init__(self,container):
         # initilize the gui
-        gui.Desktop.__init__(self)
-        self.connect(gui.QUIT,self.quit,None)
+        #gui.Desktop.__init__(self)
+        #self.connect(gui.QUIT,self.quit,None)
         
         # crate a container in APP
-        self.c = gui.Container(width=800,height=750)
+        #self.c = gui.Container(width=800,height=750)
+        self.c = container
         
         # create a Deck
         deck = card.Deck()
@@ -502,7 +508,7 @@ class App(gui.Desktop):
             print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
         self.hp0_ddcb = self.humanPlayer_0.getDraftDialogConfirmButton()
         self.hp0_ddcb.connect(gui.CLICK,ddq,self)
-        self.c.add(b,300,500)
+        self.c.add(b,300,10)
         
         # -----------------------------------------------
         # test  the function of open/close playing dialog
@@ -514,7 +520,7 @@ class App(gui.Desktop):
             self.humanPlayer_0.showHidePlayDialog(self.openPlayingDialog)
             
         buttonOCPD.connect(gui.CLICK,ocpd,self)
-        self.c.add(buttonOCPD,50,500)
+        self.c.add(buttonOCPD,50,10)
         
         # -----------------------------------------------
         # test to capture the confirmation of playing from human player
@@ -534,17 +540,10 @@ class App(gui.Desktop):
             self.humanPlayer_0.startEsDialog()
             
         bes.connect(gui.CLICK,eso,self)
-        self.c.add(bes,500,500)
+        self.c.add(bes,500,10)
         
         def cesd(self):
             self.EsUsed = self.humanPlayer_0.getEsUsed()
         self.humanPlayer_0.getEsDialogConfirmButton().connect(gui.CLICK,cesd,self)
-        
-        self.widget = self.c
-        
-if __name__ == '__main__':
-    app = App()
-    app.run()
-
         
         
