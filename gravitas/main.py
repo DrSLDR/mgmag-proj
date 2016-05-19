@@ -197,6 +197,8 @@ class GameEngine(object):
         # Now draw the game clock
         angle = self.clock.get_time()*2*math.pi/10.0
         draw_clock("Game time", (90,30), 25, (255,100,255), angle)
+
+        self.gameManager.update()
         self.renderBoard(font, disp)
 
         return (rect,)

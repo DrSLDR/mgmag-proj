@@ -30,9 +30,15 @@ class GameManager:
     def __init__(self, state):
         self._state = state
 
+
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
 ##### START OF GAME LEVEL ######################################################
+
+    """The function to update the game state. """
+    def update(self):
+        if self._state.winner is None:
+            self.game()
 
     """Main game loop. Runs the game for six rounds or until someone wins."""
     def game(self):
@@ -49,7 +55,6 @@ class GameManager:
         print("Got winner at round " + str(self._state.round) + ", turn " +
               str(self._state.turn) + ": " + self._state.winner.getName())
 
-        # Do teardown or something, or open for another game
 
 ##### END OF GAME LEVEL ########################################################
 ################################################################################
@@ -106,8 +111,8 @@ class GameManager:
                 # selection = p.promptForChoice(self._deck.percieveCardField())
                 # self._deck.takeFromField(selection)
                 field = self._state.deck.getField()
-                print("Selection round " + str(i+1) + " for player " +
-                      p.getName()) 
+                print("Selection round "+str(self._state.round)+"." + str(i+1) + 
+                    " for player " + p.getName()) 
                 #TODO either wait for the render loop to catch up or call it
 
 ##### END OF ROUND LEVEL #######################################################
