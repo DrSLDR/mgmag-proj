@@ -1,7 +1,25 @@
 """Module containing the game manager class"""
 from player import Player, Ship
 from card import Card, Deck
-import random, json
+import random
+
+class State:
+    def __init__(self):
+        # Bookkeeping
+        random.seed()
+        self.turn = 0
+        self.round = 0
+        self.players = []
+        self.hulks = []
+        self.winner = None
+        self.deck = Deck()
+
+    def addHulk(self, position):
+        self.hulks.append(Ship(pos=position))
+
+    def addPlayer(self, player):
+        self.players.append(player)
+
 
 """Game manager class. Home to all the game's logic."""
 class GameManager:
@@ -9,51 +27,8 @@ class GameManager:
     """Constructs the game manager. Takes a file pointer to a list of player
     configurations, creates the player and ship objects, hands over control of
     these to the player controllers, then starts the game loop."""
-    def __init__(self, config):
-        # Bookkeeping
-        random.seed()
-        self._turn = 0
-        self._round = 0
-        self._players = []
-        self._winner = None
-        self._deck = Deck()
-        self._initPType()
-
-        # Create the player objects
-        availColors = [1,2,3,4]
-        for p in self._parseConfig(config):
-            c = random.choice(availColors)
-            availColors.remove(c)
-            player = Player(c, p['name'])
-            self._players.append(player)
-            #TODO create and hand over player to player controller
-
-        # Create NPC ships ("hulks")
-        self._hulks = [Ship(pos=36)]
-        if len(self._players) > 2:
-            self._hulks.append(Ship(pos=26))
-
-        # Starts the game
-        self.game()
-
-    """Helper function that reads the configuration file"""
-    def _parseConfig(self, config):
-        f = open(config, 'r')
-        conflist = json.load(f)
-        f.close()
-        for c in conflist:
-            if not c['type'] in self.__PType:
-                print("ERROR: Unknown agent type " + c['type'])
-                exit(1)
-        return conflist
-        
-    """Initializes the player type enumeration dictionary mapping of known player
-    types to the constructor for their respective player controller."""
-    def _initPType(self):
-        self.__PType = {
-            "human": None,
-            "randAI": None
-        }
+    def __init__(self, state):
+        self._state = state
 
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
@@ -61,18 +36,18 @@ class GameManager:
 
     """Main game loop. Runs the game for six rounds or until someone wins."""
     def game(self):
-        while self._round < 6:
-            self._round = self._round + 1
+        while self._state.round < 6:
+            self._state.round = self._state.round + 1
             if self.round():
                 break
 
         # Figure out non-clear victory
-        if self._winner is None:
+        if self._state.winner is None:
             self.sortPlayers()
-            self._winner = self._players[0]
+            self._state.winner = self._state.players[0]
 
-        print("Got winner at round " + str(self._round) + ", turn " +
-              str(self._turn) + ": " + self._winner.getName())
+        print("Got winner at round " + str(self._state.round) + ", turn " +
+              str(self._state.turn) + ": " + self._state.winner.getName())
 
         # Do teardown or something, or open for another game
 
@@ -84,9 +59,9 @@ class GameManager:
     immediately if a player has won, else False"""
     def round(self):
         self.startRound()
-        self._turn = 0
-        while self._turn < 6:
-            self._turn = self._turn + 1
+        self._state.turn = 0
+        while self._state.turn < 6:
+            self._state.turn = self._state.turn + 1
             if self.turn():
                 return True
         return False
@@ -96,22 +71,22 @@ class GameManager:
     def sortPlayers(self):
         # Pull all players in the singularity into a separate list
         inS = []
-        for p in self._players:
+        for p in self._state.players:
             if p.getPos() == 0:
                 inS.append(p)
-                self._players.remove(p)
+                self._state.players.remove(p)
 
         # Shuffle the players in the singularity
         random.shuffle(inS)
 
         # Sort the remaining players
-        self._players = sorted(self._players, key=lambda p: p.getDistanceToWG())
+        self._state.players = sorted(self._state.players, key=lambda p: p.getDistanceToWG())
 
         # Concatenate
-        self._players = self._players + inS
+        self._state.players = self._state.players + inS
 
         # Reverse
-        self._players.reverse()
+        self._state.players.reverse()
 
     """Starts the round; deals cards, prompts for selections, and starts the
     round loop"""
@@ -120,17 +95,17 @@ class GameManager:
         self.sortPlayers()
 
         # Reset all players Emergency Stop
-        for p in self._players:
+        for p in self._state.players:
             p.resetES()
 
         # Prepare the field and start drawing
-        field = self._deck.createCardField(len(self._players))
+        field = self._state.deck.createCardField(len(self._state.players))
         for i in range(3):
-            for p in self._players:
+            for p in self._state.players:
                 #TODO prompt the players to draw a card
                 # selection = p.promptForChoice(self._deck.percieveCardField())
                 # self._deck.takeFromField(selection)
-                field = self._deck.getField()
+                field = self._state.deck.getField()
                 print("Selection round " + str(i+1) + " for player " +
                       p.getName()) 
                 #TODO either wait for the render loop to catch up or call it
@@ -181,7 +156,7 @@ class GameManager:
             p = plays[c]
 
             # Determine if p is even capable of moving
-            target = self._playerCanMove(p)
+            target = self._state.playerCanMove(p)
             if target is not None or c.getType == Card.Type.tractor:
                 # Wait for Emergency Stop decision
                 while True:
@@ -196,7 +171,7 @@ class GameManager:
 
             # Check if the player has won the game
             if p.getDistanceToWG() == 0:
-                self._winner = p
+                self._state.winner = p
                 return True
         return False
 
@@ -212,7 +187,7 @@ class GameManager:
         numberBehind = 0
 
         # Loop over all ships on the board
-        for s in (self._players + self._hulks):
+        for s in (self._state.players + self._state.hulks):
             # Ignore the player being resolved
             if not s == player:
                 # Ignore ships in the singularity
@@ -265,7 +240,7 @@ class GameManager:
             # Tractor. Bastard
             # Build ship list
             ships = []
-            for s in (self._players + self._hulks):
+            for s in (self._state.players + self._state.hulks):
                 if not s == player:
                     ships.append(s)
 
@@ -291,7 +266,7 @@ class GameManager:
             # Disregard everything if the player is in the singularity
             if not player.getPos() == 0:
                 collission = False
-                for s in (self._players + self._hulks):
+                for s in (self._state.players + self._state.hulks):
                     if not s == player:
                         if s.getPos() == player.getPos():
                             # Collission

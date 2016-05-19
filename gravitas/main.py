@@ -145,6 +145,13 @@ class GameEngine(object):
         from board import Renderer
         from collections import namedtuple
         Size = namedtuple('Size', ['width', 'height'])
+        # construct factory, which gets used to (eventually) create the game manager
+        from factory import Factory
+        factory = Factory('config.json')
+        pcs = factory.makePlayerControllers()
+        state = factory.makeState(pcs)
+        self.gameManager = factory.makeGameManager(state)
+        # create board 
         self.renderBoard = Renderer(Size(
             self.app.gameArea.rect.width,
             self.app.gameArea.rect.height
@@ -166,8 +173,8 @@ class GameEngine(object):
         if self.ballrect.top < 0 or self.ballrect.bottom > height:
             self.speed[1] = -self.speed[1]
 
-        black = 0, 0, 255 # which is blue
-        dest.fill(black)
+        backgroundColor = 0, 0, 255 # which is blue
+        dest.fill(backgroundColor)
         # YOU JUST GOT RECT!
         dest.blit(self.logo, self.ballrect)
 
@@ -230,7 +237,6 @@ class GameEngine(object):
                 updates += lst
             pygame.display.update(updates)
             pygame.time.wait(10)
-
 
 ###
 disp = pygame.display.set_mode((800, 600))
