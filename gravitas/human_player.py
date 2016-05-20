@@ -89,7 +89,7 @@ class DraftingDialog(gui.Dialog):
         lableStr = 'Drafing Window for ' + self._playerName;
         title = gui.Label(lableStr)
         # 3.2 create a container to show all un-distributed stacks of cards and confirm button
-        self.stacksContainer = gui.Container(width = 400, height = 400)
+        self.stacksContainer = gui.Container(width = 500, height = 400)
         self.stacksTbl = gui.Table() 
         
         # create a confirm button for the human player to confirm his/her selection
