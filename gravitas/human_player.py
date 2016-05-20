@@ -98,11 +98,11 @@ class DraftingDialog(gui.Dialog):
         def clsDialog(self):
             # get the final selected item 
             self._selectedItem = self.group.value
-            #self.close()
             # play the confirm audio
             self._confirm.play()
             if self._selectedItem is not None:
                 self.stacksContainer.remove(self.stacksTbl)
+                self.close()
         self.confirmButton.connect(gui.CLICK,clsDialog,self)
         # add confirm button to container
         self.stacksContainer.add(self.confirmButton,300,370)
@@ -562,19 +562,21 @@ class App():
         self.c.add(b,300,10)
         
         def ddq_0(self):
-            self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStackIndex())
-            print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
-            self.humanPlayer_1.DecisionMaking_Drafting(self.stacks)
+            if self.humanPlayer_0.getSelectedStackIndex() is not None:
+                self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStackIndex())
+                print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
+                self.humanPlayer_1.DecisionMaking_Drafting(self.stacks)
         self.hp0_ddcb = self.humanPlayer_0.getDraftDialogConfirmButton()
         self.hp0_ddcb.connect(gui.CLICK,ddq_0,self)
         
         def ddq_1(self):
-            self.stacks = general.delcard(self.stacks,self.humanPlayer_1.getSelectedStackIndex())
-            print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
-            if len(self.stacks) > 0:
-                self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
-            else:
-                self.humanPlayer_0.showHidePlayDialog(True)
+            if self.humanPlayer_1.getSelectedStackIndex() is not None:
+                self.stacks = general.delcard(self.stacks,self.humanPlayer_1.getSelectedStackIndex())
+                print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
+                if len(self.stacks) > 0:
+                    self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
+                else:
+                    self.humanPlayer_0.showHidePlayDialog(True)
         self.hp1_ddcb = self.humanPlayer_1.getDraftDialogConfirmButton()
         self.hp1_ddcb.connect(gui.CLICK,ddq_1,self)
         
