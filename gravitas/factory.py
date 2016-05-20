@@ -9,17 +9,12 @@ from gamemanager import State, GameManager
  playerControllers, states and the Gamemanager"""
 
 class Factory():
-    
-    """Initialise factory"""
-    def __init__(self, configfile):
-        # get configuration
-        self._initPType()
-        self._config = self._parseConfig(configfile)
 
-    """Initializes the player type enumeration dictionary mapping of known
-    player types to the constructor for their respective player controller."""
-    def _initPType(self):
-        self.__PType = {
+    def __init__(self, args):
+        self.args = args
+        #The player type enumeration dictionary mapping of known player types to
+        #the constructor for their respective player controller. 
+        self._PType = {
             "human": None,
             "randAI": None
         }
@@ -30,38 +25,61 @@ class Factory():
         conflist = json.load(f)
         f.close()
         for c in conflist:
-            if not c['type'] in self.__PType:
+            if not c['type'] in self._PType:
                 print("ERROR: Unknown agent type " + c['type'])
-                exit(1)
         return conflist
 
     """return list of player controllers, whose properties depend on the config
     file"""
-    def makePlayerControllers(self):
-        return None
+    def _createPlayerController(self, player, config):
+        if self._PType[config['type']] is None:
+            print("Non-implemented player controller")
+            return None
+        else:
+            # Bind the arguments
+            args = config['arguments']
+            # Invoke the constructor
+            return self._PType[config['type']](player, args)
 
     """create a game state and put the player controllers in there"""
-    def makeState(self, playerControllers):
+    def _createState(self, config):
         # create empty state
         state = State()
 
         # Create the player objects
         availColors = [1,2,3,4]
-        for p in self._config:
+        for p in config:
             c = random.choice(availColors)
             availColors.remove(c)
             player = Player(c, p['name'])
-            state.addPlayer(player)
-            #TODO create and hand over player to player controller
+            pc = self._createPlayerController(player, p)
+            state.addPlayer((player, pc))
 
         # Create NPC ships ("hulks")
         state.addHulk(36)
-        if len(self._config) > 2:
+        if len(config) > 2:
             state.addHulk(26)
 
         return state
 
-    """Make game manager and give it a current game state"""
-    def makeGameManager(self, state):
-        gm = GameManager(state)
-        return gm
+    """Given the game manager configuration, create the game manager"""
+    def _createGameManager(self, config):
+        state = self._createState(config)
+        return GameManager(state)
+
+    """Create game function. Main function of the class. Sets handles the
+    command line arguments, if any, and returns the game manager."""
+    def createGame(self):
+        # Prepares the RNG
+        random.seed()
+
+        # Runs over the arguments
+        # Configuration file
+        try:
+            config = self._parseConfig(self.args.config)
+        except Exception:
+            print("OHSNAP")
+            raise
+        
+        # Create and return the game manager
+        return self._createGameManager(config)

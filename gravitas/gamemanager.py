@@ -6,7 +6,6 @@ import random
 class State:
     def __init__(self):
         # Bookkeeping
-        random.seed()
         self.turn = 0
         self.round = 0
         self.players = []

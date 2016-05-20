@@ -149,7 +149,7 @@ class GameEngine(object):
                                            (200,200)) 
         self.ballrect = self.logo.get_rect()
         self.speed = [1, 2]
-        self.args = args
+        self.factory = Factory(args)
 
     # Pause the game clock
     def pause(self):
@@ -200,7 +200,7 @@ class GameEngine(object):
     """Initializes the game"""
     def init(self):
         # Call the factory
-        self.gameManager = Factory.createGame(self.args)
+        self.gameManager = self.factory.createGame()
 
         # create board 
         Size = namedtuple('Size', ['width', 'height'])
