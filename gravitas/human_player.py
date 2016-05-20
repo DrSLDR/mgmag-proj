@@ -89,7 +89,7 @@ class DraftingDialog(gui.Dialog):
         lableStr = 'Drafing Window for ' + self._playerName;
         title = gui.Label(lableStr)
         # 3.2 create a container to show all un-distributed stacks of cards and confirm button
-        self.stacksContainer = gui.Container(width = 400, height = 400)
+        self.stacksContainer = gui.Container(width = 500, height = 400)
         self.stacksTbl = gui.Table() 
         
         # create a confirm button for the human player to confirm his/her selection
@@ -153,7 +153,9 @@ class DraftingDialog(gui.Dialog):
         
     def setStacks(self,stacks):
         self.stacks = stacks
-    
+        
+    def setSelectedItem(self,Item):
+        self._selectedItem = Item
     
     def getSelectedItem(self):
         return self._selectedItem
@@ -204,7 +206,7 @@ class PlayingDialog(gui.Dialog):
         self.cardsContainer.add(self.confirmButton,380,120)
         
         # initialie Drafting dialog
-        gui.Dialog.__init__(self,title,self.cardsContainer,name='playingDialog')
+        gui.Dialog.__init__(self,title,self.cardsContainer)
         
     # ********************************************************************    
     # define the methods for Playing Dialog    
@@ -435,6 +437,7 @@ class humanPlayer():
         # crate initial playing window without card 
         # *******************************************************
         self.play_dialog = PlayingDialog(self.playingCards,self.EsUsed,self.playerName)
+        self.play_dialog.name = "playingDialog" + self.playerName
         self.container.add(self.play_dialog,self.pdx,self.pdy)
         def pdq(self):
             if self.play_dialog.getSelectedItem() is not None:
@@ -469,6 +472,8 @@ class humanPlayer():
     
     def DecisionMaking_Drafting(self,stacks):
         self.stacks = stacks
+        self.draft_dialog.setSelectedItem(Item = None)
+        self.selectedStackIndex = None
         self.draft_dialog.setStacks(self.stacks)
         self.draft_dialog.paintStacks()
         #self.container.add(self.draft_dialog,self.ddx,self.ddy)
@@ -477,10 +482,11 @@ class humanPlayer():
     def playDialogUpdate(self):
         self.play_dialog.paintCards(self.playingCards,self.EsUsed)
         
-    def showHidePlayDialog(self,show = 1):
-        if show and not self.container.find('playingDialog'):
+    def showHidePlayDialog(self,show = True):
+        if show and not self.container.find('playingDialog'+self.playerName):
             self.container.add(self.play_dialog,self.pdx,self.pdy)
-        elif not show and self.container.find('playingDialog'):
+            self.selectedCard = None
+        elif not show and self.container.find('playingDialog'+self.playerName):
             self.container.remove(self.play_dialog)
     
     def startEsDialog(self):
@@ -528,7 +534,7 @@ class App():
         # create a Deck
         deck = card.Deck()
         # reshuffle 2*3*playerAmount cards 
-        playerAmount = 4;
+        playerAmount = 2;
         playerName_0 = 'Andy'
         playerName_1 = 'July'
         playerName_2 = 'Salary'
@@ -539,6 +545,7 @@ class App():
         # step1. create a human player
         # -----------------------------------------------
         self.humanPlayer_0 = humanPlayer(playerName_0,self.c)
+        self.humanPlayer_1 = humanPlayer(playerName_1,self.c)
         self.EsUsed = 0
         self.stacks = stacks = deck.createCardField(playerAmount)
     
@@ -547,16 +554,29 @@ class App():
         # -----------------------------------------------
         b = gui.Button('Open Drafting Dialog')
         def ddo(self):
+            self.humanPlayer_0.showHidePlayDialog(False)
+            self.humanPlayer_1.showHidePlayDialog(False)
             self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
             # the game manager should monitor the confirm event from drafting dialog
         b.connect(gui.CLICK,ddo,self)
+        self.c.add(b,300,10)
         
-        def ddq(self):
+        def ddq_0(self):
             self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStackIndex())
             print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
+            self.humanPlayer_1.DecisionMaking_Drafting(self.stacks)
         self.hp0_ddcb = self.humanPlayer_0.getDraftDialogConfirmButton()
-        self.hp0_ddcb.connect(gui.CLICK,ddq,self)
-        self.c.add(b,300,10)
+        self.hp0_ddcb.connect(gui.CLICK,ddq_0,self)
+        
+        def ddq_1(self):
+            self.stacks = general.delcard(self.stacks,self.humanPlayer_1.getSelectedStackIndex())
+            print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
+            if len(self.stacks) > 0:
+                self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
+            else:
+                self.humanPlayer_0.showHidePlayDialog(True)
+        self.hp1_ddcb = self.humanPlayer_1.getDraftDialogConfirmButton()
+        self.hp1_ddcb.connect(gui.CLICK,ddq_1,self)
         
         # -----------------------------------------------
         # test  the function of open/close playing dialog
@@ -566,18 +586,45 @@ class App():
         def ocpd(self):
             self.openPlayingDialog = not self.openPlayingDialog
             self.humanPlayer_0.showHidePlayDialog(self.openPlayingDialog)
-            
+            self.humanPlayer_1.showHidePlayDialog(not self.openPlayingDialog)
         buttonOCPD.connect(gui.CLICK,ocpd,self)
         self.c.add(buttonOCPD,50,10)
         
         # -----------------------------------------------
         # test to capture the confirmation of playing from human player
         # -----------------------------------------------
-        def pdq(self):
-            print('get the confirmation from playing dialog')
-            print(playerName_0, ' played ', self.humanPlayer_0.getSelectedCard().getName(), ' in this turn!')
+        self.player0_played = False
+        self.player1_played = False
+        self.revealedCards = []
+        def pdq_0(self):
+            if self.humanPlayer_0.getSelectedCard() is not None:
+                self.player0_played = True
+                self.revealedCards.append([playerName_0,self.humanPlayer_0.getSelectedCard()])
+                cleanRevealedCards(self)
+                self.humanPlayer_0.showHidePlayDialog(False)
+                self.humanPlayer_1.showHidePlayDialog(True)
+                if self.player0_played and self.player1_played:
+                    self.player0_played = False
+                    self.player1_played = False 
+                    updateRevealedCards(self, self.revealedCards)
+                    self.revealedCards = []
         self.hp0_pdcb = self.humanPlayer_0.getPlayDialogConfirmButton()
-        self.hp0_pdcb.connect(gui.CLICK,pdq,self)
+        self.hp0_pdcb.connect(gui.CLICK,pdq_0,self)
+        
+        def pdq_1(self):
+            if self.humanPlayer_1.getSelectedCard() is not None:
+                self.player1_played = True
+                self.revealedCards.append([playerName_1,self.humanPlayer_1.getSelectedCard()])
+                cleanRevealedCards(self)
+                self.humanPlayer_1.showHidePlayDialog(False)
+                self.humanPlayer_0.showHidePlayDialog(True)
+                if self.player0_played and self.player1_played:
+                    self.player0_played = False
+                    self.player1_played = False 
+                    updateRevealedCards(self, self.revealedCards)
+                    self.revealedCards = []
+        self.hp1_pdcb = self.humanPlayer_1.getPlayDialogConfirmButton()
+        self.hp1_pdcb.connect(gui.CLICK,pdq_1,self)
         
         
         # -----------------------------------------------
@@ -599,22 +646,16 @@ class App():
         self.revealCardsDialog = revealCardsDialog()
         self.revealCardsDialog.name = 'revealCardsDialog'
         
-        # -----------------------------------------------
-        # create a button to test revealCardsDialog
-        # -----------------------------------------------
-        buttonRevealCards = gui.Button('Reveal Cards Window')
-        def rcdo(self):
-            revealedCards =[]
-            i = 0
-            # just for test, it is of course not the real case
-            for element in self.stacks:
-                if (i< 4) and len(self.stacks) >= 4:
-                    revealedCards.append([playerNames[i],self.stacks[len(self.stacks) - i -1][0]])
-                    i += 1
+        def updateRevealedCards(self,revealedCards):
+            self.revealCardsDialog.paintRevealedCards(revealedCards)
             if self.c.find('revealCardsDialog'):
                 self.c.remove(self.revealCardsDialog)
-            self.revealCardsDialog.paintRevealedCards(revealedCards)
             self.c.add(self.revealCardsDialog,800,50)
-            
-        buttonRevealCards.connect(gui.CLICK,rcdo,self)
-        self.c.add(buttonRevealCards,800,10)
+        
+        def cleanRevealedCards(self):
+            self.revealCardsDialog.paintRevealedCards([])
+            if self.c.find('revealCardsDialog'):
+                self.c.remove(self.revealCardsDialog)
+            self.c.add(self.revealCardsDialog,800,50)
+        
+        cleanRevealedCards(self)
