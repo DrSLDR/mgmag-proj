@@ -320,6 +320,53 @@ class EsDialog(gui.Dialog):
         return self.confirmButton
         
 
+'''revealCardsDialog class, display all played cards after all players have played their cards in the playing phase '''
+class revealCardsDialog(gui.Dialog):
+    def __init__(self):
+        # initialize
+        self.revealCards = []  # revealCards is a list of revealCard,revealCard = [playerName,Card]
+        # 1. define the title of the dialog
+        self.title = gui.Label('Reveal Cards Window')
+        # 2. define the container of the dialog
+        self.container = gui.Container(width = 400, heigt = 550) 
+        
+        # initialie Emergency Sop dialog
+        gui.Dialog.__init__(self,self.title,self.container)
+    
+    def paintRevealedCard(self,revealCard):
+        tbl = gui.Table()
+        tbl.tr()
+        # create the player name part as a button
+        nameBlock = gui.Button(revealCard[0],width = 70,height = 25) 
+        tbl.td(nameBlock)
+        tbl.tr()
+        tbl.td(gui.Spacer(width=1, height=5))
+        tbl.tr()
+        # create the card part as a table 
+        g = gui.Group(value=None)
+        cardBlock = general.genVcard(revealCard[1])
+        tbl.td(gui.Tool(g,cardBlock,None))
+        return tbl
+    
+    def paintRevealedCards(self,revealCards):
+        self.container = gui.Container(width = 400, heigt = 300)
+        x = 10
+        cnt = 0
+        for element in revealCards:
+            if cnt < 4: # limit the maximum amount of revealed card to 4
+                revealCardTbl = self.paintRevealedCard(element)
+                self.container.add(revealCardTbl,x = x,y = 5)
+                x += 100
+            cnt += 1
+        self.container.add(gui.Spacer(width = 100, height = 5), x = 0, y = 140)
+        gui.Dialog.__init__(self,self.title,self.container)
+        
+    def getConfirmButton(self):
+        return self.confirmButton
+        
+
+
+
 ''' Define a humanPlayer class, which defines the whole GUI which will be used by a human player
     The HumanPlayer including follwing functions:
     1.  create a human player object with 2 arguments, 
@@ -357,7 +404,7 @@ class humanPlayer():
         self.container = container      # the container
         self.playerName = playerName    # the name of player   
         self.ddx,self.ddy = 160,30      # the left top location of draft dialog
-        self.pdx,self.pdy = 40,50      # the left top location of playing dialog
+        self.pdx,self.pdy = 40,50       # the left top location of playing dialog
         self.esdx,self.esdy = 100,100   # the left top location of Emergency Stop dialog
         
         # *******************************************************
@@ -486,6 +533,7 @@ class App():
         playerName_1 = 'July'
         playerName_2 = 'Salary'
         playerName_3 = 'Alan'
+        playerNames = [playerName_0,playerName_1,playerName_2,playerName_3]
         
         # -----------------------------------------------
         # step1. create a human player
@@ -542,8 +590,31 @@ class App():
         bes.connect(gui.CLICK,eso,self)
         self.c.add(bes,500,10)
         
-        def cesd(self):
-            self.EsUsed = self.humanPlayer_0.getEsUsed()
-        self.humanPlayer_0.getEsDialogConfirmButton().connect(gui.CLICK,cesd,self)
         
         
+        # -----------------------------------------------
+        # test revealCardsDialog 
+        # -----------------------------------------------
+        # initilize a revealCardsDialog
+        self.revealCardsDialog = revealCardsDialog()
+        self.revealCardsDialog.name = 'revealCardsDialog'
+        
+        # -----------------------------------------------
+        # create a button to test revealCardsDialog
+        # -----------------------------------------------
+        buttonRevealCards = gui.Button('Reveal Cards Window')
+        def rcdo(self):
+            revealedCards =[]
+            i = 0
+            # just for test, it is of course not the real case
+            for element in self.stacks:
+                if (i< 4) and len(self.stacks) >= 4:
+                    revealedCards.append([playerNames[i],self.stacks[len(self.stacks) - i -1][0]])
+                    i += 1
+            if self.c.find('revealCardsDialog'):
+                self.c.remove(self.revealCardsDialog)
+            self.revealCardsDialog.paintRevealedCards(revealedCards)
+            self.c.add(self.revealCardsDialog,800,50)
+            
+        buttonRevealCards.connect(gui.CLICK,rcdo,self)
+        self.c.add(buttonRevealCards,800,10)

@@ -37,6 +37,7 @@ class MainGui(gui.Desktop):
 
     def __init__(self, disp):
         gui.Desktop.__init__(self)
+        container = gui.Container()
 
         # Setup the 'game' area where the action takes place
         self.gameArea = DrawingArea(disp.get_width(),
@@ -51,11 +52,12 @@ class MainGui(gui.Desktop):
         tbl.tr()
         tbl.td(self.menuArea)
 
-        #self.setup_menu()
+        #self.setup_menu(container)
         import human_player
         human_player.App(self.menuArea)
-
-        self.init(tbl, disp)
+        
+        container.add(tbl,0,0)
+        self.init(container, disp)
 
     def setup_menu(self):
         tbl = gui.Table(vpadding=5, hpadding=2)
@@ -243,6 +245,6 @@ class GameEngine(object):
             pygame.time.wait(10)
 
 ###
-disp = pygame.display.set_mode((1024, 768))
+disp = pygame.display.set_mode((1366, 768))
 eng = GameEngine(disp)
 eng.run()
