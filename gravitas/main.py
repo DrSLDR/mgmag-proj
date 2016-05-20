@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """This file starts the game"""
 
-import pygame
+import pygame, argparse
 from pgu import gui, timer
-
+from factory import Factory
+from board import Renderer
+from collections import namedtuple
 
 class DrawingArea(gui.Widget):
     def __init__(self, width, height):
@@ -138,28 +140,16 @@ events to move, so you'll get stupid stuff like only movement
 on mouse move). The game engine punches a hole in the pgu
 interface and keeps updating that hole."""
 class GameEngine(object):
-    def __init__(self, disp):
+    def __init__(self, disp, args):
         self.disp = disp
         self.app = MainGui(self.disp)
         self.app.engine = self
         from strings import Logo
-        self.logo = pygame.transform.scale(pygame.image.load(Logo.game), (200,200))
+        self.logo = pygame.transform.scale(pygame.image.load(Logo.game),
+                                           (200,200)) 
         self.ballrect = self.logo.get_rect()
         self.speed = [1, 2]
-        from board import Renderer
-        from collections import namedtuple
-        Size = namedtuple('Size', ['width', 'height'])
-        # construct factory, which gets used to (eventually) create the game manager
-        from factory import Factory
-        factory = Factory('config.json')
-        pcs = factory.makePlayerControllers()
-        state = factory.makeState(pcs)
-        self.gameManager = factory.makeGameManager(state)
-        # create board 
-        self.renderBoard = Renderer(Size(
-            self.app.gameArea.rect.width,
-            self.app.gameArea.rect.height
-        )).render # a function
+        self.args = args
 
     # Pause the game clock
     def pause(self):
@@ -207,14 +197,27 @@ class GameEngine(object):
 
         return (rect,)
 
+    """Initializes the game"""
+    def init(self):
+        # Call the factory
+        self.gameManager = Factory.createGame(self.args)
 
-    def run(self):
+        # create board 
+        Size = namedtuple('Size', ['width', 'height'])
+        self.renderBoard = Renderer(Size(
+            self.app.gameArea.rect.width,
+            self.app.gameArea.rect.height
+        )).render # a function
+
         self.app.update()
         pygame.display.flip()
 
         self.font = pygame.font.SysFont("", 16)
 
         self.clock = timer.Clock() #pygame.time.Clock()
+
+    def run(self):
+        self.init()
         done = False
         while not done:
             # Process events
@@ -244,7 +247,18 @@ class GameEngine(object):
             pygame.display.update(updates)
             pygame.time.wait(10)
 
-###
+################################################################################
+##### RUNTIME SCRIPT ###########################################################
+
+# Prep the parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config", default="config.json", help="Name of "+
+                    "configuration file")
+
+# Do the parsering
+args = parser.parse_args()
+
+# Do everything else
 disp = pygame.display.set_mode((1366, 768))
-eng = GameEngine(disp)
+eng = GameEngine(disp, args)
 eng.run()

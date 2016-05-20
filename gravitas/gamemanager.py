@@ -85,7 +85,8 @@ class GameManager:
         random.shuffle(inS)
 
         # Sort the remaining players
-        self._state.players = sorted(self._state.players, key=lambda p: p.getDistanceToWG())
+        self._state.players = sorted(self._state.players, key=lambda p:
+                                     p.getDistanceToWG())
 
         # Concatenate
         self._state.players = self._state.players + inS
@@ -181,7 +182,8 @@ class GameManager:
         return False
 
     """Determines if the player is stuck or not. If the player is stuck, returns
-    None, else returns the target ship (the one the player will travel towards)"""
+    None, else returns the target ship (the one the player will travel
+    towards)""" 
     def _playerCanMove(self, player):
         # Set up the math
         nearestAhead = None

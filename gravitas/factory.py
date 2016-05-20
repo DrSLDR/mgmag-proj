@@ -5,7 +5,8 @@ from player import Player, Ship
 from card import Card, Deck
 from gamemanager import State, GameManager
 
-"""Class that creates a factory, which can in turn create other objects; playerControllers, states and the Gamemanager"""
+"""Class that creates a factory, which can in turn create other objects;
+ playerControllers, states and the Gamemanager"""
 
 class Factory():
     
@@ -15,8 +16,8 @@ class Factory():
         self._initPType()
         self._config = self._parseConfig(configfile)
 
-    """Initializes the player type enumeration dictionary mapping of known player
-    types to the constructor for their respective player controller."""
+    """Initializes the player type enumeration dictionary mapping of known
+    player types to the constructor for their respective player controller."""
     def _initPType(self):
         self.__PType = {
             "human": None,
@@ -34,7 +35,8 @@ class Factory():
                 exit(1)
         return conflist
 
-    """return list of player controllers, whose properties depend on the config file"""
+    """return list of player controllers, whose properties depend on the config
+    file"""
     def makePlayerControllers(self):
         return None
 
