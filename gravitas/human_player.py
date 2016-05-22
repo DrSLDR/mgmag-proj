@@ -15,59 +15,46 @@ import strings
 class params:
     FACE_UP = 0
     FACE_DOWN = 1
-class general:
-    def genVcard(card):
-        '''a function to generate a Visual card with a widget(Table)'''
-        # get the card information
-        cardName  = card.getName()
-        cardValue = str(card.getValue())
-        cardType  = card.getType()
-        if cardType == 0:
-            cardTypeStr = ' Normal  '
-        elif cardType == 1:
-            cardTypeStr = 'Repulsor'
-        else: cardTypeStr = ' Tractor  '
 
-        # create the card image as a table
-        vcard = gui.Table(width = 30)
+def createCardView(card):
+    '''a function to generate a Visual card with a widget(Table)'''
+    # get the card information
+    cardName  = card.getName()
+    cardValue = str(card.getValue())
+    cardType  = card.getType()
+    if cardType == 0:
+        cardTypeStr = ' Normal  '
+    elif cardType == 1:
+        cardTypeStr = 'Repulsor'
+    else: cardTypeStr = ' Tractor  '
 
-        vcard.add(gui.Label(' '))
-        vcard.tr()
-        vcard.add(gui.Label(' '))
-        vcard.add(gui.Label(cardValue))
-        vcard.tr()
-        vcard.add(gui.Label(' '))
-        vcard.add(gui.Label(cardName))
-        vcard.tr()
-        vcard.add(gui.Label(' '))
-        vcard.add(gui.Label(cardTypeStr))
-        vcard.tr()
-        vcard.add(gui.Label(' '))
-        return vcard
+    # create the card image as a table
+    vcard = gui.Table(width = 30)
 
-    def createStopButton(face_sta):
-        '''
-        a function to generate visual Emergency Stop card return as a button
-        '''
-        return gui.Button(
-            "ES Card" if face_sta == params.FACE_UP else " ",
-            width = 75,
-            height = 95,
-            name = 'EsButton'
-        )
+    vcard.add(gui.Label(' '))
+    vcard.tr()
+    vcard.add(gui.Label(' '))
+    vcard.add(gui.Label(cardValue))
+    vcard.tr()
+    vcard.add(gui.Label(' '))
+    vcard.add(gui.Label(cardName))
+    vcard.tr()
+    vcard.add(gui.Label(' '))
+    vcard.add(gui.Label(cardTypeStr))
+    vcard.tr()
+    vcard.add(gui.Label(' '))
+    return vcard
 
-
-    def delcard(stacks,index):
-        '''
-        A function to delete the index stack from stacks, a stack 
-        including 2 cards, one face up and another face down
-        '''
-        stacks_bak = stacks
-        stacks = []
-        for i in range(len(stacks_bak)):
-            if (i != index):
-                stacks.append(stacks_bak[i])
-        return stacks
+def createStopButton(face_sta):
+    '''
+    a function to generate visual Emergency Stop card return as a button
+    '''
+    return gui.Button(
+        "ES Card" if face_sta == params.FACE_UP else " ",
+        width = 75,
+        height = 95,
+        name = 'EsButton'
+    )
 
 
 class DraftingDialog(gui.Dialog):
@@ -125,7 +112,7 @@ class DraftingDialog(gui.Dialog):
             # get the card information
             # create the image of each card as a table(widgit)
             card = stacks[i][0]
-            vcard[i] = general.genVcard(card)
+            vcard[i] = createCardView(card)
             # 4 cards in one row
             if (i % 4 == 0):
                 tbl.tr()
@@ -209,7 +196,7 @@ class PlayingDialog(gui.Dialog):
             card = [None]*amountCards
             vcard = [None]*amountCards
             for i in range(amountCards):
-                vcard[i] = general.genVcard(cards[i])
+                vcard[i] = createCardView(cards[i])
                 tbl.td(gui.Tool(self.cardsGroup,vcard[i],value=i))
                 tbl.td(gui.Spacer(width = 10, height = 20))
             # monitor the event whether the selection change
@@ -236,7 +223,7 @@ class PlayingDialog(gui.Dialog):
         # create a talbe(widget) to place all cards
         self.cardsTbl = self.genCardTbl(self.cards)
         # crate a button(widget) to place emergency stop card
-        self.esCardButton = general.createStopButton(self.EsUsed)
+        self.esCardButton = createStopButton(self.EsUsed)
 
         # add new widgets into the container
         self.cardsContainer.add(self.cardsTbl,10,10)
@@ -327,7 +314,7 @@ class revealCardsDialog(gui.Dialog):
             tbl.tr()
             # create the card part as a table
             g = gui.Group(value=None)
-            cardBlock = general.genVcard(revealCard[1])
+            cardBlock = createCardView(revealCard[1])
             tbl.td(gui.Tool(g,cardBlock,None))
             return tbl
 
@@ -418,7 +405,7 @@ class humanPlayer():
         def pdq(self):
             if self.play_dialog.getSelectedItem() is not None:
                 self.selectedCard = self.playingCards[self.getSelectedCardIndex()]
-                self.playingCards = general.delcard(self.playingCards,self.getSelectedCardIndex())
+                self.playingCards.pop(self.getSelectedCardIndex())
                 print('the latest length of playingCards is ', len(self.playingCards))
                 # update the playing window with new cards
                 self.playDialogUpdate()
@@ -447,7 +434,6 @@ class humanPlayer():
         self.selectedStackIndex = None
         self.draft_dialog.setStacks(self.stacks)
         self.draft_dialog.paintStacks()
-        #self.container.add(self.draft_dialog,self.ddx,self.ddy)
         self.draft_dialog.open()
 
     def playDialogUpdate(self):
@@ -461,7 +447,6 @@ class humanPlayer():
             self.container.remove(self.play_dialog)
 
     def startEsDialog(self):
-        #self.container.add(self.Es_Dialog,self.esdx,self.esdy)
         self.Es_Dialog.open()
 
     def getSelectedStackIndex(self):
@@ -494,25 +479,19 @@ class App():
     def __init__(self,container):
         # create a Deck
         deck = card.Deck()
-        # reshuffle 2*3*playerAmount cards
-        playerAmount = 2;
-        playerName_0 = 'Andy'
-        playerName_1 = 'July'
-        playerName_2 = 'Salary'
-        playerName_3 = 'Alan'
-        playerNames = [playerName_0,playerName_1,playerName_2,playerName_3]
-        # playerNames = ['Andy','July','Salary','Alan']
+        playerNames = ['Andy','July','Salary','Alan']
+
+        players = list(map(lambda p: humanPlayer(p,container), playerNames))
 
         # Create a human player
-        self.humanPlayer_0 = humanPlayer(playerName_0,container)
-        self.humanPlayer_1 = humanPlayer(playerName_1,container)
-        self.EsUsed = 0
-        self.stacks = stacks = deck.createCardField(playerAmount)
+        self.humanPlayer_0 = humanPlayer(playerNames[0],container)
+        self.humanPlayer_1 = humanPlayer(playerNames[1],container)
+        self.stacks = deck.createCardField(len(players))
 
         # Create a button to open the drating dialog
         b = gui.Button('Open Drafting Dialog')
         def ddo(self):
-            self.humanPlayer_0.showHidePlayDialog(False)
+            self.humanPlayer_0.showHidePlayDialog(True)
             self.humanPlayer_1.showHidePlayDialog(False)
             self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
             # the game manager should monitor the confirm event from drafting dialog
@@ -521,7 +500,7 @@ class App():
 
         def ddq_0(self):
             if self.humanPlayer_0.getSelectedStackIndex() is not None:
-                self.stacks = general.delcard(self.stacks,self.humanPlayer_0.getSelectedStackIndex())
+                self.stacks.pop(self.humanPlayer_0.getSelectedStackIndex())
                 print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
                 self.humanPlayer_1.DecisionMaking_Drafting(self.stacks)
         self.hp0_ddcb = self.humanPlayer_0.getDraftDialogConfirmButton()
@@ -529,7 +508,7 @@ class App():
 
         def ddq_1(self):
             if self.humanPlayer_1.getSelectedStackIndex() is not None:
-                self.stacks = general.delcard(self.stacks,self.humanPlayer_1.getSelectedStackIndex())
+                self.stacks.pop(self.humanPlayer_1.getSelectedStackIndex())
                 print('draft dialog closed, the latest amount of stacks is ', len(self.stacks))
                 if len(self.stacks) > 0:
                     self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
@@ -555,7 +534,7 @@ class App():
         def pdq_0(self):
             if self.humanPlayer_0.getSelectedCard() is not None:
                 self.player0_played = True
-                self.revealedCards.append([playerName_0,self.humanPlayer_0.getSelectedCard()])
+                self.revealedCards.append([playerNames[0],self.humanPlayer_0.getSelectedCard()])
                 cleanRevealedCards(self)
                 self.humanPlayer_0.showHidePlayDialog(False)
                 self.humanPlayer_1.showHidePlayDialog(True)
@@ -570,7 +549,7 @@ class App():
         def pdq_1(self):
             if self.humanPlayer_1.getSelectedCard() is not None:
                 self.player1_played = True
-                self.revealedCards.append([playerName_1,self.humanPlayer_1.getSelectedCard()])
+                self.revealedCards.append([playerNames[1],self.humanPlayer_1.getSelectedCard()])
                 cleanRevealedCards(self)
                 self.humanPlayer_1.showHidePlayDialog(False)
                 self.humanPlayer_0.showHidePlayDialog(True)
