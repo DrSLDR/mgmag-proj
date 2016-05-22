@@ -69,7 +69,7 @@ class Player(Ship):
     def canES(self):
         return self._canEmergencyStop
 
-    def getDistanceToWG(self):
+    def distanceToFinish(self):
         return 54 - self.getPos()
 
     def resetES(self):
