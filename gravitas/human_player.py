@@ -316,10 +316,9 @@ class revealCardsDialog(ADialog):
         x = 10
         for element in revealCards:
             revealCardTbl = paintRevealedCard(element)
-            self.container.add(revealCardTbl,x = x,y = 5)
+            self.getContainer().add(revealCardTbl,x = x,y = 5)
             x += 100
         self.getContainer().add(gui.Spacer(width = 100, height = 5), x = 0, y = 140)
-        self.repaint()
 
     def repaint(self):
         ADialog.__init__(self,self.title,Size(width = 400, height = 300))
