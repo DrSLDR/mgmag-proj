@@ -479,19 +479,24 @@ class App():
     def __init__(self,container):
         # create a Deck
         deck = card.Deck()
-        playerNames = ['Andy','July','Salary','Alan']
-
-        players = list(map(lambda p: humanPlayer(p,container), playerNames))
+        playerAmount = 2;
+        playerName_0 = 'Andy'
+        playerName_1 = 'July'
+        playerName_2 = 'Salary'
+        playerName_3 = 'Alan'
+        playerNames = [playerName_0,playerName_1,playerName_2,playerName_3]
+        # playerNames = ['Andy','July','Salary','Alan']
 
         # Create a human player
-        self.humanPlayer_0 = humanPlayer(playerNames[0],container)
-        self.humanPlayer_1 = humanPlayer(playerNames[1],container)
-        self.stacks = deck.createCardField(len(players))
+        self.humanPlayer_0 = humanPlayer(playerName_0,container)
+        self.humanPlayer_1 = humanPlayer(playerName_1,container)
+        self.EsUsed = 0
+        self.stacks = stacks = deck.createCardField(playerAmount)
 
         # Create a button to open the drating dialog
         b = gui.Button('Open Drafting Dialog')
         def ddo(self):
-            self.humanPlayer_0.showHidePlayDialog(True)
+            self.humanPlayer_0.showHidePlayDialog(False)
             self.humanPlayer_1.showHidePlayDialog(False)
             self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
             # the game manager should monitor the confirm event from drafting dialog
