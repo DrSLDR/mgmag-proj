@@ -241,7 +241,7 @@ class PlayingDialog(ADialog):
     def setEsUsed(self,EsUsed):
         self.EsUsed = EsUsed
 
-class EsDialog(ADialog):
+class EmergencyStopDialog(ADialog):
     '''Emergency Stop class, create the Emergency Stop Dialog '''
     def __init__(self,player):
         ADialog.__init__(
@@ -287,7 +287,7 @@ class EsDialog(ADialog):
         return self.confirmButton
 
 
-class revealCardsDialog(ADialog):
+class RevealCardsDialog(ADialog):
     '''This class displays all played cards after the players have played 
     their cards in the playing phase '''
     def __init__(self):
@@ -318,7 +318,9 @@ class revealCardsDialog(ADialog):
             revealCardTbl = paintRevealedCard(element)
             self.getContainer().add(revealCardTbl,x = x,y = 5)
             x += 100
-        self.getContainer().add(gui.Spacer(width = 100, height = 5), x = 0, y = 140)
+        self.getContainer().add(
+            gui.Spacer(width = 100, height = 5), x = 0, y = 140
+        )
 
     def repaint(self):
         ADialog.__init__(self,self.title,Size(width = 400, height = 300))
@@ -326,36 +328,36 @@ class revealCardsDialog(ADialog):
     def getConfirmButton(self):
         return self.confirmButton
 
-class humanPlayer():
+class HumanPlayer():
     ''' this class defines the GUI which will be used by a human player
         It includes the  following functions:
         1.  create a human player object with 2 arguments,
-            humanPlayer = humanPlayer(playerName,container)
+            HumanPlayer = HumanPlayer(playerName,container)
             playerName is the Name of Player which will be shown in 
             the title of all dialogs. Container is the image container 
             which will be used to display all windows in this container
         2.  open a drafting dialog in drafting phase, the human player can 
             select a stack of cards in this dialog can press confirm
             button to confirm his/her selection.
-            humanPlayer.DecisionMaking_Drafting(stacks)
+            HumanPlayer.DecisionMaking_Drafting(stacks)
             stacks is the input argument, all cards in the stacks will be shown 
             in the drafting dialog
         3.  show/hide the playing dialog, since there are more than one 
             players in the game, so, you may need this function to show/hide
             a specific player's playing dialog
-            humanPlayer.showHidePlayDialog(show=1)
+            HumanPlayer.showHidePlayDialog(show=1)
             show is the input argument with defaut value 1, 0: hide, 1: show
         4.  In the playing phase, when resolve for each player, the player 
-            many want to use Emergency Stop card, so a EsDialog is provided
+            many want to use Emergency Stop card, so a EmergencyStopDialog is provided
             for human player to select whether use Emergency Stop
-            humanPlayer.startEsDialog()
+            HumanPlayer.startEmergencyStopDialog()
         5.  since the game manager should know when the human player finally 
             confirms his selection and go to next turn
             So, the game manager can get the confirm button of 3 dialogs 
             (drafting, playing and EmergencyStop)
-                humanPlayer.getDraftDialogConfirmButton()
-                humanPlayer.getPlayDialogConfirmButton()
-                humanPlayer.getEsDialogConfirmButton()
+                HumanPlayer.getDraftDialogConfirmButton()
+                HumanPlayer.getPlayDialogConfirmButton()
+                HumanPlayer.getEmergencyStopDialogConfirmButton()
     '''
     def __init__(self, playerName,container):
         # initialize parameter
@@ -408,13 +410,13 @@ class humanPlayer():
         pdConfirmButton.connect(gui.CLICK,pdq,self)
 
         # crate initial Emergency Stop window
-        self.Es_Dialog =  EsDialog(self)
+        self.Es_Dialog =  EmergencyStopDialog(self)
         def esq(self):
             #self.container.remove(self.Es_Dialog)
             self.EsUsed = self.getSelectedEs()
             # re-build the playing window with new cards
             self.playDialogUpdate()
-        EsConfirmButton = self.getEsDialogConfirmButton()
+        EsConfirmButton = self.getEmergencyStopDialogConfirmButton()
         EsConfirmButton.connect(gui.CLICK,esq,self)
 
     def setStacks(self,stacks):
@@ -441,7 +443,7 @@ class humanPlayer():
         elif not show and self.container.find('playingDialog'+self.name):
             self.container.remove(self.play_dialog)
 
-    def startEsDialog(self):
+    def startEmergencyStopDialog(self):
         self.Es_Dialog.open()
 
     def getSelectedStackIndex(self):
@@ -462,7 +464,7 @@ class humanPlayer():
     def getPlayDialogConfirmButton(self):
         return self.play_dialog.getConfirmButton()
 
-    def getEsDialogConfirmButton(self):
+    def getEmergencyStopDialogConfirmButton(self):
         return self.Es_Dialog.getConfirmButton()
 
     def getEsUsed(self):
@@ -470,7 +472,7 @@ class humanPlayer():
 
 
 class App():
-    '''the class App is just an example showing how to use humanPlayer class'''
+    '''the class App is just an example showing how to use HumanPlayer class'''
     def __init__(self,container):
         # create a Deck
         deck = card.Deck()
@@ -478,8 +480,8 @@ class App():
         playerNames = ['Andy','July','Salary','Alan']
 
         # Create a human player
-        self.humanPlayer_0 = humanPlayer(playerNames[0],container)
-        self.humanPlayer_1 = humanPlayer(playerNames[1],container)
+        self.humanPlayer_0 = HumanPlayer(playerNames[0],container)
+        self.humanPlayer_1 = HumanPlayer(playerNames[1],container)
         self.stacks = deck.createCardField(playerAmount)
 
         # Create a button to open the drating dialog
@@ -558,23 +560,23 @@ class App():
         # create a button to test emergency stop card function
         bes = gui.Button('Open Emergency Stop Dialog')
         def eso(self):
-            self.humanPlayer_0.startEsDialog()
+            self.humanPlayer_0.startEmergencyStopDialog()
 
         bes.connect(gui.CLICK,eso,self)
         container.add(bes,500,10)
 
-        # Test revealCardsDialog
-        # initilize a revealCardsDialog
-        self.revealCardsDialog = revealCardsDialog()
+        # Test RevealCardsDialog
+        # initilize a RevealCardsDialog
+        self.revealCardsDialog = RevealCardsDialog()
         self.revealCardsDialog.name = 'revealCardsDialog'
         def updateRevealedCards(self,revealedCards):
             self.revealCardsDialog.paintRevealedCards(revealedCards)
-            if container.find('revealCardsDialog'):
+            if container.find('RevealCardsDialog'):
                 container.remove(self.revealCardsDialog)
             container.add(self.revealCardsDialog,800,50)
         def cleanRevealedCards(self):
             self.revealCardsDialog.paintRevealedCards([])
-            if container.find('revealCardsDialog'):
+            if container.find('RevealCardsDialog'):
                 container.remove(self.revealCardsDialog)
             container.add(self.revealCardsDialog,800,50)
         cleanRevealedCards(self)
