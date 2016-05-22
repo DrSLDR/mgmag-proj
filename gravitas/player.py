@@ -41,7 +41,7 @@ class Ship:
     """Move function. Adds the given value to the ship's position. Tests to make
     sure that the position isn't outside of the board in either direction."""
     def move(self, value):
-        self._pos = self._pos + value
+        self._pos += value
         if self._pos > 54:
             self._pos = 54
         elif self._pos < 0:
@@ -69,7 +69,7 @@ class Player(Ship):
     def canES(self):
         return self._canEmergencyStop
 
-    def getDistanceToWG(self):
+    def distanceToFinish(self):
         return 54 - self.getPos()
 
     def resetES(self):

@@ -3,10 +3,14 @@ from player import Player, Ship
 from card import Card, Deck
 import random
 
+"""The game state class. Beyond counters relating to the point in play, it also
+contains the reference to the deck and the lists of players (and hulks). The
+player list is a list of pairs (Player (or Ship) object, PlayerController (or
+None for hulks)). The State should be treated as read-only; only the Game Manger
+(and Factory) should write the state."""
 class State:
     def __init__(self):
         # Bookkeeping
-        random.seed()
         self.turn = 0
         self.round = 0
         self.players = []
@@ -15,7 +19,7 @@ class State:
         self.deck = Deck()
 
     def addHulk(self, position):
-        self.hulks.append(Ship(pos=position))
+        self.hulks.append((Ship(pos=position), None))
 
     def addPlayer(self, player):
         self.players.append(player)
@@ -30,7 +34,6 @@ class GameManager:
     def __init__(self, state):
         self._state = state
 
-
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
 ##### START OF GAME LEVEL ######################################################
@@ -43,14 +46,14 @@ class GameManager:
     """Main game loop. Runs the game for six rounds or until someone wins."""
     def game(self):
         while self._state.round < 6:
-            self._state.round = self._state.round + 1
+            self._state.round += 1
             if self.round():
                 break
 
         # Figure out non-clear victory
         if self._state.winner is None:
             self.sortPlayers()
-            self._state.winner = self._state.players[0]
+            self._state.winner = self._state.players[0][0]
 
         print("Got winner at round " + str(self._state.round) + ", turn " +
               str(self._state.turn) + ": " + self._state.winner.getName())
@@ -66,7 +69,7 @@ class GameManager:
         self.startRound()
         self._state.turn = 0
         while self._state.turn < 6:
-            self._state.turn = self._state.turn + 1
+            self._state.turn += 1
             if self.turn():
                 return True
         return False
@@ -77,7 +80,7 @@ class GameManager:
         # Pull all players in the singularity into a separate list
         inS = []
         for p in self._state.players:
-            if p.getPos() == 0:
+            if p[0].getPos() == 0:
                 inS.append(p)
                 self._state.players.remove(p)
 
@@ -85,10 +88,11 @@ class GameManager:
         random.shuffle(inS)
 
         # Sort the remaining players
-        self._state.players = sorted(self._state.players, key=lambda p: p.getDistanceToWG())
+        self._state.players = sorted(self._state.players, key=lambda p:
+                                     p[0].distanceToFinish())
 
         # Concatenate
-        self._state.players = self._state.players + inS
+        self._state.players += inS
 
         # Reverse
         self._state.players.reverse()
@@ -101,7 +105,7 @@ class GameManager:
 
         # Reset all players Emergency Stop
         for p in self._state.players:
-            p.resetES()
+            p[0].resetES()
 
         # Prepare the field and start drawing
         field = self._state.deck.createCardField(len(self._state.players))
@@ -112,7 +116,7 @@ class GameManager:
                 # self._deck.takeFromField(selection)
                 field = self._state.deck.getField()
                 print("Selection round "+str(self._state.round)+"." + str(i+1) + 
-                    " for player " + p.getName()) 
+                      " for player " + p[0].getName()) 
                 #TODO either wait for the render loop to catch up or call it
 
 ##### END OF ROUND LEVEL #######################################################
@@ -130,11 +134,9 @@ class GameManager:
         # while len(plays) < len(self._players):
             # for p in self._players:
                 #TODO: Implement this functionality
-                # card = p.pollPlay()
+                # card = p[1].pollPlay()
                 # if card is not None:
                 #     plays[card] = p
-            #TODO: There should probably be a delay here so that the loop isn't
-            # super fast
         
         # Reveal
         self.reveal(plays)
@@ -142,13 +144,11 @@ class GameManager:
         # Resolve
         return self.resolve(plays)
 
-
     """Turn reveal. Sends revealed cards to all player controllers"""
     def reveal(self, plays):
         cards = plays.keys()
-        #TODO: keep track of player controllers
-        # for pc in self._playerControllers:
-        #     pc.sendReveal(cards)
+        # for p in self._players:
+        #     p[1].sendReveal(cards)
 
     """Turn resolution. Given a list of cards, will sort and resolve
     plays. Returns True if a player has entered the Warp Gate, else False"""
@@ -158,7 +158,9 @@ class GameManager:
 
         # Resolution loop
         for c in ordered:
-            p = plays[c]
+            ptup = plays[c]
+            p = ptup[0]
+            pc = ptup[1]
 
             # Determine if p is even capable of moving
             target = self._state.playerCanMove(p)
@@ -166,7 +168,7 @@ class GameManager:
                 # Wait for Emergency Stop decision
                 while True:
                     #TODO: implement this
-                    useES = p.pollUseES()
+                    useES = pc.pollUseES()
                     if useES is not None:
                         break
 
@@ -175,13 +177,14 @@ class GameManager:
                 self._resolvePlay(p, c, target)
 
             # Check if the player has won the game
-            if p.getDistanceToWG() == 0:
-                self._state.winner = p
+            if p.distanceToFinish() == 0:
+                self._state.winner = ptup
                 return True
         return False
 
     """Determines if the player is stuck or not. If the player is stuck, returns
-    None, else returns the target ship (the one the player will travel towards)"""
+    None, else returns the target ship (the one the player will travel
+    towards)""" 
     def _playerCanMove(self, player):
         # Set up the math
         nearestAhead = None
@@ -192,20 +195,21 @@ class GameManager:
         numberBehind = 0
 
         # Loop over all ships on the board
-        for s in (self._state.players + self._state.hulks):
+        for ship in (self._state.players + self._state.hulks):
+            s = ship[0]
             # Ignore the player being resolved
             if not s == player:
                 # Ignore ships in the singularity
                 if not s.getPos() == 0:
                     # The ship is behind the player
                     if player.directionTo(s) == -1:
-                        numberBehind = numberBehind + 1
+                        numberBehind += 1
                         if player.distanceTo(s) < distanceBehind:
                             distanceBehind = player.distanceTo(s)
                             nearestBehind = s
                     # The ship is ahead of the player
                     else:
-                        numberAhead = numberAhead + 1 
+                        numberAhead += 1 
                         if player.distanceTo(s) < distanceAhead:
                             distanceAhead = player.distanceTo(s)
                             nearestAhead = s
@@ -245,7 +249,8 @@ class GameManager:
             # Tractor. Bastard
             # Build ship list
             ships = []
-            for s in (self._state.players + self._state.hulks):
+            for ship in (self._state.players + self._state.hulks):
+                s = ship[0]
                 if not s == player:
                     ships.append(s)
 

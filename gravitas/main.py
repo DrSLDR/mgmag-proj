@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """This file starts the game"""
 
-import pygame
+import pygame, argparse
 from pgu import gui, timer
+from factory import Factory
+from board import Renderer
+from collections import namedtuple
+from strings import Logo
 
 class DrawingArea(gui.Widget):
     def __init__(self, width, height):
@@ -54,29 +58,24 @@ events to move, so you'll get stupid stuff like only movement
 on mouse move). The game engine punches a hole in the pgu
 interface and keeps updating that hole."""
 class GameEngine(object):
-    def __init__(self, disp):
+    def __init__(self, disp, args):
         self.disp = disp
         self.app = MainGui(self.disp)
-        self.app.engine = self
-        from board import Renderer
-        from collections import namedtuple
-        Size = namedtuple('Size', ['width', 'height'])
-        # construct factory, which gets used to (eventually) create the game manager
-        from factory import Factory
-        factory = Factory('config.json')
-        pcs = factory.makePlayerControllers()
-        state = factory.makeState(pcs)
-        self.gameManager = factory.makeGameManager(state)
-        # create board 
-        self.renderBoard = Renderer(Size(
-            self.app.gameArea.rect.width,
-            self.app.gameArea.rect.height
-        )).render # a function
+        self.app.engine = self  
+        self.logo = pygame.transform.scale(pygame.image.load(Logo.game),
+                                           (200,200)) 
+        self.ballrect = self.logo.get_rect()
+        self.speed = [1, 2]
+        self.factory = Factory(args)
 
-    """
-    Render the continuesly updating part of the game (game board)
-    This part can do animations.
-    """
+    # Pause the game clock
+    def pause(self):
+        self.clock.pause()
+
+    # Resume the game clock
+    def resume(self):
+        self.clock.resume()
+
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
         backgroundColor = 0, 0, 255 # which is blue
@@ -85,23 +84,31 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
+        self.gameManager.update()
         self.renderBoard(font, disp)
         return (rect,)
 
-    """
-    Update the game, tpf = time since last frame (time per frame)
-    """
-    def update(self, tpf):
-        self.gameManager.update()
+    """Initializes the game"""
+    def init(self):
+        # Call the factory
+        self.gameManager = self.factory.createGame()
 
-    """
-    Will block untill the game is completed.
-    """
-    def run(self):
+        # create board 
+        Size = namedtuple('Size', ['width', 'height'])
+        self.renderBoard = Renderer(Size(
+            self.app.gameArea.rect.width,
+            self.app.gameArea.rect.height
+        )).render # a function
+
         self.app.update()
         pygame.display.flip()
+
         self.font = pygame.font.SysFont("", 16)
+
         self.clock = timer.Clock() #pygame.time.Clock()
+
+    def run(self):
+        self.init()
         done = False
         while not done:
             # Process events
@@ -112,7 +119,6 @@ class GameEngine(object):
                 else:
                     # Pass the event off to pgu
                     self.app.event(ev)
-            self.update(self.clock.get_time())
             # Render the game
             rect = self.app.get_render_area()
             updates = []
@@ -121,8 +127,10 @@ class GameEngine(object):
             if (lst):
                 updates += lst
             self.disp.set_clip()
+
             # Cap it at 30fps
             self.clock.tick(30)
+
             # Give pgu a chance to update the display
             lst = self.app.update()
             if (lst):
@@ -130,7 +138,18 @@ class GameEngine(object):
             pygame.display.update(updates)
             pygame.time.wait(10)
 
-###
+################################################################################
+##### RUNTIME SCRIPT ###########################################################
+
+# Prep the parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config", default="config.json", help="Name of "+
+                    "configuration file")
+
+# Do the parsering
+args = parser.parse_args()
+
+# Do everything else
 disp = pygame.display.set_mode((1366, 768))
-eng = GameEngine(disp)
+eng = GameEngine(disp, args)
 eng.run()
