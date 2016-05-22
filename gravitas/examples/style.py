@@ -1,4 +1,9 @@
-"""Every file should start with a comment describing its purpose in life"""
+"""Every file should start with a comment describing its purpose in life
+please note that if this style guide is ambigious, you can follow the
+pep style guide: https://www.python.org/dev/peps/pep-0008/
+
+except for the snake casing, that's terrible
+"""
 
 def function(argument, bars):
     """ Docstrings below the decleration according to the 
