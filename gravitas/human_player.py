@@ -389,9 +389,7 @@ class humanPlayer():
         self.pdx,self.pdy = 40,50       # the left top location of playing dialog
         self.esdx,self.esdy = 100,100   # the left top location of Emergency Stop dialog
 
-        # *******************************************************
         # crate initial Drafting window without card
-        # *******************************************************
         self.draft_dialog = DraftingDialog(self.stacks,self.playerName)
         # when the human player press 'confirm' button to confirm his/her selection, then
         # 1. close the drafting dialog
@@ -413,9 +411,7 @@ class humanPlayer():
         ddConfirmButton = self.getDraftDialogConfirmButton()
         ddConfirmButton.connect(gui.CLICK,ddq,self)
 
-        # *******************************************************
-        # crate initial playing window without card
-        # *******************************************************
+        # create initial playing window without card
         self.play_dialog = PlayingDialog(self.playingCards,self.EsUsed,self.playerName)
         self.play_dialog.name = "playingDialog" + self.playerName
         self.container.add(self.play_dialog,self.pdx,self.pdy)
@@ -429,9 +425,7 @@ class humanPlayer():
         pdConfirmButton = self.getPlayDialogConfirmButton()
         pdConfirmButton.connect(gui.CLICK,pdq,self)
 
-        # *******************************************************
         # crate initial Emergency Stop window
-        # *******************************************************
         self.Es_Dialog =  EsDialog(self.playerName)
         def esq(self):
             #self.container.remove(self.Es_Dialog)
@@ -441,9 +435,6 @@ class humanPlayer():
         EsConfirmButton = self.getEsDialogConfirmButton()
         EsConfirmButton.connect(gui.CLICK,esq,self)
 
-    # ***********************************************************
-    # define methods for human player
-    # ***********************************************************
     def setStacks(self,stacks):
         self.stacks = stacks
 
@@ -502,11 +493,8 @@ class App():
     '''the class App is just an example showing how to use humanPlayer class'''
     def __init__(self,container):
         # initilize the gui
-        #gui.Desktop.__init__(self)
-        #self.connect(gui.QUIT,self.quit,None)
 
         # crate a container in APP
-        #self.c = gui.Container(width=800,height=750)
         self.c = container
 
         # create a Deck
@@ -519,17 +507,13 @@ class App():
         playerName_3 = 'Alan'
         playerNames = [playerName_0,playerName_1,playerName_2,playerName_3]
 
-        # -----------------------------------------------
-        # step1. create a human player
-        # -----------------------------------------------
+        # Create a human player
         self.humanPlayer_0 = humanPlayer(playerName_0,self.c)
         self.humanPlayer_1 = humanPlayer(playerName_1,self.c)
         self.EsUsed = 0
         self.stacks = stacks = deck.createCardField(playerAmount)
 
-        # -----------------------------------------------
-        # create a button to open the drating dialog
-        # -----------------------------------------------
+        # Create a button to open the drating dialog
         b = gui.Button('Open Drafting Dialog')
         def ddo(self):
             self.humanPlayer_0.showHidePlayDialog(False)
@@ -558,9 +542,7 @@ class App():
         self.hp1_ddcb = self.humanPlayer_1.getDraftDialogConfirmButton()
         self.hp1_ddcb.connect(gui.CLICK,ddq_1,self)
 
-        # -----------------------------------------------
         # test  the function of open/close playing dialog
-        # -----------------------------------------------
         self.openPlayingDialog = True
         buttonOCPD = gui.Button('Open/Close Playing Window')
         def ocpd(self):
@@ -570,9 +552,7 @@ class App():
         buttonOCPD.connect(gui.CLICK,ocpd,self)
         self.c.add(buttonOCPD,50,10)
 
-        # -----------------------------------------------
         # test to capture the confirmation of playing from human player
-        # -----------------------------------------------
         self.player0_played = False
         self.player1_played = False
         self.revealedCards = []
@@ -606,9 +586,7 @@ class App():
         self.hp1_pdcb = self.humanPlayer_1.getPlayDialogConfirmButton()
         self.hp1_pdcb.connect(gui.CLICK,pdq_1,self)
 
-        # -----------------------------------------------
         # create a button to test emergency stop card function
-        # -----------------------------------------------
         bes = gui.Button('Open Emergency Stop Dialog')
         def eso(self):
             self.humanPlayer_0.startEsDialog()
@@ -616,9 +594,7 @@ class App():
         bes.connect(gui.CLICK,eso,self)
         self.c.add(bes,500,10)
 
-        # -----------------------------------------------
-        # test revealCardsDialog
-        # -----------------------------------------------
+        # Test revealCardsDialog
         # initilize a revealCardsDialog
         self.revealCardsDialog = revealCardsDialog()
         self.revealCardsDialog.name = 'revealCardsDialog'
