@@ -42,10 +42,8 @@ class MainGui(gui.Desktop):
         tbl.td(self.menuArea)
         import human_player
         human_player.App(self.menuArea)
-        
         container.add(tbl,0,0)
         self.init(container, disp)
-
     def get_render_area(self):
         return self.gameArea.get_abs_rect()
 
