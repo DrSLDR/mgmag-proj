@@ -27,23 +27,21 @@ def createCardView(card):
     elif cardType == 1:
         cardTypeStr = 'Repulsor'
     else: cardTypeStr = ' Tractor  '
-
     # create the card image as a table
-    vcard = gui.Table(width = 30)
-
-    vcard.add(gui.Label(' '))
-    vcard.tr()
-    vcard.add(gui.Label(' '))
-    vcard.add(gui.Label(cardValue))
-    vcard.tr()
-    vcard.add(gui.Label(' '))
-    vcard.add(gui.Label(cardName))
-    vcard.tr()
-    vcard.add(gui.Label(' '))
-    vcard.add(gui.Label(cardTypeStr))
-    vcard.tr()
-    vcard.add(gui.Label(' '))
-    return vcard
+    result = gui.Table(width = 30)
+    result.add(gui.Label(' '))
+    result.tr()
+    result.add(gui.Label(' '))
+    result.add(gui.Label(cardValue))
+    result.tr()
+    result.add(gui.Label(' '))
+    result.add(gui.Label(cardName))
+    result.tr()
+    result.add(gui.Label(' '))
+    result.add(gui.Label(cardTypeStr))
+    result.tr()
+    result.add(gui.Label(' '))
+    return result
 
 def createStopButton(face_sta):
     '''
@@ -56,8 +54,15 @@ def createStopButton(face_sta):
         name = 'EsButton'
     )
 
+class ADialog(gui.Dialog):
+    def __init__(self, title, container, name='a dialog'):
+        # Cause we want sound
+        pygame.mixer.init()
+        self._click = pygame.mixer.Sound(strings.Audio.click)
+        self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
+        gui.Dialog.__init__(self,title, container, name='draftingDialog')
 
-class DraftingDialog(gui.Dialog):
+class DraftingDialog(ADialog):
     '''This dialog allows a human player to select cards from a set of stacks
     All stacks of cards are shown in the dialog, 
     human player can select one of the stacks of cards,
@@ -67,10 +72,6 @@ class DraftingDialog(gui.Dialog):
         self._playerName = playerName
         # create a group of stacks for selection
         self.group = gui.Group(value=None)
-        # audio
-        pygame.mixer.init()
-        self._click = pygame.mixer.Sound(strings.Audio.click)
-        self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
         # 3. create the drafting window which includes a lable and a container
         # 3.1 crate the lable
         lableStr = 'Drafing Window for ' + self._playerName;
@@ -93,7 +94,7 @@ class DraftingDialog(gui.Dialog):
         # add confirm button to container
         self.stacksContainer.add(self.confirmButton,300,370)
         # initialie Drafting dialog
-        gui.Dialog.__init__(self,title,self.stacksContainer,name='draftingDialog')
+        ADialog.__init__(self,title,self.stacksContainer,name='draftingDialog')
 
     def genCardTbl(self,stacks):
         '''convert all stacks into visual stacks(a table widget) 
@@ -140,7 +141,7 @@ class DraftingDialog(gui.Dialog):
     def getConfirmButton(self):
         return self.confirmButton
 
-class PlayingDialog(gui.Dialog):
+class PlayingDialog(ADialog):
     '''this class creates a playing dialog for the human player
     In drarting phase, the selected cards will apper in this dialog
     In playing phase, the human player will select a card to play from this dialog'''
@@ -152,10 +153,7 @@ class PlayingDialog(gui.Dialog):
         self.selectedItem = None
         # crate a group of cards for selection
         self.cardsGroup = gui.Group(value=None)
-        # audio
-        pygame.mixer.init()
-        self._click = pygame.mixer.Sound(strings.Audio.click)
-        self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
+
         # create the title of dialog
         lableStr = 'Playing Window for ' + self._playerName;
         title = gui.Label(lableStr)
@@ -182,7 +180,7 @@ class PlayingDialog(gui.Dialog):
         self.cardsContainer.add(self.confirmButton,380,120)
 
         # initialie Drafting dialog
-        gui.Dialog.__init__(self,title,self.cardsContainer)
+        ADialog.__init__(self,title,self.cardsContainer)
 
     def genCardTbl(self,cards):
         '''generate card group'''
@@ -238,15 +236,11 @@ class PlayingDialog(gui.Dialog):
     def setEsUsed(self,EsUsed):
         self.EsUsed = EsUsed
 
-class EsDialog(gui.Dialog):
+class EsDialog(ADialog):
     '''Emergency Stop class, create the Emergency Stop Dialog '''
     def __init__(self,playerName):
         self._playerName = playerName
         self.EsUsed = 0
-        # load audios
-        pygame.mixer.init()
-        self._click = pygame.mixer.Sound(strings.Audio.click)
-        self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
         # 1. define the title of the dialog
         lableStr = 'Emergency Stop Window for ' + self._playerName;
         title = gui.Label(lableStr)
@@ -283,7 +277,7 @@ class EsDialog(gui.Dialog):
         # add confirm button to container
         EScontainer.add(self.confirmButton,160,100)
         # initialie Emergency Sop dialog
-        gui.Dialog.__init__(self,title,EScontainer)
+        ADialog.__init__(self,title,EScontainer)
 
     def getEsUsed(self):
         return self.EsUsed
@@ -292,7 +286,7 @@ class EsDialog(gui.Dialog):
         return self.confirmButton
 
 
-class revealCardsDialog(gui.Dialog):
+class revealCardsDialog(ADialog):
     '''This class displays all played cards after the players have played 
     their cards in the playing phase '''
     def __init__(self):
@@ -328,7 +322,7 @@ class revealCardsDialog(gui.Dialog):
         self.repaint()
 
     def repaint(self):
-        gui.Dialog.__init__(self,self.title,self.container)
+        ADialog.__init__(self,self.title,self.container)
 
     def getConfirmButton(self):
         return self.confirmButton
@@ -370,7 +364,7 @@ class humanPlayer():
         self.stacks = []                # stacks which will be displayed in drafting window
         self.playingCards = []          # current cards which hold by the player
         self.selectedCard = []          # the card played by the human player in this turn
-        self.container = container      # the container
+        self.container = container      
         self.playerName = playerName    # the name of player
         self.ddx,self.ddy = 160,30      # the left top location of draft dialog
         self.pdx,self.pdy = 40,50       # the left top location of playing dialog
