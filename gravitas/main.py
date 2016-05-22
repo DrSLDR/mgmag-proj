@@ -142,9 +142,6 @@ class GameEngine(object):
         self.disp = disp
         self.app = MainGui(self.disp)
         self.app.engine = self
-        from strings import Logo
-        self.logo = pygame.transform.scale(pygame.image.load(Logo.game), (200,200))
-        self.ballrect = self.logo.get_rect()
         self.speed = [1, 2]
         from board import Renderer
         from collections import namedtuple
@@ -171,36 +168,14 @@ class GameEngine(object):
 
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
-        self.ballrect = self.ballrect.move(self.speed)
-        if self.ballrect.left < 0 or self.ballrect.right > width:
-            self.speed[0] = -self.speed[0]
-        if self.ballrect.top < 0 or self.ballrect.bottom > height:
-            self.speed[1] = -self.speed[1]
 
         backgroundColor = 0, 0, 255 # which is blue
         dest.fill(backgroundColor)
-        # YOU JUST GOT RECT!
-        dest.blit(self.logo, self.ballrect)
 
         import math
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
-
-        def draw_clock(name, pt, radius, col, angle):
-            pygame.draw.circle(dest, col, pt, radius)
-            pygame.draw.line(dest, (0,0,0), pt, 
-                             (pt[0]+radius*math.cos(angle),
-                              pt[1]+radius*math.sin(angle)), 2)
-            font(name,(pt[0]-radius, pt[1]+radius+5))
-
-        # Draw the real time clock
-        angle = self.clock.get_real_time()*2*math.pi/10.0
-        draw_clock("Real time", (30,30), 25, (255,200,100), angle)
-
-        # Now draw the game clock
-        angle = self.clock.get_time()*2*math.pi/10.0
-        draw_clock("Game time", (90,30), 25, (255,100,255), angle)
 
         self.gameManager.update()
         self.renderBoard(font, disp)
