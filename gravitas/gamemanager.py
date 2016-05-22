@@ -46,7 +46,7 @@ class GameManager:
     """Main game loop. Runs the game for six rounds or until someone wins."""
     def game(self):
         while self._state.round < 6:
-            self._state.round = self._state.round + 1
+            self._state.round += 1
             if self.round():
                 break
 
@@ -69,7 +69,7 @@ class GameManager:
         self.startRound()
         self._state.turn = 0
         while self._state.turn < 6:
-            self._state.turn = self._state.turn + 1
+            self._state.turn += 1
             if self.turn():
                 return True
         return False
@@ -92,7 +92,7 @@ class GameManager:
                                      p[0].distanceToFinish())
 
         # Concatenate
-        self._state.players = self._state.players + inS
+        self._state.players += inS
 
         # Reverse
         self._state.players.reverse()
@@ -203,13 +203,13 @@ class GameManager:
                 if not s.getPos() == 0:
                     # The ship is behind the player
                     if player.directionTo(s) == -1:
-                        numberBehind = numberBehind + 1
+                        numberBehind += 1
                         if player.distanceTo(s) < distanceBehind:
                             distanceBehind = player.distanceTo(s)
                             nearestBehind = s
                     # The ship is ahead of the player
                     else:
-                        numberAhead = numberAhead + 1 
+                        numberAhead += 1 
                         if player.distanceTo(s) < distanceAhead:
                             distanceAhead = player.distanceTo(s)
                             nearestAhead = s

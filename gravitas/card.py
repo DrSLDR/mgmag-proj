@@ -117,7 +117,7 @@ class Deck:
             # and the shown card
             if f is not None:
                 perception.append( ( i, f[0]) )
-            i = i + 1
+            i += 1
         return perception
 
     """Gets the field"""
