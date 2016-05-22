@@ -2,14 +2,10 @@
 
 # This is not needed if you have PGU installed
 import sys
-sys.path.insert(0, "..")
 
-import math
-import time
 import pygame
 from pygame.locals import *
-import pgu
-from pgu import gui, timer
+from pgu import gui
 
 #import local libs
 import card
@@ -20,8 +16,8 @@ class params:
     FACE_UP = 0
     FACE_DOWN = 1
 class general:
-    '''a function to generate a Visual card with a widget(Table)'''
     def genVcard(card):
+        '''a function to generate a Visual card with a widget(Table)'''
         # get the card information
         cardName  = card.getName()
         cardValue = str(card.getValue())
@@ -49,18 +45,23 @@ class general:
         vcard.add(gui.Label(' '))
         return vcard
 
-    '''a function to generate visual Emergency Stop card return as a widget(Table)'''
-    def genEsCard(face_sta):
-        if face_sta == params.FACE_UP:
-            vcard = gui.Button("ES Card", width = 75, height = 95, name = 'EsButton')
-        else:
-            vcard = gui.Button(" ", width = 75, height = 95, name = 'EsButton')
+    def createStopButton(face_sta):
+        '''
+        a function to generate visual Emergency Stop card return as a button
+        '''
+        return gui.Button(
+            "ES Card" if face_sta == params.FACE_UP else " ",
+            width = 75,
+            height = 95,
+            name = 'EsButton'
+        )
 
-        return vcard
 
-
-    '''a function to delete the index stack from stacks, a stack including 2 cards, one face up and another face down'''
     def delcard(stacks,index):
+        '''
+        A function to delete the index stack from stacks, a stack 
+        including 2 cards, one face up and another face down
+        '''
         stacks_bak = stacks
         stacks = []
         for i in range(len(stacks_bak)):
@@ -68,19 +69,18 @@ class general:
                 stacks.append(stacks_bak[i])
         return stacks
 
-'''Drafting Dialog which provide GUI supporting for human player select a stack of cards from stacks
-   All stacks of cards are shown in the dialog, human player can select one of the stacks of cards,
-   and then press confirm button to confirm the selection'''
 
 class DraftingDialog(gui.Dialog):
-    # define the initial method
+    '''This dialog allows a human player to select cards from a set of stacks
+    All stacks of cards are shown in the dialog, 
+    human player can select one of the stacks of cards,
+    and then press confirm button to confirm the selection'''
     def __init__(self,stacks,playerName):
-        # 1. get input arguments
         self.stacks = stacks
         self._playerName = playerName
         # create a group of stacks for selection
         self.group = gui.Group(value=None)
-        # 2. load audios
+        # audio
         pygame.mixer.init()
         self._click = pygame.mixer.Sound(strings.Audio.click)
         self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
@@ -88,14 +88,13 @@ class DraftingDialog(gui.Dialog):
         # 3.1 crate the lable
         lableStr = 'Drafing Window for ' + self._playerName;
         title = gui.Label(lableStr)
-        # 3.2 create a container to show all un-distributed stacks of cards and confirm button
+        # 3.2 a container to show all available stacks of cards and confirm button
         self.stacksContainer = gui.Container(width = 500, height = 400)
         self.stacksTbl = gui.Table()
-
         # create a confirm button for the human player to confirm his/her selection
         self.confirmButton = gui.Button("Confirm")
         # define the the things need to do before close the drafting window
-        def clsDialog(self):
+        def onConfirm(self):
             # get the final selected item
             self._selectedItem = self.group.value
             # play the confirm audio
@@ -103,21 +102,18 @@ class DraftingDialog(gui.Dialog):
             if self._selectedItem is not None:
                 self.stacksContainer.remove(self.stacksTbl)
                 self.close()
-        self.confirmButton.connect(gui.CLICK,clsDialog,self)
+        self.confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
         self.stacksContainer.add(self.confirmButton,300,370)
         # initialie Drafting dialog
         gui.Dialog.__init__(self,title,self.stacksContainer,name='draftingDialog')
 
-    # ***********************************************************
-    # define the methods for DraftingDialog
-    # ***********************************************************
-    '''function genCardTbl
-    input:     card stacks, a stack includes 2 cards
-    process:   convert all stacks into visual stacks(a table widget) and place them in a group which only be selected one at a time
-    return:    the generate Table(a widget)'''
     def genCardTbl(self,stacks):
-    # create a talbe(widget) to place all stack of cards
+        '''convert all stacks into visual stacks(a table widget) 
+        and place them in a group which only be selected one at a time
+        input:     card stacks, a stack includes 2 cards
+        return:    the generate Table(a widget)'''
+        # create a talbe(widget) to place all stack of cards
         tbl = gui.Table()
         self.group = gui.Group(value = None)
         # generate all cards included in the input argument stacks
@@ -157,23 +153,22 @@ class DraftingDialog(gui.Dialog):
     def getConfirmButton(self):
         return self.confirmButton
 
-'''a class to create a playing dialog for the human player
-   In drarting phase, the selected cards will apper in this dialog
-   In playing phase, the human player will select a card to play from this dialog'''
 class PlayingDialog(gui.Dialog):
+    '''this class creates a playing dialog for the human player
+    In drarting phase, the selected cards will apper in this dialog
+    In playing phase, the human player will select a card to play from this dialog'''
+
     def __init__(self,cards,EsUsed,playerName):
-        # 1. initialize
         self.cards = cards
         self.EsUsed = EsUsed
         self._playerName = playerName
         self.selectedItem = None
         # crate a group of cards for selection
         self.cardsGroup = gui.Group(value=None)
-        # 2. load audios
+        # audio
         pygame.mixer.init()
         self._click = pygame.mixer.Sound(strings.Audio.click)
         self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
-
         # create the title of dialog
         lableStr = 'Playing Window for ' + self._playerName;
         title = gui.Label(lableStr)
@@ -184,7 +179,7 @@ class PlayingDialog(gui.Dialog):
 
         # create a confirm button for the human player to confirm his/her selection
         self.confirmButton = gui.Button("Confirm")
-        def clsDialog(self):
+        def onConfirm(self):
             self.selectedItem = self.cardsGroup.value
             if len(self.cards) > 0 and self.selected:
                 print('finally select ', self.cards[self.selectedItem].getName())
@@ -195,18 +190,15 @@ class PlayingDialog(gui.Dialog):
             self.selected = False
             self._confirm.play()
 
-        self.confirmButton.connect(gui.CLICK,clsDialog,self)
+        self.confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
         self.cardsContainer.add(self.confirmButton,380,120)
 
         # initialie Drafting dialog
         gui.Dialog.__init__(self,title,self.cardsContainer)
 
-    # ********************************************************************
-    # define the methods for Playing Dialog
-    # ********************************************************************
-    '''generate card group'''
     def genCardTbl(self,cards):
+        '''generate card group'''
         # create a talbe(widget) to place all cards
         tbl = gui.Table(name = 'table')
         self.cardsGroup = gui.Group(value=None)
@@ -230,8 +222,8 @@ class PlayingDialog(gui.Dialog):
             self.cardsGroup.connect(gui.CHANGE,getGv,self)
         return tbl
 
-    '''update the cards area'''
     def paintCards(self,cards,EsUsed):
+        '''update the cards area'''
         self.cards = cards
         self.EsUsed = EsUsed
         # remove the old widgets
@@ -244,7 +236,7 @@ class PlayingDialog(gui.Dialog):
         # create a talbe(widget) to place all cards
         self.cardsTbl = self.genCardTbl(self.cards)
         # crate a button(widget) to place emergency stop card
-        self.esCardButton = general.genEsCard(self.EsUsed)
+        self.esCardButton = general.createStopButton(self.EsUsed)
 
         # add new widgets into the container
         self.cardsContainer.add(self.cardsTbl,10,10)
@@ -259,8 +251,8 @@ class PlayingDialog(gui.Dialog):
     def setEsUsed(self,EsUsed):
         self.EsUsed = EsUsed
 
-'''Emergency Stop class, create the Emergency Stop Dialog '''
 class EsDialog(gui.Dialog):
+    '''Emergency Stop class, create the Emergency Stop Dialog '''
     def __init__(self,playerName):
         self._playerName = playerName
         self.EsUsed = 0
@@ -277,7 +269,8 @@ class EsDialog(gui.Dialog):
         lable = gui.Label('Do you want to use Emergency Stop Card?')
         lbw,lbh = lable.resize()
         EScontainer.add(lable,int((400-lbw)/2),20)
-        # 2.2 create a table with 'yes' or 'no' option in container and also a gruop for selection
+        # 2.2 create a table with 'yes' or 'no' option in container
+        # and also a gruop for selection
         table = gui.Table()
         table.tr()
         g = gui.Group(value=0)
@@ -312,8 +305,9 @@ class EsDialog(gui.Dialog):
         return self.confirmButton
 
 
-'''revealCardsDialog class, display all played cards after all players have played their cards in the playing phase '''
 class revealCardsDialog(gui.Dialog):
+    '''This class displays all played cards after the players have played 
+    their cards in the playing phase '''
     def __init__(self):
         # revealCards is a list of revealCard,revealCard = [playerName,Card]
         self.revealCards = []
@@ -352,34 +346,37 @@ class revealCardsDialog(gui.Dialog):
     def getConfirmButton(self):
         return self.confirmButton
 
-''' Define a humanPlayer class, which defines the whole GUI which will be used by a human player
-    The HumanPlayer including follwing functions:
-    1.  create a human player object with 2 arguments,
-            humanPlayer = humanPlayer(playerName,container)
-                playerName is the Name of Player which will be shown in the title of all dialogs
-                Container is the image container which will be used to display all windows in this container
-    2.  open a drafting dialog in drafting phase, the human player can select a stack of cards in this dialog can press confirm
-        button to confirm his/her selection.
-            humanPlayer.DecisionMaking_Drafting(stacks)
-                stacks is the input argument, all cards in the stacks will be shown in the drafting dialog
-
-    3.  show/hide the playing dialog, since there are more than one players in the game, so, you may need this function to show/hide
-        a specific player's playing dialog
-            humanPlayer.showHidePlayDialog(show=1)
-                show is the input argument with defaut value 1, 0: hide, 1: show
-
-    4.  In the playing phase, when resolve for each player, the player many want to use Emergency Stop card, so a EsDialog is provided
-        for human player to select whether use Emergency Stop
-            humanPlayer.startEsDialog()
-
-    5.  since the game manager should know when the human player finally confirms his selection and go to next turn
-        So, the game manager can get the confirm button of 3 dialogs (drafting, playing and EmergencyStop)
-            humanPlayer.getDraftDialogConfirmButton()
-            humanPlayer.getPlayDialogConfirmButton()
-            humanPlayer.getEsDialogConfirmButton()
-'''
-
 class humanPlayer():
+    ''' this class defines the GUI which will be used by a human player
+        It includes the  following functions:
+        1.  create a human player object with 2 arguments,
+            humanPlayer = humanPlayer(playerName,container)
+            playerName is the Name of Player which will be shown in 
+            the title of all dialogs. Container is the image container 
+            which will be used to display all windows in this container
+        2.  open a drafting dialog in drafting phase, the human player can 
+            select a stack of cards in this dialog can press confirm
+            button to confirm his/her selection.
+            humanPlayer.DecisionMaking_Drafting(stacks)
+            stacks is the input argument, all cards in the stacks will be shown 
+            in the drafting dialog
+        3.  show/hide the playing dialog, since there are more than one 
+            players in the game, so, you may need this function to show/hide
+            a specific player's playing dialog
+            humanPlayer.showHidePlayDialog(show=1)
+            show is the input argument with defaut value 1, 0: hide, 1: show
+        4.  In the playing phase, when resolve for each player, the player 
+            many want to use Emergency Stop card, so a EsDialog is provided
+            for human player to select whether use Emergency Stop
+            humanPlayer.startEsDialog()
+        5.  since the game manager should know when the human player finally 
+            confirms his selection and go to next turn
+            So, the game manager can get the confirm button of 3 dialogs 
+            (drafting, playing and EmergencyStop)
+                humanPlayer.getDraftDialogConfirmButton()
+                humanPlayer.getPlayDialogConfirmButton()
+                humanPlayer.getEsDialogConfirmButton()
+    '''
     def __init__(self,playerName,container):
         # initialize parameter
         self.EsUsed = 0                 # whether Emergency Stop card is used, 0: not used, 1: used
@@ -500,11 +497,9 @@ class humanPlayer():
     def getEsUsed(self):
         return self.EsUsed
 
-# *********************************************************
-# Main
-# *********************************************************
-'''the class App is just an example showing how to use humanPlayer class'''
+
 class App():
+    '''the class App is just an example showing how to use humanPlayer class'''
     def __init__(self,container):
         # initilize the gui
         #gui.Desktop.__init__(self)
