@@ -58,7 +58,6 @@ class GameEngine(object):
         self.disp = disp
         self.app = MainGui(self.disp)
         self.app.engine = self
-        self.speed = [1, 2]
         from board import Renderer
         from collections import namedtuple
         Size = namedtuple('Size', ['width', 'height'])
@@ -74,14 +73,10 @@ class GameEngine(object):
             self.app.gameArea.rect.height
         )).render # a function
 
-    # Pause the game clock
-    def pause(self):
-        self.clock.pause()
-
-    # Resume the game clock
-    def resume(self):
-        self.clock.resume()
-
+    """
+    Render the continuesly updating part of the game (game board)
+    This part can do animations.
+    """
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
         backgroundColor = 0, 0, 255 # which is blue
@@ -90,16 +85,22 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
-        self.gameManager.update()
         self.renderBoard(font, disp)
         return (rect,)
 
+    """
+    Update the game, tpf = time since last frame (time per frame)
+    """
+    def update(self, tpf):
+        self.gameManager.update()
+
+    """
+    Will block untill the game is completed.
+    """
     def run(self):
         self.app.update()
         pygame.display.flip()
-
         self.font = pygame.font.SysFont("", 16)
-
         self.clock = timer.Clock() #pygame.time.Clock()
         done = False
         while not done:
@@ -111,6 +112,7 @@ class GameEngine(object):
                 else:
                     # Pass the event off to pgu
                     self.app.event(ev)
+            self.update(self.clock.get_time())
             # Render the game
             rect = self.app.get_render_area()
             updates = []
@@ -119,10 +121,8 @@ class GameEngine(object):
             if (lst):
                 updates += lst
             self.disp.set_clip()
-
             # Cap it at 30fps
             self.clock.tick(30)
-
             # Give pgu a chance to update the display
             lst = self.app.update()
             if (lst):
