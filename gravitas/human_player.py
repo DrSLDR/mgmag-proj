@@ -492,11 +492,6 @@ class humanPlayer():
 class App():
     '''the class App is just an example showing how to use humanPlayer class'''
     def __init__(self,container):
-        # initilize the gui
-
-        # crate a container in APP
-        self.c = container
-
         # create a Deck
         deck = card.Deck()
         # reshuffle 2*3*playerAmount cards
@@ -506,10 +501,11 @@ class App():
         playerName_2 = 'Salary'
         playerName_3 = 'Alan'
         playerNames = [playerName_0,playerName_1,playerName_2,playerName_3]
+        # playerNames = ['Andy','July','Salary','Alan']
 
         # Create a human player
-        self.humanPlayer_0 = humanPlayer(playerName_0,self.c)
-        self.humanPlayer_1 = humanPlayer(playerName_1,self.c)
+        self.humanPlayer_0 = humanPlayer(playerName_0,container)
+        self.humanPlayer_1 = humanPlayer(playerName_1,container)
         self.EsUsed = 0
         self.stacks = stacks = deck.createCardField(playerAmount)
 
@@ -521,7 +517,7 @@ class App():
             self.humanPlayer_0.DecisionMaking_Drafting(self.stacks)
             # the game manager should monitor the confirm event from drafting dialog
         b.connect(gui.CLICK,ddo,self)
-        self.c.add(b,300,10)
+        container.add(b,300,10)
 
         def ddq_0(self):
             if self.humanPlayer_0.getSelectedStackIndex() is not None:
@@ -550,7 +546,7 @@ class App():
             self.humanPlayer_0.showHidePlayDialog(self.openPlayingDialog)
             self.humanPlayer_1.showHidePlayDialog(not self.openPlayingDialog)
         buttonOCPD.connect(gui.CLICK,ocpd,self)
-        self.c.add(buttonOCPD,50,10)
+        container.add(buttonOCPD,50,10)
 
         # test to capture the confirmation of playing from human player
         self.player0_played = False
@@ -592,7 +588,7 @@ class App():
             self.humanPlayer_0.startEsDialog()
 
         bes.connect(gui.CLICK,eso,self)
-        self.c.add(bes,500,10)
+        container.add(bes,500,10)
 
         # Test revealCardsDialog
         # initilize a revealCardsDialog
@@ -600,12 +596,12 @@ class App():
         self.revealCardsDialog.name = 'revealCardsDialog'
         def updateRevealedCards(self,revealedCards):
             self.revealCardsDialog.paintRevealedCards(revealedCards)
-            if self.c.find('revealCardsDialog'):
-                self.c.remove(self.revealCardsDialog)
-            self.c.add(self.revealCardsDialog,800,50)
+            if container.find('revealCardsDialog'):
+                container.remove(self.revealCardsDialog)
+            container.add(self.revealCardsDialog,800,50)
         def cleanRevealedCards(self):
             self.revealCardsDialog.paintRevealedCards([])
-            if self.c.find('revealCardsDialog'):
-                self.c.remove(self.revealCardsDialog)
-            self.c.add(self.revealCardsDialog,800,50)
+            if container.find('revealCardsDialog'):
+                container.remove(self.revealCardsDialog)
+            container.add(self.revealCardsDialog,800,50)
         cleanRevealedCards(self)
