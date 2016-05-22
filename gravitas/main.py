@@ -62,19 +62,7 @@ class GameEngine(object):
         self.disp = disp
         self.app = MainGui(self.disp)
         self.app.engine = self  
-        self.logo = pygame.transform.scale(pygame.image.load(Logo.game),
-                                           (200,200)) 
-        self.ballrect = self.logo.get_rect()
-        self.speed = [1, 2]
         self.factory = Factory(args)
-
-    # Pause the game clock
-    def pause(self):
-        self.clock.pause()
-
-    # Resume the game clock
-    def resume(self):
-        self.clock.resume()
 
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
@@ -92,19 +80,15 @@ class GameEngine(object):
     def init(self):
         # Call the factory
         self.gameManager = self.factory.createGame()
-
         # create board 
         Size = namedtuple('Size', ['width', 'height'])
         self.renderBoard = Renderer(Size(
             self.app.gameArea.rect.width,
             self.app.gameArea.rect.height
         )).render # a function
-
         self.app.update()
         pygame.display.flip()
-
         self.font = pygame.font.SysFont("", 16)
-
         self.clock = timer.Clock() #pygame.time.Clock()
 
     def run(self):
@@ -127,10 +111,8 @@ class GameEngine(object):
             if (lst):
                 updates += lst
             self.disp.set_clip()
-
             # Cap it at 30fps
             self.clock.tick(30)
-
             # Give pgu a chance to update the display
             lst = self.app.update()
             if (lst):
