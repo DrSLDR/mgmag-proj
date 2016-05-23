@@ -79,6 +79,9 @@ class GameEngine(object):
         self.font = pygame.font.SysFont("", 16)
         self.clock = timer.Clock() #pygame.time.Clock()
 
+    def update(self):
+        self.gameManager.update()
+
     def render(self, dest, rect):
         size = width, height = rect.width, rect.height
         backgroundColor = 0, 0, 255 # which is blue
@@ -87,7 +90,6 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
-        self.gameManager.update()
         self.renderBoard(font, disp, )
         return (rect,)
 
@@ -103,6 +105,8 @@ class GameEngine(object):
                 else:
                     # Pass the event off to pgu
                     self.app.event(ev)
+            # update logic
+            self.update()
             # Render the game
             rect = self.app.get_render_area()
             updates = []
