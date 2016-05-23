@@ -80,9 +80,11 @@ class GameEngine(object):
         self.clock = timer.Clock() #pygame.time.Clock()
 
     def update(self):
+        """updates the game state / execute the game logic"""
         self.gameManager.update()
 
     def render(self, dest, rect):
+        """shows to a player what's going on"""
         size = width, height = rect.width, rect.height
         backgroundColor = 0, 0, 255 # which is blue
         dest.fill(backgroundColor)
@@ -94,6 +96,7 @@ class GameEngine(object):
         return (rect,)
 
     def run(self):
+        """blocking call for the game"""
         self.init()
         done = False
         while not done:
