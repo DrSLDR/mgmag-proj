@@ -64,18 +64,6 @@ class GameEngine(object):
         self.app.engine = self  
         self.factory = Factory(args)
 
-    def render(self, dest, rect):
-        size = width, height = rect.width, rect.height
-        backgroundColor = 0, 0, 255 # which is blue
-        dest.fill(backgroundColor)
-        import math
-        def font(text, position, color=(255,255,255)):
-            tmp = self.font.render(text, True, color)
-            dest.blit(tmp, position)
-        self.gameManager.update()
-        self.renderBoard(font, disp)
-        return (rect,)
-
     def init(self):
         """Initializes the game"""
         # Call the factory
@@ -91,7 +79,24 @@ class GameEngine(object):
         self.font = pygame.font.SysFont("", 16)
         self.clock = timer.Clock() #pygame.time.Clock()
 
+    def update(self):
+        """updates the game state / execute the game logic"""
+        self.gameManager.update()
+
+    def render(self, dest, rect):
+        """shows to a player what's going on"""
+        size = width, height = rect.width, rect.height
+        backgroundColor = 0, 0, 255 # which is blue
+        dest.fill(backgroundColor)
+        import math
+        def font(text, position, color=(255,255,255)):
+            tmp = self.font.render(text, True, color)
+            dest.blit(tmp, position)
+        self.renderBoard(font, disp, self.gameManager.copyState())
+        return (rect,)
+
     def run(self):
+        """blocking call for the game"""
         self.init()
         done = False
         while not done:
@@ -103,6 +108,8 @@ class GameEngine(object):
                 else:
                     # Pass the event off to pgu
                     self.app.event(ev)
+            # update logic
+            self.update()
             # Render the game
             rect = self.app.get_render_area()
             updates = []
