@@ -66,13 +66,13 @@ class Player(Ship):
     def getHand(self):
         return self._hand
 
-    def canES(self):
+    def canEmergencyStop(self):
         return self._canEmergencyStop
 
     def distanceToFinish(self):
         return 54 - self.getPos()
 
-    def resetES(self):
+    def resetEmergencyStop(self):
         self._canEmergencyStop = True
 
     def __str__(self):

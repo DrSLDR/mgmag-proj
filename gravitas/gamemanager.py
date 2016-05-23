@@ -88,7 +88,7 @@ class GameManager:
 
         # Reset all players Emergency Stop
         for p in self._state.players:
-            p[0].resetES()
+            p[0].resetEmergencyStop()
 
         # Sets the next state
         self._state.GMState = self._GMStates['initdraft']
@@ -131,7 +131,7 @@ class GameManager:
         choice. Updates the state to playing when all drafting is done."""
         player = self._state.players[self._draftPlayer]
         #TODO prompt the players to draw a card
-        selection = player[1].pollDraft(self._state)
+        # selection = player[1].pollDraft(self._state)
         
         # Handle draft
         if selection is not None:
@@ -195,12 +195,12 @@ class GameManager:
                 # Wait for Emergency Stop decision
                 while True:
                     #TODO: implement this
-                    useES = pc.pollUseES()
-                    if useES is not None:
+                    useEmergencyStop = pc.pollEmergencyStop()
+                    if useEmergencyStop is not None:
                         break
 
             # Handle decision
-            if not useES:
+            if not useEmergencyStop:
                 self._resolvePlay(p, c, target)
 
             # Check if the player has won the game
