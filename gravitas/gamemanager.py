@@ -3,12 +3,12 @@ from player import Player, Ship
 from card import Card, Deck
 import random
 
-"""The game state class. Beyond counters relating to the point in play, it also
-contains the reference to the deck and the lists of players (and hulks). The
-player list is a list of pairs (Player (or Ship) object, PlayerController (or
-None for hulks)). The State should be treated as read-only; only the Game Manger
-(and Factory) should write the state."""
 class State:
+    """The game state class. Beyond counters relating to the point in play, it
+    also contains the reference to the deck and the lists of players (and
+    hulks). The player list is a list of pairs (Player (or Ship) object,
+    PlayerController (or None for hulks)). The State should be treated as
+    read-only; only the Game Manger (and Factory) should write the state."""
     def __init__(self):
         # Bookkeeping
         self.turn = 0
@@ -17,6 +17,7 @@ class State:
         self.hulks = []
         self.winner = None
         self.deck = Deck()
+        self.GMState = 0
 
     def addHulk(self, position):
         self.hulks.append((Ship(pos=position), None))
@@ -24,59 +25,77 @@ class State:
     def addPlayer(self, player):
         self.players.append(player)
 
-
-"""Game manager class. Home to all the game's logic."""
 class GameManager:
+    """Game manager class. Home to all the game's logic."""
 
-    """Constructs the game manager. Takes a file pointer to a list of player
-    configurations, creates the player and ship objects, hands over control of
-    these to the player controllers, then starts the game loop."""
     def __init__(self, state):
+        """Constructs the game manager. Takes an already-constructed
+        game-state."""
         self._state = state
+        self._GMStates = {
+            "init" : 0,
+            "initdraft" : 1,
+            "drafting" : 2,
+            "playing" : 3
+        }
 
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
 ##### START OF GAME LEVEL ######################################################
 
-    """The function to update the game state. """
+    """Function to update the game state. Only public function of the GM. Always
+    returns a reference to the game state."""
     def update(self):
         if self._state.winner is None:
-            self.game()
-
-    """Main game loop. Runs the game for six rounds or until someone wins."""
-    def game(self):
-        while self._state.round < 6:
-            self._state.round += 1
-            if self.round():
-                break
-
-        # Figure out non-clear victory
-        if self._state.winner is None:
-            self.sortPlayers()
-            self._state.winner = self._state.players[0][0]
-
-        print("Got winner at round " + str(self._state.round) + ", turn " +
-              str(self._state.turn) + ": " + self._state.winner.getName())
-
+            if self._state.round < 6:
+                self._round()
+            else:
+                # Figure out non-clear victory
+                if self._state.winner is None:
+                    self.sortPlayers()
+                    self._state.winner = self._state.players[0][0]
+        else:
+            print("Got winner at round " + str(self._state.round) + ", turn " +
+                  str(self._state.turn) + ": " + self._state.winner.getName())
+                
+        return self._state
 
 ##### END OF GAME LEVEL ########################################################
 ################################################################################
 ##### START OF ROUND LEVEL #####################################################
 
-    """Round loop function. Prepares a round, then runs six turns. Returns True
-    immediately if a player has won, else False"""
-    def round(self):
-        self.startRound()
-        self._state.turn = 0
-        while self._state.turn < 6:
-            self._state.turn += 1
-            if self.turn():
-                return True
-        return False
+    def _round(self):
+        """Round update function. Prepares a round, if neccessary, then calls
+        appropriate lower updates as needed."""
+        if self._state.GMState == self._GMStates['init']:
+            # Initializes the round
+            self._initRound()
+        if self._state.GMState == self._GMStates['initdraft']:
+            # Prepare the draft
+            self._initDraft()
+        if self._state.GMState == self._GMStates['drafting']:
+            # Calls for drafting
+            self._draft()
+        elif self._state.GMState == self._GMStates['playing']:
+            # Play game
+            self._turn()
 
-    """Sorts the players based on distance to the warp gate. If two or more
-    players are in the singularity, their order is randomized."""
-    def sortPlayers(self):
+    def _initRound(self):
+        """Initializes the round. Sorts the players, resets all Emergency Stops,
+        readies a drafting field, and sets the state to drafting."""
+        # Sort the players
+        self.sortPlayers()
+
+        # Reset all players Emergency Stop
+        for p in self._state.players:
+            p[0].resetES()
+
+        # Sets the next state
+        self._state.GMState = self._GMStates['initdraft']
+
+    def _sortPlayers(self):
+        """Sorts the players based on distance to the warp gate. If two or more
+        players are in the singularity, their order is randomized."""
         # Pull all players in the singularity into a separate list
         inS = []
         for p in self._state.players:
@@ -97,28 +116,36 @@ class GameManager:
         # Reverse
         self._state.players.reverse()
 
-    """Starts the round; deals cards, prompts for selections, and starts the
-    round loop"""
-    def startRound(self):
-        # Sort the players
-        self.sortPlayers()
+    def _initDraft(self):
+        """Initializes the drafting step. Prepares the field and sets the
+        drafting parameters."""
+        self._field = self._state.deck.createCardField(len(self._state.players))
+        self._draftsRemaining = 3
+        self._draftPlayer = 0
 
-        # Reset all players Emergency Stop
-        for p in self._state.players:
-            p[0].resetES()
+        # Sets drafting
+        self._state.GMState = self._GMStates['drafting']
 
-        # Prepare the field and start drawing
-        field = self._state.deck.createCardField(len(self._state.players))
-        for i in range(3):
-            for p in self._state.players:
-                #TODO prompt the players to draw a card
-                # selection = p.promptForChoice(self._deck.percieveCardField())
-                # self._deck.takeFromField(selection)
-                field = self._state.deck.getField()
-                print("Selection round "+str(self._state.round)+"." + str(i+1) + 
-                      " for player " + p[0].getName()) 
-                #TODO either wait for the render loop to catch up or call it
+    def _draft(self):
+        """Updates the drafting step. Polls the next player in line for a
+        choice. Updates the state to playing when all drafting is done."""
+        player = self._state.players[self._draftPlayer]
+        #TODO prompt the players to draw a card
+        selection = player[1].pollDraft(self._state)
+        
+        # Handle draft
+        if selection is not None:
+            self._deck.takeFromField(selection)
+            self._draftPlayer += 1
+            if self._draftPlayer == len(self._state.players):
+                self._draftsRemaining -= 1
+                self._draftPlayer = 0
 
+        # Check if draft is ended
+        if self._draftsRemaining == 0:
+            # End drafting
+            self._state.GMState = self._GMStates['playing']
+                
 ##### END OF ROUND LEVEL #######################################################
 ################################################################################
 ##### START OF TURN LEVEL ######################################################
