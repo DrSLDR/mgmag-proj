@@ -92,7 +92,7 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             dest.blit(tmp, position)
-        self.renderBoard(font, disp, )
+        self.renderBoard(font, disp, self.gameManager.copyState())
         return (rect,)
 
     def run(self):

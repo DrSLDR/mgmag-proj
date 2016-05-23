@@ -34,6 +34,10 @@ class GameManager:
     def __init__(self, state):
         self._state = state
 
+    def copyState(self):
+        import copy
+        return copy.deepcopy(self._state)
+
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
 ##### START OF GAME LEVEL ######################################################
