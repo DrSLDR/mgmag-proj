@@ -2,9 +2,9 @@
 can be grouped, please put them as static members of a class, otherwise
 just use loose variables."""
 class Logo:
-    game = "../img/gravitas_logo.png"
-    team = "../img/gravyboat_logo_text_alt.png"
+    game = "../res/img/gravitas_logo.png"
+    team = "../res/img/gravyboat_logo_text_alt.png"
     
 class Audio:
-    click = '../audio/pickup.wav'
-    confirm = '../audio/confirm.wav'
+    click = '../res/audio/pickup.wav'
+    confirm = '../res/audio/confirm.wav'
