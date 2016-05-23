@@ -4,7 +4,7 @@ import random, json
 from player import Player, Ship
 from card import Card, Deck
 from gamemanager import State, GameManager
-from pc import RandomAI_PC, Human_PC
+from player_controller import RandomAI_PC, Human_PC
 """Class that creates a factory, which can in turn create other objects;
  playerControllers, states and the Gamemanager"""
 
