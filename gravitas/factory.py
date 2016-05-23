@@ -4,7 +4,7 @@ import random, json
 from player import Player, Ship
 from card import Card, Deck
 from gamemanager import State, GameManager
-
+from pc import RandomAI_PC, Human_PC
 """Class that creates a factory, which can in turn create other objects;
  playerControllers, states and the Gamemanager"""
 
@@ -15,8 +15,8 @@ class Factory():
         #The player type enumeration dictionary mapping of known player types to
         #the constructor for their respective player controller. 
         self._PType = {
-            "human": None,
-            "randAI": None
+            "human": Human_PC,
+            "randAI": RandomAI_PC
         }
 
     """Helper function that reads the configuration file"""

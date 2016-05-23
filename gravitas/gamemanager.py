@@ -111,12 +111,13 @@ class GameManager:
         field = self._state.deck.createCardField(len(self._state.players))
         for i in range(3):
             for p in self._state.players:
-                #TODO prompt the players to draw a card
-                # selection = p.promptForChoice(self._deck.percieveCardField())
-                # self._deck.takeFromField(selection)
-                field = self._state.deck.getField()
                 print("Selection round "+str(self._state.round)+"." + str(i+1) + 
                       " for player " + p[0].getName()) 
+                #TODO prompt the players to draw a card
+                selection = p[1].pollDraw(self._state.deck.percieveCardField())
+                self._state.deck.takeFromField(selection)
+                field = self._state.deck.getField()
+                
                 #TODO either wait for the render loop to catch up or call it
 
 ##### END OF ROUND LEVEL #######################################################
@@ -134,7 +135,7 @@ class GameManager:
         # while len(plays) < len(self._players):
             # for p in self._players:
                 #TODO: Implement this functionality
-                # card = p[1].pollPlay()
+                # card = p[1].pollPlay(p[0].getHand())
                 # if card is not None:
                 #     plays[card] = p
         
@@ -168,7 +169,7 @@ class GameManager:
                 # Wait for Emergency Stop decision
                 while True:
                     #TODO: implement this
-                    useES = pc.pollUseES()
+                    useES = pc.pollUseES(p.canES())
                     if useES is not None:
                         break
 
