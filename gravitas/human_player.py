@@ -91,16 +91,18 @@ class DraftingDialog(ADialog):
         # create a confirm button for the human player to confirm his/her selection
         self.confirmButton = gui.Button("Confirm")
         self.confirmed = False
+        self._selectedItem = None
         # define the the things need to do before close the drafting window
         def onConfirm(self):
+            if slef.group.value is None:
+                return
             # get the final selected item
             self._selectedItem = self.group.value
             # play the confirm audio
             self._confirm.play()
-            if self._selectedItem is not None:
-                self.getContainer().remove(self.stacksTbl)
-                self.close()
-                self.confirmed = True
+            self.getContainer().remove(self.stacksTbl)
+            self.close()
+            self.confirmed = True
         self.confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
         self.getContainer().add(self.confirmButton,300,370)
@@ -133,23 +135,23 @@ class DraftingDialog(ADialog):
         # monitor the event whether the selection change
         self.group.send(gui.CHANGE)
         def getGv(self):
-            print(stacks[self.group.value][1].getName(), ' is selected')
             self._click.play()
         self.group.connect(gui.CHANGE,getGv,self)
         return tbl
 
     def paintStacks(self,stacks):
+        self._selectedItem = None
         self.confirmed = False
         self.stacksTbl = self.genCardTbl(stacks)
         self.getContainer().add(self.stacksTbl,50,10)
         
     def getSelectedItem(self):
-        while self.confirmed is False:
-            for event in pygame.event.get():            
-                self.app.event(event)
-            rect = self.app.update()
-            pygame.display.update(rect)
-            pygame.time.wait(20)
+        #while self.confirmed is False:
+        #    for event in pygame.event.get():            
+        #        self.app.event(event)
+        #    rect = self.app.update()
+        #    pygame.display.update(rect)
+        #    pygame.time.wait(20)
         return self._selectedItem
 
 class PlayingDialog(ADialog):
@@ -374,6 +376,8 @@ class HumanPlayer():
         self.container = container 
         self.app = app
         self.name = playerName    # the name of player
+        self.isDraftDialogOpen = False
+        print('xxx')
 
         # crate initial Drafting window without card
         self.draft_dialog = DraftingDialog(self)
@@ -385,7 +389,12 @@ class HumanPlayer():
     def decisionMaking_Drafting(self,stacks):
         self.stacks = stacks
         self.draft_dialog.paintStacks(self.stacks)
-        self.draft_dialog.open()
+        if self.isDraftDialogOpen is False:
+            self.draft_dialog.open()
+        self.isDraftDialogOpen = True
+        if self.draft_dialog.getSelectedItem():
+            self.isDraftDialogOpen = False
+        
         return self.draft_dialog.getSelectedItem()
 
     def decisionMaking_Playing(self,playingCards,EsUsed):
