@@ -33,7 +33,7 @@ class IPlayerController():
 
 class RandomAI_PC(IPlayerController):
     """player controller that returns random choices as resolution to its functions"""
-    def __init__(self, player, args):
+    def __init__(self, player, args,container,app):
         super().__init__(player,args)
 
     """Function that returns the choice of a stack from the draw field"""
@@ -77,15 +77,18 @@ class RandomAI_PC(IPlayerController):
 
 class Human_PC(IPlayerController):
     """Human player Controller, that calls to the GUI for resolution of its functions"""
-    def __init__(self, player, args):
+    def __init__(self, player, args,container,app):
         super().__init__(player,args)
+        import human_player
+        self.humanPlayerGui = human_player.HumanPlayer(self.player.getName(),container,app)
 
     """Function that returns the choice of a stack from the draw field"""
     def pollDraw(self, percievedField):
         # TODO: implement choosing a card from the draw field
+        selectedStackIndex = self.humanPlayerGui.decisionMaking_Drafting(percievedField)
         if not len(percievedField) == 0:
             # returns the index of the choosen stack
-            fieldOfChoice = percievedField[0] # stub: first stack
+            fieldOfChoice = percievedField[selectedStackIndex] # stub: first stack
             print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
             # returns the index of the choosen stack
             return fieldOfChoice[0]
@@ -98,7 +101,8 @@ class Human_PC(IPlayerController):
         hand = self.player.getHand()
         if not len(hand) == 0:
             # TODO: implement choosing a card from the hand
-            cardOfChoice = hand[0] # stub: default first card
+            #cardOfChoice = hand[0] # stub: default first card
+            cardOfChoice = self.humanPlayerGui.decisionMaking_Playing(hand)
             print("Human "+self.player.getName()+" played card "+str(cardOfChoice))
             #return choice
             return cardOfChoice
@@ -113,7 +117,9 @@ class Human_PC(IPlayerController):
         # PC can choose to use ES if it is still available for this player
         if self.player.casES():
             # TODO: implement choosing to use the ES or not
-            doesPlayES = False # stub: default False
+            #doesPlayES = False # stub: default False
+            doesPlayES = self.humanPlayerGui.decisionMaking_EmergencyStop()
+            
             if(doesPlayES):
                 print("Human "+self.player.getName()+" DID play emergency stop")
             else:
@@ -125,3 +131,4 @@ class Human_PC(IPlayerController):
 
         # returns None as long as no choice is made
         return None
+    
