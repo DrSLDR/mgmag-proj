@@ -13,14 +13,14 @@ class DrawingArea(gui.Widget):
     def __init__(self, width, height):
         gui.Widget.__init__(self, width=width, height=height)
         self.imageBuffer = pygame.Surface((width, height))
-    def paint(self, surf):
+    def paint(self, surface):
         # Paint whatever has been captured in the buffer
-        surf.blit(self.imageBuffer, (0, 0))
+        surface.blit(self.imageBuffer, (0, 0))
     # Call self function to take a snapshot of whatever has been rendered
     # onto the display over self widget.
     def save_background(self):
-        disp = pygame.display.get_surface()
-        self.imageBuffer.blit(disp, self.get_abs_rect())
+        display = pygame.displaylay.get_surface()
+        self.imageBuffer.blit(display, self.get_abs_rect())
 
 class MainGui(gui.Desktop):
     """It describes all the buttons and stuff like that. This is
@@ -31,22 +31,22 @@ class MainGui(gui.Desktop):
     # The game engine
     engine = None
 
-    def __init__(self, disp):
+    def __init__(self, display):
         gui.Desktop.__init__(self)
         container = gui.Container()
         # Setup the 'game' area where the action takes place
-        self.gameArea = DrawingArea(disp.get_width(),
+        self.gameArea = DrawingArea(display.get_width(),
                                     self.gameAreaHeight)
         # Setup the gui area
         self.menuArea = gui.Container(
-            height=disp.get_height()-self.gameAreaHeight)
-        tbl = gui.Table(height=disp.get_height())
-        tbl.tr()
-        tbl.td(self.gameArea)
-        tbl.tr()
-        tbl.td(self.menuArea)
-        container.add(tbl,0,0)
-        self.init(container, disp)
+            height=display.get_height()-self.gameAreaHeight)
+        tabel = gui.Table(height=display.get_height())
+        tabel.tr()
+        tabel.td(self.gameArea)
+        tabel.tr()
+        tabel.td(self.menuArea)
+        container.add(tabel,0,0)
+        self.init(container, display)
 
     def get_render_area(self):
         return self.gameArea.get_abs_rect()
@@ -85,47 +85,44 @@ class GameEngine(object):
         """updates the game state / execute the game logic"""
         self.gameManager.update()
 
-    def render(self, dest, rect):
+    def render(self, destination, rect):
         """shows to a player what's going on"""
-        size = width, height = rect.width, rect.height
         backgroundColor = 0, 0, 255 # which is blue
-        dest.fill(backgroundColor)
+        destination.fill(backgroundColor)
         import math
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
-            dest.blit(tmp, position)
+            destination.blit(tmp, position)
         self.renderBoard(font, disp, self.gameManager.copyState())
         return (rect,)
 
     def run(self):
         """blocking call for the game"""
         self.init()
-        done = False
-        while not done:
+        while True:
             # Process events
             for ev in pygame.event.get():
                 if (ev.type == pygame.QUIT or 
                     ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
-                    done = True
-                else:
-                    # Pass the event off to pgu
-                    self.app.event(ev)
+                    return # cheated out that done variable
+                # Pass the event off to pgu
+                self.app.event(ev)
             # update logic
             self.update()
             # Render the game
             rect = self.app.get_render_area()
             updates = []
             self.disp.set_clip(rect)
-            lst = self.render(self.disp, rect)
-            if (lst):
-                updates += lst
+            temp = self.render(self.disp, rect)
+            if (temp):
+                updates += temp
             self.disp.set_clip()
             # Cap it at 30fps
             self.clock.tick(30)
             # Give pgu a chance to update the display
-            lst = self.app.update()
-            if (lst):
-                updates += lst
+            temp = self.app.update()
+            if (temp):
+                updates += temp
             pygame.display.update(updates)
             pygame.time.wait(10)
 
