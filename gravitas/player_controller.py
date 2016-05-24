@@ -85,10 +85,10 @@ class Human_PC(IPlayerController):
         selectedStackIndex = self.humanPlayerGui.decisionMaking_Drafting(percievedField)
         if not len(percievedField) == 0:
             # returns the index of the choosen stack
-            fieldOfChoice = percievedField[selectedStackIndex] # stub: first stack
-            print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
+            #fieldOfChoice = percievedField[selectedStackIndex] # stub: first stack
+            #print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
             # returns the index of the choosen stack
-            return fieldOfChoice[0]
+            return selectedStackIndex 
         # returns None as long as no choice is made
         return None
 
