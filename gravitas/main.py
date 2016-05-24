@@ -44,12 +44,16 @@ class MainGui(gui.Desktop):
         tbl.td(self.gameArea)
         tbl.tr()
         tbl.td(self.menuArea)
-        import human_player
-        human_player.App(self.menuArea)
+        #import human_player
+        #human_player.App(self.menuArea,self)
         container.add(tbl,0,0)
         self.init(container, disp)
     def get_render_area(self):
         return self.gameArea.get_abs_rect()
+    
+    def getHumanPlayerGuiContainer(self):
+        return self.menuArea
+    
 
 
 class GameEngine(object):
@@ -61,8 +65,9 @@ class GameEngine(object):
     def __init__(self, disp, args):
         self.disp = disp
         self.app = MainGui(self.disp)
+        self.humanPlayerGuiContainer = self.app.getHumanPlayerGuiContainer()
         self.app.engine = self  
-        self.factory = Factory(args)
+        self.factory = Factory(args,self.humanPlayerGuiContainer,self.app)
 
     def init(self):
         """Initializes the game"""
