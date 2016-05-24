@@ -10,7 +10,7 @@ from player_controller import RandomAI_PC, Human_PC
 
 class Factory():
 
-    def __init__(self, args):
+    def __init__(self, args, guiContainer,app):
         self.args = args
         #The player type enumeration dictionary mapping of known player types to
         #the constructor for their respective player controller. 
@@ -18,6 +18,8 @@ class Factory():
             "human": Human_PC,
             "randAI": RandomAI_PC
         }
+        self.guiContainer = guiContainer
+        self.app = app
 
     """Helper function that reads the configuration file"""
     def _parseConfig(self, config):
@@ -39,7 +41,7 @@ class Factory():
             # Bind the arguments
             args = config['arguments']
             # Invoke the constructor
-            return self._PType[config['type']](player, args)
+            return self._PType[config['type']](player, args, self.guiContainer, self.app)
 
     """create a game state and put the player controllers in there"""
     def _createState(self, config):
@@ -83,3 +85,4 @@ class Factory():
         
         # Create and return the game manager
         return self._createGameManager(config)
+    
