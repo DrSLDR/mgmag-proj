@@ -44,8 +44,6 @@ class MainGui(gui.Desktop):
         tbl.td(self.gameArea)
         tbl.tr()
         tbl.td(self.menuArea)
-        #import human_player
-        #human_player.App(self.menuArea,self)
         container.add(tbl,0,0)
         self.init(container, disp)
     def get_render_area(self):
