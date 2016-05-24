@@ -42,6 +42,10 @@ class GameManager:
             "resolve" : 6
         }
 
+    def copyState(self):
+        import copy
+        return copy.deepcopy(self._state)
+
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
 ##### START OF GAME LEVEL ######################################################
