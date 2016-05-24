@@ -1,3 +1,6 @@
+"""File for the factory class, containing a bunch of init logic (such
+as loading of configuration)"""
+
 import pygame
 from pgu import gui, timer
 import random, json
@@ -5,10 +8,9 @@ from player import Player, Ship
 from card import Card, Deck
 from gamemanager import State, GameManager
 from player_controller import RandomAI_PC, Human_PC
-"""Class that creates a factory, which can in turn create other objects;
- playerControllers, states and the Gamemanager"""
 
 class Factory():
+    """ A factory which can create playerControllers, states and the Gamemanager"""
 
     def __init__(self, args, guiContainer,app):
         self.args = args
@@ -21,8 +23,8 @@ class Factory():
         self.guiContainer = guiContainer
         self.app = app
 
-    """Helper function that reads the configuration file"""
     def _parseConfig(self, config):
+        """Helper function that reads the configuration file"""
         f = open(config, 'r')
         conflist = json.load(f)
         f.close()
@@ -31,9 +33,9 @@ class Factory():
                 print("ERROR: Unknown agent type " + c['type'])
         return conflist
 
-    """return list of player controllers, whose properties depend on the config
-    file"""
     def _createPlayerController(self, player, config):
+        """return list of player controllers, whose properties depend on the config
+        file"""
         if self._PType[config['type']] is None:
             print("Non-implemented player controller")
             return None
@@ -43,8 +45,8 @@ class Factory():
             # Invoke the constructor
             return self._PType[config['type']](player, args, self.guiContainer, self.app)
 
-    """create a game state and put the player controllers in there"""
     def _createState(self, config):
+        """create a game state and put the player controllers in there"""
         # create empty state
         state = State()
 
@@ -64,16 +66,17 @@ class Factory():
 
         return state
 
-    """Given the game manager configuration, create the game manager"""
     def _createGameManager(self, config):
+        """Given the game manager configuration, create the game manager"""
         state = self._createState(config)
         return GameManager(state)
 
-    """Create game function. Main function of the class. Sets handles the
-    command line arguments, if any, and returns the game manager."""
     def createGame(self):
+        """Create game function. Main function of the class. Sets handles the
+        command line arguments, if any, and returns the game manager."""
         # Prepares the RNG
-        random.seed()
+        random.seed() # wut?! You need to do this in python, appearantly not...
+        # see: https://stackoverflow.com/questions/817705/pythons-random-what-happens-if-i-dont-use-seedsomevalue
 
         # Runs over the arguments
         # Configuration file

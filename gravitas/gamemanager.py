@@ -10,7 +10,7 @@ class State:
     PlayerController (or None for hulks)). The State should be treated as
     read-only; only the Game Manger (and Factory) should write the state."""
     def __init__(self):
-        # Bookkeeping
+       # Bookkeeping
         self.turn = 0
         self.round = 0
         self.players = []
@@ -47,10 +47,6 @@ class GameManager:
         #return copy.deepcopy(self._state)
         #YOLO
         return self._state
-
-##### END OF ROOT LEVEL ########################################################
-################################################################################
-##### START OF GAME LEVEL ######################################################
 
     """Function to update the game state. Only public function of the GM. Always
     returns a reference to the game state."""
@@ -92,23 +88,16 @@ class GameManager:
         else:
             print("Got winner at round " + str(self._state.round) + ", turn " +
                   str(self._state.turn) + ": " + self._state.winner.getName())
-                
         return self._state
-
-##### END OF GAME LEVEL ########################################################
-################################################################################
-##### START OF ROUND LEVEL #####################################################
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
         readies a drafting field, and sets the state to drafting."""
         # Sort the players
         self._sortPlayers()
-
         # Reset all players Emergency Stop
         for p in self._state.players:
             p[0].resetEmergencyStop()
-
         # Sets the next state
         self._state.GMState = self._GMStates['initdraft']
 
@@ -121,17 +110,13 @@ class GameManager:
             if p[0].getPos() == 0:
                 inS.append(p)
                 self._state.players.remove(p)
-
         # Shuffle the players in the singularity
         random.shuffle(inS)
-
         # Sort the remaining players
         self._state.players = sorted(self._state.players, key=lambda p:
                                      p[0].distanceToFinish())
-
         # Concatenate
         self._state.players += inS
-
         # Reverse
         self._state.players.reverse()
 
@@ -141,7 +126,6 @@ class GameManager:
         self._field = self._state.deck.createCardField(len(self._state.players))
         self._draftsRemaining = 3
         self._draftPlayer = 0
-
         # Sets drafting
         self._state.GMState = self._GMStates['drafting']
 
@@ -164,17 +148,12 @@ class GameManager:
             # End drafting
             self._state.GMState = self._GMStates['initplay']
                 
-##### END OF ROUND LEVEL #######################################################
-################################################################################
-##### START OF TURN LEVEL ######################################################
-
     def _turn(self):
         """Turn update function. Polls a player to play."""
         # Gets the player to poll
         p = self._turnSelectPlayer()
         player = p[0]
         pc = p[1]
-
         # Get play
         play = pc.pollPlay(self._state)
 
@@ -183,7 +162,6 @@ class GameManager:
             self._plays[play] = p
             player.playCard(play)
             self._playersRemaining.remove(p)
-
         # Update state if neccessary
         if len(self._playersRemaining) == 0:
             self._state.GMState = self._GMStates['reveal']
@@ -193,12 +171,10 @@ class GameManager:
         remaining list."""
         # Prepares dictionary containing mappings of cards to players
         self._plays = {}
-
         # Prepares list of players which have yet to play
         self._playersRemaining = []
         for p in self._state.players:
             self._playersRemaining.append(p)
-
         # Sets the state to playing
         self._state.GMState = self._GMStates['playing']
         
@@ -349,16 +325,13 @@ class GameManager:
                 s = ship[0]
                 if not s == player:
                     ships.append(s)
-
             # First sort (signed, since ships closer to the singularity get
             # priority in a tie)
             ships = sorted(ships, key=lambda s: (player.distanceTo(s) *
                                                  player.directionTo(s)))
-
             # Second sort (unsigned; preserves relative order due to stable
             # sort)
             ships = sorted(ships, key=lambda s: player.distanceTo(s))
-
             # Loop over sorted ships and resolve tractor
             for s in ships:
                 d = s.directionTo(player)

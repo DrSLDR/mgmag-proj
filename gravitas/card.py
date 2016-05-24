@@ -1,27 +1,22 @@
 """Module containing the code pertaining to cards"""
 import random
 
-"""Master card class. Contains card instance data, type class and comparison
-functionality"""
 class Card:
+    """Contains card instance data, type class and comparison functionality"""
     
-    """Nested class acting as an enumeration over card types. For utility
-    only"""
     class Type:
+        """An enumeration over card types."""
         normal = 0
         repulsor = 1
         tractor = 2
     
-    """Constructs a card and sets instance variables. Instance variables are to
-    be considered constant."""
     def __init__(self, cardtype, value, name, longname):
+        """Instance variables are to be considered constant."""
         self._cardtype = cardtype
         self._value = value
         self._name = name
         self._longname = longname
 
-    """Getters. Accessing the instance variables directly is bad practice. Don't
-    do it.'"""
     def getType(self):
         return self._cardtype
 
@@ -34,22 +29,22 @@ class Card:
     def getLongName(self):
         return self._longname
 
-    """ Return string describing card"""
     def __str__(self):
+        """ Return string describing card"""
         return self.getName()
 
-    """Return unambiguos card represenation. Whatever that is."""
     def __repr__(self):
+        """Return unambiguos card represenation. Whatever that is."""
         return self.__str__()
 
 ##### ENDs OF CARD CLASS ########################################################
 
-"""Deck class; singleton handling the creation of a deck, shuffling and laying
-out the card field"""
 class Deck:
+    """Singleton handling the creation of a deck, shuffling and laying out the 
+    card field"""
 
-    """Creates a full deck of cards, sorted, as a list"""
     def __init__(self):
+        """Creates a full deck of cards, sorted, as a list"""
         # Master deck configuration list
         DECKCONF = [
             ("Argon", "Ar", 1, Card.Type.normal),
@@ -89,13 +84,13 @@ class Deck:
         # field is empty for now
         self._field = []
 
-    """make a resource field with size of 3*playerAmount
-    Returns cards in sets of 2; the second is the hidden one.
-
-    (Does not remove the cards from self.deck, only returns the resulting field.
-    This way we don't need to keep rebuilding the cards in the deck)
-    """
     def createCardField(self,playerAmount):
+        """make a resource field with size of 3*playerAmount
+        Returns cards in sets of 2; the second is the hidden one.
+
+        (Does not remove the cards from self.deck, only returns the resulting field.
+        This way we don't need to keep rebuilding the cards in the deck)
+        """
         # draw the right amount of (unique) cards
         # 2x, because of the double cards
         cardDraws = random.sample(self._deck,2*3*playerAmount)
@@ -108,8 +103,8 @@ class Deck:
             self._field[i] = ( cardDraws[i*2] , cardDraws[i*2+1] ) 
         return self._field
 
-    """Players should only see the top cards in the resource field"""
     def percieveCardField(self):
+        """Players should only see the top cards in the resource field"""
         perception = []
         i = 0
         for f in self._field:
@@ -120,24 +115,21 @@ class Deck:
             i += 1
         return perception
 
-    """Gets the field"""
     def getField(self):
         return self._field
 
-    """Removes selected cardSet of the resource field"""
     def takeFromField(self, cardIndex):
+        """Removes selected cardSet of the resource field"""
         cardSet = self._field[cardIndex]
         # make item on field None to show it has been taken. None instead of
         # removing item, because the field needs to be drawn on screen
         self._field[cardIndex] = None
         return cardSet
 
-    """print a card list"""
     def printCardList(cardList):
         for c in cardList:
             print(c)
 
-    """print a card field"""
     def printCardField(cardField):
         for c in cardField:
             if c is not None:
@@ -145,6 +137,7 @@ class Deck:
             else:
                 print("[ Empty spot ]")
 
-    """Sorts a given list by resolution order (alphabetic). Returns sorted list."""
     def sortByResolution(cardList):
+        """Sorts a given list by resolution order (alphabetic). 
+        Returns sorted list."""
         return sorted(cardList, key=lambda c: c.getName())

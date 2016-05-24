@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""This file starts the game"""
+"""This file starts the game, it also contains the engine (ticking
+at a certain pase) and it starts everything else"""
 
 import pygame, argparse
 from pgu import gui, timer
@@ -46,13 +47,11 @@ class MainGui(gui.Desktop):
         tbl.td(self.menuArea)
         container.add(tbl,0,0)
         self.init(container, disp)
+
     def get_render_area(self):
         return self.gameArea.get_abs_rect()
-    
     def getHumanPlayerGuiContainer(self):
         return self.menuArea
-    
-
 
 class GameEngine(object):
     """In our main drawing are we don't want to use pgu because
@@ -135,10 +134,8 @@ class GameEngine(object):
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", default="config.json", help="Name of "+
                     "configuration file")
-
 # Do the parsering
 args = parser.parse_args()
-
 # Do everything else
 disp = pygame.display.set_mode((1366, 768))
 eng = GameEngine(disp, args)

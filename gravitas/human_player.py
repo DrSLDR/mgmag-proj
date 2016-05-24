@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+"""Contains the 'widget' part of the GUI (think buttons dialogs etc)"""
 # This is not needed if you have PGU installed
 import sys
 
