@@ -78,7 +78,7 @@ class Renderer:
             pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             font("%i"%i, pos)
         size = Point(x=30,y=30)
-        for (player, pc) in gamestate.players:
+        for (player, pc) in (gamestate.players + gamestate.hulks):
             pos = self.calcScreenPos(player.getPos())
             color = Renderer.colors[player.getColor()]
 

@@ -43,8 +43,10 @@ class GameManager:
         }
 
     def copyState(self):
-        import copy
-        return copy.deepcopy(self._state)
+        #import copy
+        #return copy.deepcopy(self._state)
+        #YOLO
+        return self._state
 
 ##### END OF ROOT LEVEL ########################################################
 ################################################################################
@@ -85,7 +87,7 @@ class GameManager:
             else:
                 # Figure out non-clear victory
                 if self._state.winner is None:
-                    self.sortPlayers()
+                    self._sortPlayers()
                     self._state.winner = self._state.players[0][0]
         else:
             print("Got winner at round " + str(self._state.round) + ", turn " +
@@ -101,7 +103,7 @@ class GameManager:
         """Initializes the round. Sorts the players, resets all Emergency Stops,
         readies a drafting field, and sets the state to drafting."""
         # Sort the players
-        self.sortPlayers()
+        self._sortPlayers()
 
         # Reset all players Emergency Stop
         for p in self._state.players:
@@ -147,12 +149,11 @@ class GameManager:
         """Updates the drafting step. Polls the next player in line for a
         choice. Updates the state to playing when all drafting is done."""
         player = self._state.players[self._draftPlayer]
-        #TODO prompt the players to draw a card
-        # selection = player[1].pollDraft(self._state)
+        selection = player[1].pollDraft(self._state)
         
         # Handle draft
         if selection is not None:
-            self._deck.takeFromField(selection)
+            player[0].addCards(self._state.deck.takeFromField(selection))
             self._draftPlayer += 1
             if self._draftPlayer == len(self._state.players):
                 self._draftsRemaining -= 1
@@ -171,14 +172,16 @@ class GameManager:
         """Turn update function. Polls a player to play."""
         # Gets the player to poll
         p = self._turnSelectPlayer()
+        player = p[0]
         pc = p[1]
 
         # Get play
-        play = pc.pollPlay()
+        play = pc.pollPlay(self._state)
 
         # Handle play
         if play is not None:
             self._plays[play] = p
+            player.playCard(play)
             self._playersRemaining.remove(p)
 
         # Update state if neccessary
@@ -209,8 +212,8 @@ class GameManager:
         prepares resolution."""
         # Informs all PCs
         cards = list(self._plays.keys())
-        for p in self._players:
-            p[1].sendReveal(cards)
+        for p in self._state.players:
+            p[1].informReveal(cards)
 
         # Prepares the resolution
         self._orderedPlays = Deck.sortByResolution(self._plays)
@@ -222,14 +225,14 @@ class GameManager:
     def _initNextResolve(self):
         """Prepares the next play to be resolved."""
         if len(self._orderedPlays) > 0:
-            firstCard = list(self._orderedPlays.keys())[0]
-            self._toResolve = (firstCard, self._orderedPlays.pop(firstCard))
+            firstCard = self._orderedPlays.pop(0)
+            self._toResolve = (firstCard, self._plays[firstCard])
             
 
     def _resolve(self):
-        """Turn resolution. Attempts to resolve the first card in the ordered play
-        list. Will poll (applicable) players to use the Emergency Stop. Can also
-        set the game winner if applicable."""
+        """Turn resolution. Attempts to resolve the first card in the ordered
+        play list. Will poll (applicable) players to use the Emergency Stop. Can
+        also set the game winner if applicable."""
         # Check if there is a play to resolve
         if self._toResolve is None:
             # Bind the first card to be resolved
@@ -245,15 +248,22 @@ class GameManager:
             
             # Determine if the player can move
             target = self._playerCanMove(player)
-            if target is not None or c.getType == Card.Type.tractor:
-                # Player can move. Poll for Emergency Stop
-                useEmergencyStop = pc.pollEmergencyStop()
+            if target is not None or card.getType() == Card.Type.tractor:
+                # Player can move. Test if Emergency Stop is available
+                if player.canEmergencyStop():
+                    # Player is able; poll
+                    useEmergencyStop = pc.pollEmergencyStop(self._state)
+                else:
+                    # Player is unable
+                    useEmergencyStop = False
 
                 # Test if a decision was made
                 if useEmergencyStop is not None:
                     # Execute resolution
                     if not useEmergencyStop:
                         self._resolvePlay(player, card, target)
+                    else:
+                        player.useEmergencyStop()
                     resolved = True
 
             if resolved:
@@ -265,7 +275,7 @@ class GameManager:
                 self._toResolve = None
         else:
             # Set the state to next play and tick the turn counter
-            self._state.GMState = self._GMStates['playing']
+            self._state.GMState = self._GMStates['initplay']
             self._state.turn += 1
 
     def _playerCanMove(self, player):

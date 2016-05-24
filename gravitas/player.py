@@ -59,6 +59,22 @@ class Player(Ship):
         self._hand = []
         self._canEmergencyStop = True
 
+    def addCards(self, pair):
+        """Adds a pair of cards to the hand"""
+        self._hand += list(pair)
+
+    def playCard(self, card):
+        """Removes a played card from the hand"""
+        self._hand.remove(card)
+
+    def useEmergencyStop(self):
+        """Sets the Emergency Stop as used"""
+        self._canEmergencyStop = False
+
+    def resetEmergencyStop(self):
+        """Resets the Emergency Stop as usable"""
+        self._canEmergencyStop = True
+
     """Getters"""
     def getName(self):
         return self._name
@@ -71,9 +87,6 @@ class Player(Ship):
 
     def distanceToFinish(self):
         return 54 - self.getPos()
-
-    def resetEmergencyStop(self):
-        self._canEmergencyStop = True
 
     def __str__(self):
         return self.getName() + " (" + str(self.getPos()) + ")" 
