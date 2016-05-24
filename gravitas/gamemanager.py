@@ -36,7 +36,10 @@ class GameManager:
             "init" : 0,
             "initdraft" : 1,
             "drafting" : 2,
-            "playing" : 3
+            "initplay" : 3,
+            "playing" : 4,
+            "reveal" : 5,
+            "resolve" : 6
         }
 
 ##### END OF ROOT LEVEL ########################################################
@@ -48,7 +51,33 @@ class GameManager:
     def update(self):
         if self._state.winner is None:
             if self._state.round < 6:
-                self._round()
+                if self._state.GMState == self._GMStates['init']:
+                    # Initializes the round
+                    self._initRound()
+                elif self._state.GMState == self._GMStates['initdraft']:
+                    # Prepare the draft
+                    self._initDraft()
+                elif self._state.GMState == self._GMStates['drafting']:
+                    # Calls for drafting
+                    self._draft()
+                elif self._state.GMState == self._GMStates['initplay']:
+                    # Prepare for play
+                    self._initTurn()
+                elif self._state.GMState == self._GMStates['playing']:
+                    if self._state.turn < 6:
+                        # Play game
+                        self._turn()
+                    else:
+                        # End round
+                        self._state.turn = 0
+                        self._state.round += 1
+                        self._state.GMState = self._GMStates['init']
+                elif self._state.GMState == self._GMStates['reveal']:
+                    # Reveal plays
+                    self._reveal()
+                elif self._state.GMState == self._GMStates['resolve']:
+                    # Resolve plays; may set winner
+                    self._resolve()
             else:
                 # Figure out non-clear victory
                 if self._state.winner is None:
@@ -63,22 +92,6 @@ class GameManager:
 ##### END OF GAME LEVEL ########################################################
 ################################################################################
 ##### START OF ROUND LEVEL #####################################################
-
-    def _round(self):
-        """Round update function. Prepares a round, if neccessary, then calls
-        appropriate lower updates as needed."""
-        if self._state.GMState == self._GMStates['init']:
-            # Initializes the round
-            self._initRound()
-        if self._state.GMState == self._GMStates['initdraft']:
-            # Prepare the draft
-            self._initDraft()
-        if self._state.GMState == self._GMStates['drafting']:
-            # Calls for drafting
-            self._draft()
-        elif self._state.GMState == self._GMStates['playing']:
-            # Play game
-            self._turn()
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
@@ -144,75 +157,117 @@ class GameManager:
         # Check if draft is ended
         if self._draftsRemaining == 0:
             # End drafting
-            self._state.GMState = self._GMStates['playing']
+            self._state.GMState = self._GMStates['initplay']
                 
 ##### END OF ROUND LEVEL #######################################################
 ################################################################################
 ##### START OF TURN LEVEL ######################################################
 
-    """Turn loop function. Waits for all players to play cards, then triggers
-    reveal and resolve. Returns True immediately if a player has won, else False
-    at the end of turn"""
-    def turn(self):
+    def _turn(self):
+        """Turn update function. Polls a player to play."""
+        # Gets the player to poll
+        p = self._turnSelectPlayer()
+        pc = p[1]
+
+        # Get play
+        play = pc.pollPlay()
+
+        # Handle play
+        if play is not None:
+            self._plays[play] = p
+            self._playersRemaining.remove(p)
+
+        # Update state if neccessary
+        if len(self._playersRemaining) == 0:
+            self._state.GMState = self._GMStates['reveal']
+        
+    def _initTurn(self):
+        """Turn initialization function. Prepares the plays dictionary, players
+        remaining list."""
         # Prepares dictionary containing mappings of cards to players
-        plays = {}
+        self._plays = {}
+
+        # Prepares list of players which have yet to play
+        self._playersRemaining = []
+        for p in self._state.players:
+            self._playersRemaining.append(p)
+
+        # Sets the state to playing
+        self._state.GMState = self._GMStates['playing']
         
-        # Polls all players for a card to play
-        # while len(plays) < len(self._players):
-            # for p in self._players:
-                #TODO: Implement this functionality
-                # card = p[1].pollPlay()
-                # if card is not None:
-                #     plays[card] = p
+    def _turnSelectPlayer(self):
+        """Selects a random player to poll for play. Uses randomization since
+        playing does not have to be in order."""
+        return random.choice(self._playersRemaining)
+
+    def _reveal(self):
+        """Turn reveal. Sends revealed cards to all player controllers. Also
+        prepares resolution."""
+        # Informs all PCs
+        cards = list(self._plays.keys())
+        for p in self._players:
+            p[1].sendReveal(cards)
+
+        # Prepares the resolution
+        self._orderedPlays = Deck.sortByResolution(self._plays)
+        self._toResolve = None
+
+        # Updates state
+        self._state.GMState = self._GMStates['resolve']
+
+    def _initNextResolve(self):
+        """Prepares the next play to be resolved."""
+        if len(self._orderedPlays) > 0:
+            firstCard = list(self._orderedPlays.keys())[0]
+            self._toResolve = (firstCard, self._orderedPlays.pop(firstCard))
+            
+
+    def _resolve(self):
+        """Turn resolution. Attempts to resolve the first card in the ordered play
+        list. Will poll (applicable) players to use the Emergency Stop. Can also
+        set the game winner if applicable."""
+        # Check if there is a play to resolve
+        if self._toResolve is None:
+            # Bind the first card to be resolved
+            self._initNextResolve()
         
-        # Reveal
-        self.reveal(plays)
-
-        # Resolve
-        return self.resolve(plays)
-
-    """Turn reveal. Sends revealed cards to all player controllers"""
-    def reveal(self, plays):
-        cards = plays.keys()
-        # for p in self._players:
-        #     p[1].sendReveal(cards)
-
-    """Turn resolution. Given a list of cards, will sort and resolve
-    plays. Returns True if a player has entered the Warp Gate, else False"""
-    def resolve(self, plays):
-        # Get resolve-order sorted list of cards
-        ordered = Deck.sortByResolution(plays)
-
-        # Resolution loop
-        for c in ordered:
-            ptup = plays[c]
-            p = ptup[0]
-            pc = ptup[1]
-
-            # Determine if p is even capable of moving
-            target = self._state.playerCanMove(p)
+        # Check again; if this fails, resolution is all done
+        if self._toResolve is not None:
+            # Bind the relevant variables
+            card = self._toResolve[0]
+            player = self._toResolve[1][0]
+            pc = self._toResolve[1][1]
+            resolved = False
+            
+            # Determine if the player can move
+            target = self._playerCanMove(player)
             if target is not None or c.getType == Card.Type.tractor:
-                # Wait for Emergency Stop decision
-                while True:
-                    #TODO: implement this
-                    useEmergencyStop = pc.pollEmergencyStop()
-                    if useEmergencyStop is not None:
-                        break
+                # Player can move. Poll for Emergency Stop
+                useEmergencyStop = pc.pollEmergencyStop()
 
-            # Handle decision
-            if not useEmergencyStop:
-                self._resolvePlay(p, c, target)
+                # Test if a decision was made
+                if useEmergencyStop is not None:
+                    # Execute resolution
+                    if not useEmergencyStop:
+                        self._resolvePlay(player, card, target)
+                    resolved = True
 
-            # Check if the player has won the game
-            if p.distanceToFinish() == 0:
-                self._state.winner = ptup
-                return True
-        return False
+            if resolved:
+                # Check for winner
+                if player.distanceToFinish() == 0:
+                    self._state.winner = self._toResolve
 
-    """Determines if the player is stuck or not. If the player is stuck, returns
-    None, else returns the target ship (the one the player will travel
-    towards)""" 
+                # Clear the play
+                self._toResolve = None
+        else:
+            # Set the state to next play and tick the turn counter
+            self._state.GMState = self._GMStates['playing']
+            self._state.turn += 1
+
     def _playerCanMove(self, player):
+        """Determines if the player is stuck or not. If the player is stuck,
+        returns None, else returns the target ship (the one the player will
+        travel towards)"""
         # Set up the math
         nearestAhead = None
         nearestBehind = None
@@ -260,8 +315,8 @@ class GameManager:
             else:
                 return nearestBehind
     
-    """Resolves an individual play and moves the player accordingly"""
     def _resolvePlay(self, player, card, target):
+        """Resolves an individual play and moves the player accordingly"""
         if card.getType() == Card.Type.normal:
             # Normal movement
             d = player.directionTo(target)
@@ -296,14 +351,15 @@ class GameManager:
                 s.move(card.getValue() * d)
                 self._resolveCollission(s, d)
 
-    """Handles post-resolution placement so that no collissions occur"""
     def _resolveCollission(self, player, direction):
+        """Handles post-resolution placement so that no collissions occur"""
         # Loop until all collissions handled
         while True:
             # Disregard everything if the player is in the singularity
             if not player.getPos() == 0:
                 collission = False
-                for s in (self._state.players + self._state.hulks):
+                for ship in (self._state.players + self._state.hulks):
+                    s = ship[0]
                     if not s == player:
                         if s.getPos() == player.getPos():
                             # Collission
