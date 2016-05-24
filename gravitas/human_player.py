@@ -94,7 +94,7 @@ class DraftingDialog(ADialog):
         self._selectedItem = None
         # define the the things need to do before close the drafting window
         def onConfirm(self):
-            if slef.group.value is None:
+            if self.group.value is None:
                 return
             # get the final selected item
             self._selectedItem = self.group.value
@@ -377,7 +377,6 @@ class HumanPlayer():
         self.app = app
         self.name = playerName    # the name of player
         self.isDraftDialogOpen = False
-        print('xxx')
 
         # crate initial Drafting window without card
         self.draft_dialog = DraftingDialog(self)
