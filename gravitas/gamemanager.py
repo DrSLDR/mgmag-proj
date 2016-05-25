@@ -1,6 +1,7 @@
 """Module containing the game manager class"""
-from player import Player, Ship
-from card import Card, Deck
+from model.player import Player
+from model.ship import Ship
+from model.card import Card, Deck
 import random
 
 class State:

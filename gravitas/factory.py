@@ -4,10 +4,12 @@ as loading of configuration)"""
 import pygame
 from pgu import gui, timer
 import random, json
-from player import Player, Ship
-from card import Card, Deck
+from model.player import Player
+from model.ship import Ship
+from model.card import Card, Deck
 from gamemanager import State, GameManager
-from player_controller import RandomAI_PC, Human_PC
+from controller.random import RandomAI_PC
+from controller.human import Human_PC
 
 class Factory():
     """ A factory which can create playerControllers, states and the Gamemanager"""
