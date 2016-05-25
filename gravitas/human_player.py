@@ -132,10 +132,6 @@ class DraftingDialog(ADialog):
         if self.getContainer().find('stacksTable'):
             self.getContainer().remove(self.stacksTbl)
         self.stacksTbl = self.genCardTbl(stacks)
-        rect = self.stacksTbl.resize()
-        print(rect)
-        rect2 = self.getContainer().resize()
-        print(rect2)
         self.getContainer().add(self.stacksTbl,30,10)
         
     def getSelectedItem(self):
@@ -166,7 +162,6 @@ class PlayingDialog(ADialog):
         def onConfirm(self):
             if self.cardsGroup.value is not None:
                 self.selectedItem = self.cardsGroup.value
-                print('selected item is ', self.selectedItem)
                 self._confirm.play()
 
         self.confirmButton.connect(gui.CLICK,onConfirm,self)
@@ -201,7 +196,6 @@ class PlayingDialog(ADialog):
         self.EsUsed = EsUsed
         self.selectedItem = None
         # remove the old widgets
-        print('current len of cards is ', len(self.cards))
         if self.getContainer().find('table'):
             self.getContainer().remove(self.cardsTbl)
         if self.getContainer().find('EsButton'):

@@ -249,7 +249,7 @@ class GameManager:
             if resolved:
                 # Check for winner
                 if player.distanceToFinish() == 0:
-                    self._state.winner = self._toResolve
+                    self._state.winner = self._toResolve[1][0]
 
                 # Clear the play
                 self._toResolve = None
