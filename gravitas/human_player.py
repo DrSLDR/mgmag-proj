@@ -78,39 +78,39 @@ class DraftingDialog(ADialog):
     human player can select one of the stacks of cards,
     and then press confirm button to confirm the selection'''
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Drafing Window for %s' % player.name,
             Size(800,150),
         )
         # create a group of stacks for selection
-        self.group = gui.Group(value=None)
+        self._stacksGroup = gui.Group(name = 'stacksGroup',value=None)
         # a container to show all available stacks of cards and confirm button
-        self.stacksTbl = gui.Table()
+        self._stacksTable = gui.Table()
         # create a confirm button for the human player to confirm his/her selection
-        self.confirmButton = gui.Button("Confirm")
+        confirmButton = gui.Button("Confirm")
         self._selectedItem = None
         # define the the things need to do before close the drafting window
         def onConfirm(self):
-            if self.group.value is None:
-                return
-            # get the final selected item
-            self._selectedItem = self.group.value
-            # play the confirm audio
-            self._confirm.play()
-        self.confirmButton.connect(gui.CLICK,onConfirm,self)
+            if self._stacksGroup.value is not None:
+                # get the final selected item
+                self._selectedItem = self._stacksGroup.value
+                # remove all stacks from container
+                self.getContainer().remove(self._stacksTable)
+                # play the confirm audio
+                self._confirm.play()
+        confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
-        self.getContainer().add(self.confirmButton,300,120)
+        self.getContainer().add(confirmButton,300,120)
         # initialie Drafting dialog
 
-    def genCardTbl(self,stacks):
+    def _genCardTbl(self,stacks):
         '''convert all stacks into visual stacks(a table widget) 
         and place them in a group which only be selected one at a time
         input:     card stacks, a stack includes 2 cards
         return:    the generate Table(a widget)'''
         # create a talbe(widget) to place all stack of cards
-        tbl = gui.Table(name = 'stacksTable')
-        self.group = gui.Group(value = None)
+        self._stacksGroup = gui.Group(name = 'stacksGroup',value=None)
+        stacksTable = gui.Table(name = 'stacksTable')
         # generate all cards included in the input argument stacks
         # and place them on the table
         card = [None]*len(stacks)
@@ -120,21 +120,19 @@ class DraftingDialog(ADialog):
             # create the image of each card as a table(widgit)
             card = stacks[i][1]
             vcard[i] = createCardView(card)
-            tbl.td(gui.Tool(self.group,vcard[i],value=i))
-            tbl.td(gui.Label("    "))
+            stacksTable.td(gui.Tool(self._stacksGroup,vcard[i],value=i))
+            stacksTable.td(gui.Label("    "))
         # monitor the event whether the selection change
-        self.group.send(gui.CHANGE)
-        def getGv(self):
+        self._stacksGroup.send(gui.CHANGE)
+        def onChange(self):
             self._click.play()
-        self.group.connect(gui.CHANGE,getGv,self)
-        return tbl
+        self._stacksGroup.connect(gui.CHANGE,onChange,self)
+        return stacksTable
 
     def paintStacks(self,stacks):
         self._selectedItem = None
-        if self.getContainer().find('stacksTable'):
-            self.getContainer().remove(self.stacksTbl)
-        self.stacksTbl = self.genCardTbl(stacks)
-        self.getContainer().add(self.stacksTbl,30,10)
+        self._stacksTable = self._genCardTbl(stacks)
+        self.getContainer().add(self._stacksTable,30,10)
         
     def getSelectedItem(self):
         return self._selectedItem
@@ -145,37 +143,34 @@ class PlayingDialog(ADialog):
     In playing phase, the human player will select a card to play from this dialog'''
 
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Playing Window for %s' % player.name,
             Size(700,150),
         )
-        self.cards = [] 
-        self.EsUsed = []
-        self.selectedItem = None
-        self.confirmed = False
+        self._cards = [] 
+        self._EsUsed = []
+        self._selectedItem = None
         # crate a group of cards for selection
-        self.cardsGroup = gui.Group(value=None)
-
-        self.cardsTbl = gui.Table()
-        self.esCardButton = gui.Button() # it's an Emergency Stop card, just show it as a button
-
+        self._cardsGroup = gui.Group(name='cardsGroup', value=None)
+        self._cardsTable = gui.Table()
+        self._esCardButton = gui.Button() # it's an Emergency Stop card, just show it as a button
         # create a confirm button for the human player to confirm his/her selection
-        self.confirmButton = gui.Button("Confirm")
+        confirmButton = gui.Button("Confirm")
         def onConfirm(self):
-            if self.cardsGroup.value is not None:
-                self.selectedItem = self.cardsGroup.value
+            if self._cardsGroup.value is not None:
+                self._selectedItem = self._cardsGroup.value
                 self._confirm.play()
-
-        self.confirmButton.connect(gui.CLICK,onConfirm,self)
+                self.getContainer().remove(self._cardsTable)
+                self.getContainer().remove(self._esCardButton)
+        confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
-        self.getContainer().add(self.confirmButton,380,120)
+        self.getContainer().add(confirmButton,380,120)
 
-    def genCardTbl(self,cards):
+    def _genCardTbl(self,cards):
         '''generate card group'''
         # create a talbe(widget) to place all cards
-        tbl = gui.Table(name = 'table')
-        self.cardsGroup = gui.Group(value=None)
+        cardsTable = gui.Table(name = 'cardsTable')
+        self._cardsGroup = gui.Group(value=None)
         # generate all cards included in the input argument stacks
         # and place them on the table
         amountCards = len(cards)
@@ -184,92 +179,88 @@ class PlayingDialog(ADialog):
             vcard = [None]*amountCards
             for i in range(amountCards):
                 vcard[i] = createCardView(cards[i])
-                tbl.td(gui.Tool(self.cardsGroup,vcard[i],value=i))
-                tbl.td(gui.Spacer(width = 10, height = 20))
+                cardsTable.td(gui.Tool(self._cardsGroup,vcard[i],value=i))
+                cardsTable.td(gui.Spacer(width = 10, height = 20))
             # monitor the event whether the selection change
-            self.cardsGroup.send(gui.CHANGE)
-            def getGv(self):
+            self._cardsGroup.send(gui.CHANGE)
+            def onChange(self):
                 self._click.play()
-            self.cardsGroup.connect(gui.CHANGE,getGv,self)
-        return tbl
+            self._cardsGroup.connect(gui.CHANGE,onChange,self)
+        return cardsTable 
 
     def paintCards(self,cards,EsUsed):
         '''update the cards area'''
-        self.cards = cards
-        self.EsUsed = EsUsed
-        self.selectedItem = None
-        # remove the old widgets
-        if self.getContainer().find('table'):
-            self.getContainer().remove(self.cardsTbl)
-        if self.getContainer().find('EsButton'):
-            self.getContainer().remove(self.esCardButton)
-
+        self._cards = cards
+        self._EsUsed = EsUsed
+        self._selectedItem = None
         # generatge the new widgets
         # create a talbe(widget) to place all cards
-        self.cardsTbl = self.genCardTbl(self.cards)
+        self._cardsTable = self._genCardTbl(self._cards)
         # crate a button(widget) to place emergency stop card
-        self.esCardButton = createStopButton(self.EsUsed)
+        self._esCardButton = createStopButton(self._EsUsed)
 
         # add new widgets into the container
-        self.getContainer().add(self.cardsTbl,10,10)
-        self.getContainer().add(self.esCardButton,600,10)
-        self.confirmed = False
+        self.getContainer().add(self._cardsTable,10,10)
+        self.getContainer().add(self._esCardButton,600,10)
 
     def getSelectedItem(self):
-        return self.selectedItem
+        return self._selectedItem
     
     def getSelectedCard(self):
-        if self.selectedItem is not None:
-            return self.cards[self.selectedItem]
+        if self._selectedItem is not None:
+            return self._cards[self._selectedItem]
         else:
             return None
 
 class EmergencyStopDialog(ADialog):
     '''Emergency Stop class, create the Emergency Stop Dialog '''
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Playing Window for %s' % player.name,
             Size(400,130),
         )
-        self.EsUsed = 0
-        self.confirmed = False
+        self._EsUsed = 0
+        self._EmergencyStopTable = gui.Table()
         # create a label in container
         lable = gui.Label('Do you want to use Emergency Stop Card?')
-        lbw,lbh = lable.resize()
-        self.getContainer().add(lable,int((400-lbw)/2),20)
-        # 2.2 create a table with 'yes' or 'no' option in container
-        # and also a gruop for selection
-        table = gui.Table()
-        table.tr()
-        g = gui.Group(value=None)
-        table.td(gui.Tool(g,gui.Label('Yes'),value = 1))
-        table.td(gui.Spacer(width = 50,height = 20))
-        table.td(gui.Tool(g,gui.Label('No'),value = 0))
-        tblw,tblh = table.resize()
-        self.getContainer().add(table,int((400-tblw)/2),20+lbh+20)
-        g.send(gui.CHANGE)
-        def gv(self):
-            self._click.play()
-        g.connect(gui.CHANGE,gv,self)
+        lableWidth,lableHeight = lable.resize()
+        self.getContainer().add(lable,int((400-lableWidth)/2),20)
+        self._group = gui.Group(name = 'YesNoGroup',value = None)
 
         # create a confirm button to confirm selection
-        self.confirmButton = gui.Button("Confirm")
-        def cEsD(self):
-            if g.value is not None:
-                self.EsUsed = g.value
+        confirmButton = gui.Button("Confirm")
+        def onConfirm(self):
+            if self._group.value is not None:
+                self._EsUsed = self._group.value
                 self._confirm.play()
-                g.value = None
-        self.confirmButton.connect(gui.CLICK,cEsD,self)
+                self.getContainer().remove(self._EmergencyStopTable)
+        confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
-        self.getContainer().add(self.confirmButton,160,100)
+        self.getContainer().add(confirmButton,160,100)
+        
+    def _genEmergencyStopTable(self):
+        # create a table with 'yes' or 'no' option in container
+        # and also a gruop for selection
+        self._group = gui.Group(name = 'YesNoGroup',value = None)
+        table = gui.Table()
+        table.tr()
+        table.td(gui.Tool(self._group,gui.Label('Yes'),value = 1))
+        table.td(gui.Spacer(width = 50,height = 20))
+        table.td(gui.Tool(self._group,gui.Label('No'),value = 0))
+        self._group.send(gui.CHANGE)
+        def onChange(self):
+            self._click.play()
+        self._group.connect(gui.CHANGE,onChange,self)
+        return table
     
     def startEmergencyStopDialog(self):
-        self.EsUsed = None
+        self._EsUsed = None
+        self._EmergencyStopTable = self._genEmergencyStopTable()
+        self.getContainer().add(self._EmergencyStopTable,130,60)
     
         
     def getEsUsed(self):
-        return self.EsUsed
+        return self._EsUsed
 
 
 class RevealCardsDialog(ADialog):
@@ -279,25 +270,25 @@ class RevealCardsDialog(ADialog):
         # revealCards is a list of revealCard,revealCard = [playerName,Card]
         self.revealCards = []
         self.title = 'Reveal Cards Window'
-        self.repaint()
+        self._repaint()
 
     def paintRevealedCards(self,revealCards):
         def paintRevealedCard(revealCard):
-            tbl = gui.Table()
-            tbl.tr()
+            table = gui.Table()
+            table.tr()
             # create the player name part as a button
             nameBlock = gui.Button(revealCard[0],width = 70,height = 25)
-            tbl.td(nameBlock)
-            tbl.tr()
-            tbl.td(gui.Spacer(width=1, height=5))
-            tbl.tr()
+            table = tbl.td(nameBlock)
+            table = tbl.tr()
+            table = tbl.td(gui.Spacer(width=1, height=5))
+            table = tr()
             # create the card part as a table
-            g = gui.Group(value=None)
+            group = gui.Group(value=None)
             cardBlock = createCardView(revealCard[1])
-            tbl.td(gui.Tool(g,cardBlock,None))
-            return tbl
+            table.td(gui.Tool(group,cardBlock,None))
+            return table 
 
-        self.repaint()
+        self._repaint()
         x = 10
         for element in revealCards:
             revealCardTbl = paintRevealedCard(element)
@@ -307,83 +298,83 @@ class RevealCardsDialog(ADialog):
             gui.Spacer(width = 100, height = 5), x = 0, y = 140
         )
 
-    def repaint(self):
-        ADialog.__init__(self,self.title,Size(width = 400, height = 150))
+    def _repaint(self):
+        super().__init__(self.title,Size(width = 400, height = 150))
 
 class HumanPlayer():
     ''' this class defines the GUI which will be used by a human player
         It includes the  following functions:
         1.  create a human player object with 2 arguments,
             HumanPlayer = HumanPlayer(playerName,container)
-            playerName is the Name of Player which will be shown in 
-            the title of all dialogs. Container is the image container 
-            which will be used to display all windows in this container
         2.  open a drafting dialog in drafting phase, the human player can 
             select a stack of cards in this dialog can press confirm
             button to confirm his/her selection.
-            HumanPlayer.DecisionMaking_Drafting(stacks)
+            HumanPlayer.decisionMaking_Drafting(stacks)
             stacks is the input argument, all cards in the stacks will be shown 
             in the drafting dialog
-        3.  show/hide the playing dialog, since there are more than one 
-            players in the game, so, you may need this function to show/hide
-            a specific player's playing dialog
-            HumanPlayer.showHidePlayDialog(show=1)
-            show is the input argument with defaut value 1, 0: hide, 1: show
+        3.  open a playing dialog in playing phase, the human player can 
+            select a card in this dialog can press confirm
+            button to confirm his/her selection.
+            HumanPlayer.decisionMaking_Playing(card,canEmergencyStop)
+            stacks is the input argument, all cards in the stacks will be shown 
+            in the drafting dialog
         4.  In the playing phase, when resolve for each player, the player 
             many want to use Emergency Stop card, so a EmergencyStopDialog is provided
             for human player to select whether use Emergency Stop
-            HumanPlayer.DeciEmergencyStopDialog()
+            HumanPlayer.decisionMaking_EmergencyStop()
     '''
     def __init__(self, playerName,container):
         # initialize parameter
-        self.stacks = []                # stacks which will be displayed in drafting window
-        self.container = container 
+        self._container = container 
         self.name = playerName    # the name of player
-        self.isDraftDialogOpen = False
-        self.isPlayDialogOpen = False
-        self.isEmergencyStopDialogOpen = False
+        self._isDraftDialogOpen = False
+        self._isPlayDialogOpen = False
+        self._isEmergencyStopDialogOpen = False
 
-        # crate initial Drafting window without card
-        self.draft_dialog = DraftingDialog(self)
-        # create initial playing window without card
-        self.play_dialog = PlayingDialog(self)
+        # crate initial Drafting window
+        self._draft_dialog = DraftingDialog(self)
+        # create initial playing window
+        self._play_dialog = PlayingDialog(self)
         # crate initial Emergency Stop window
-        self.Es_Dialog =  EmergencyStopDialog(self)
-
+        self._Es_Dialog =  EmergencyStopDialog(self)
+        
+    '''a function to open the drafting dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
     def decisionMaking_Drafting(self,stacks):
-        self.stacks = stacks
-        if self.isDraftDialogOpen is False:
-            self.draft_dialog.paintStacks(self.stacks)
-            self.container.add(self.draft_dialog,10,10)
+        if self._isDraftDialogOpen is False:
+            self._draft_dialog.paintStacks(stacks)
+            self._container.add(self._draft_dialog,10,10)
             
-        self.isDraftDialogOpen = True
-        if self.draft_dialog.getSelectedItem() is not None:
-            self.container.remove(self.draft_dialog)
-            self.isDraftDialogOpen = False
-            return self.draft_dialog.getSelectedItem()
+        self._isDraftDialogOpen = True
+        if self._draft_dialog.getSelectedItem() is not None:
+            self._container.remove(self._draft_dialog)
+            self._isDraftDialogOpen = False
+            return self._draft_dialog.getSelectedItem()
         else:
             return None
 
-    def decisionMaking_Playing(self,playingCards,EsUsed):
-        if self.isPlayDialogOpen is False:
-            self.play_dialog.paintCards(playingCards,EsUsed)
-            self.container.add(self.play_dialog,10,10)
-        self.isPlayDialogOpen = True
-        if self.play_dialog.getSelectedItem() is not None:
-            self.container.remove(self.play_dialog)
-            self.isPlayDialogOpen = False
-            return self.play_dialog.getSelectedCard()
+    '''a function to open the playing dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
+    def decisionMaking_Playing(self,playingCards,canEmergencyStop):
+        EsUsed = not canEmergencyStop
+        if self._isPlayDialogOpen is False:
+            self._play_dialog.paintCards(playingCards,EsUsed)
+            self._container.add(self._play_dialog,10,10)
+        self._isPlayDialogOpen = True
+        if self._play_dialog.getSelectedItem() is not None:
+            self._container.remove(self._play_dialog)
+            self._isPlayDialogOpen = False
+            return self._play_dialog.getSelectedCard()
         else:
             return None
 
+    '''a function to open the Emergency Stop dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
     def decisionMaking_EmergencyStop(self):
-        if self.isEmergencyStopDialogOpen is False:
-            self.Es_Dialog.startEmergencyStopDialog()
-            self.container.add(self.Es_Dialog,600,10)
-        self.isEmergencyStopDialogOpen = True
-        if self.Es_Dialog.getEsUsed() is not None:
-            self.container.remove(self.Es_Dialog)
-            self.isEmergencyStopDialogOpen = False    
-            return self.Es_Dialog.getEsUsed()
+        if self._isEmergencyStopDialogOpen is False:
+            self._Es_Dialog.startEmergencyStopDialog()
+            self._container.add(self._Es_Dialog,600,10)
+        self._isEmergencyStopDialogOpen = True
+        if self._Es_Dialog.getEsUsed() is not None:
+            self._container.remove(self._Es_Dialog)
+            self._isEmergencyStopDialogOpen = False    
+            return self._Es_Dialog.getEsUsed()
         else:
             return None
