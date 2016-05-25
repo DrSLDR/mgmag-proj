@@ -7,7 +7,6 @@ from pygame.locals import *
 from pgu import gui
 
 #import local libs
-import card
 import strings
 
 # define globle parameters
@@ -63,8 +62,7 @@ class ADialog(gui.Dialog):
         pygame.mixer.init()
         self._click = pygame.mixer.Sound(strings.Audio.click)
         self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
-        gui.Dialog.__init__(
-            self,
+        super().__init__(
             gui.Label(title),
             self._container,
             namea=title
@@ -338,7 +336,8 @@ class HumanPlayer():
         # crate initial Emergency Stop window
         self._Es_Dialog =  EmergencyStopDialog(self)
         
-    '''a function to open the drafting dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
+    '''a function to open the drafting dialog if the dialog is not opened
+       and close the dialog when human player confirm his selection'''
     def decisionMaking_Drafting(self,stacks):
         if self._isDraftDialogOpen is False:
             self._draft_dialog.paintStacks(stacks)
@@ -352,7 +351,8 @@ class HumanPlayer():
         else:
             return None
 
-    '''a function to open the playing dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
+    '''a function to open the playing dialog if the dialog is not opened, 
+       and close the dialog when human player confirm his selection'''
     def decisionMaking_Playing(self,playingCards,canEmergencyStop):
         EsUsed = not canEmergencyStop
         if self._isPlayDialogOpen is False:
@@ -366,7 +366,8 @@ class HumanPlayer():
         else:
             return None
 
-    '''a function to open the Emergency Stop dialog if the dialog is not opened, and close the dialog when human player confirm his selection'''
+    '''a function to open the Emergency Stop dialog if the dialog is not opened,
+       and close the dialog when human player confirm his selection'''
     def decisionMaking_EmergencyStop(self):
         if self._isEmergencyStopDialogOpen is False:
             self._Es_Dialog.startEmergencyStopDialog()
