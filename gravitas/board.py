@@ -1,11 +1,6 @@
 """ This file describes the board rendering aspect of the game
 """
-# The available tiles TODO move?
-tiles = range(0,55) 
-# Specially colored tiles
-hulkTiles = [26,36]
-# start/finish, both ends depending from where you look
-endTiles = [0,len(tiles)-1]
+from model import board
 
 from collections import namedtuple
 import math
@@ -54,7 +49,7 @@ class Renderer:
         self.screenSize = screenSize
         self.borderpadding = 0.05
         def scale(num):
-            return (num*(1-2*self.borderpadding))/math.sqrt(len(tiles))
+            return (num*(1-2*self.borderpadding))/math.sqrt(len(board.tiles))
         self.scale = Point(
             x=scale(screenSize.width),
             y=scale(screenSize.height)
@@ -71,14 +66,14 @@ class Renderer:
     def render(self, font, disp, gamestate):
         import pygame
         black = (0,0,0)
-        points = map(lambda x: self.calcScreenPos(x), tiles)
+        points = map(lambda x: self.calcScreenPos(x), board.tiles)
         pygame.draw.lines(disp, black, False, list(points), 5)
         size = Point(x=40,y=40)
-        for i in tiles:
+        for i in board.tiles:
             color = black
-            if i in hulkTiles:
+            if i in board.hulkTiles:
                 color = (76,153,0) # green
-            if i in endTiles:
+            if i in board.endTiles:
                 color = (102,0,0) # dark red
             pos = self.calcScreenPos(i)
             pygame.draw.rect(
