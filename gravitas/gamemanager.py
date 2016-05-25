@@ -42,6 +42,8 @@ class GameManager:
             "resolve" : 6
         }
 
+    #TODO make into a censored deep copy, the other players shouldn't know about
+    # The controllers and shouldn't know which hands have already been played
     def copyState(self):
         #import copy
         #return copy.deepcopy(self._state)

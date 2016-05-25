@@ -3,7 +3,9 @@
 # The available tiles TODO move?
 tiles = range(0,55) 
 # Specially colored tiles
-specialTiles = [26,36]
+hulkTiles = [26,36]
+
+endTiles = [0,len(tiles)]
 
 from collections import namedtuple
 import math
@@ -39,7 +41,7 @@ class Renderer:
     """
     # redefine the ship colors as proper tuples.
     colors = {
-        Ship.Color.gray: (30,30,30),
+        Ship.Color.gray: (60,60,60),
         Ship.Color.red: (204,0,0),
         Ship.Color.blue: (0,0,153),
         Ship.Color.yellow: (204,204,0),
@@ -72,8 +74,8 @@ class Renderer:
         size = Point(x=40,y=40)
         for i in tiles:
             color = black
-            if i in specialTiles:
-                color = (150,0,0) # not red
+            if i in hulkTiles:
+                color = (76,153,0) # not red
             pos = self.calcScreenPos(i)
             pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             font("%i"%i, pos)
