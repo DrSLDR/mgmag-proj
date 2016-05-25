@@ -81,16 +81,14 @@ class DraftingDialog(ADialog):
         ADialog.__init__(
             self,
             'Drafing Window for %s' % player.name,
-            Size(500,400),
+            Size(800,150),
         )
-        self.app = player.app
         # create a group of stacks for selection
         self.group = gui.Group(value=None)
         # a container to show all available stacks of cards and confirm button
         self.stacksTbl = gui.Table()
         # create a confirm button for the human player to confirm his/her selection
         self.confirmButton = gui.Button("Confirm")
-        self.confirmed = False
         self._selectedItem = None
         # define the the things need to do before close the drafting window
         def onConfirm(self):
@@ -100,12 +98,9 @@ class DraftingDialog(ADialog):
             self._selectedItem = self.group.value
             # play the confirm audio
             self._confirm.play()
-            self.getContainer().remove(self.stacksTbl)
-            self.close()
-            self.confirmed = True
         self.confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
-        self.getContainer().add(self.confirmButton,300,370)
+        self.getContainer().add(self.confirmButton,300,120)
         # initialie Drafting dialog
 
     def genCardTbl(self,stacks):
@@ -114,7 +109,7 @@ class DraftingDialog(ADialog):
         input:     card stacks, a stack includes 2 cards
         return:    the generate Table(a widget)'''
         # create a talbe(widget) to place all stack of cards
-        tbl = gui.Table()
+        tbl = gui.Table(name = 'stacksTable')
         self.group = gui.Group(value = None)
         # generate all cards included in the input argument stacks
         # and place them on the table
@@ -125,11 +120,6 @@ class DraftingDialog(ADialog):
             # create the image of each card as a table(widgit)
             card = stacks[i][1]
             vcard[i] = createCardView(card)
-            # 4 cards in one row
-            if (i % 4 == 0):
-                tbl.tr()
-                tbl.td(gui.Label('  '))
-                tbl.tr()
             tbl.td(gui.Tool(self.group,vcard[i],value=i))
             tbl.td(gui.Label("    "))
         # monitor the event whether the selection change
@@ -141,17 +131,16 @@ class DraftingDialog(ADialog):
 
     def paintStacks(self,stacks):
         self._selectedItem = None
-        self.confirmed = False
+        if self.getContainer().find('stacksTable'):
+            self.getContainer().remove(self.stacksTbl)
         self.stacksTbl = self.genCardTbl(stacks)
-        self.getContainer().add(self.stacksTbl,50,10)
+        rect = self.stacksTbl.resize()
+        print(rect)
+        rect2 = self.getContainer().resize()
+        print(rect2)
+        self.getContainer().add(self.stacksTbl,30,10)
         
     def getSelectedItem(self):
-        #while self.confirmed is False:
-        #    for event in pygame.event.get():            
-        #        self.app.event(event)
-        #    rect = self.app.update()
-        #    pygame.display.update(rect)
-        #    pygame.time.wait(20)
         return self._selectedItem
 
 class PlayingDialog(ADialog):
@@ -165,7 +154,6 @@ class PlayingDialog(ADialog):
             'Playing Window for %s' % player.name,
             Size(700,150),
         )
-        self.app = player.app
         self.cards = [] 
         self.EsUsed = []
         self.selectedItem = None
@@ -179,11 +167,10 @@ class PlayingDialog(ADialog):
         # create a confirm button for the human player to confirm his/her selection
         self.confirmButton = gui.Button("Confirm")
         def onConfirm(self):
-            self.selectedItem = self.cardsGroup.value
-            if self.selectedItem is not None:
-                self.confirmed = True
+            if self.cardsGroup.value is not None:
+                self.selectedItem = self.cardsGroup.value
+                print('selected item is ', self.selectedItem)
                 self._confirm.play()
-                self.close()
 
         self.confirmButton.connect(gui.CLICK,onConfirm,self)
         # add confirm button to container
@@ -205,11 +192,8 @@ class PlayingDialog(ADialog):
                 tbl.td(gui.Tool(self.cardsGroup,vcard[i],value=i))
                 tbl.td(gui.Spacer(width = 10, height = 20))
             # monitor the event whether the selection change
-            self.selected = False
             self.cardsGroup.send(gui.CHANGE)
             def getGv(self):
-                print(cards[self.cardsGroup.value].getName(), ' is selected')
-                self.selected = True
                 self._click.play()
             self.cardsGroup.connect(gui.CHANGE,getGv,self)
         return tbl
@@ -218,7 +202,9 @@ class PlayingDialog(ADialog):
         '''update the cards area'''
         self.cards = cards
         self.EsUsed = EsUsed
+        self.selectedItem = None
         # remove the old widgets
+        print('current len of cards is ', len(self.cards))
         if self.getContainer().find('table'):
             self.getContainer().remove(self.cardsTbl)
         if self.getContainer().find('EsButton'):
@@ -239,18 +225,10 @@ class PlayingDialog(ADialog):
         return self.selectedItem
     
     def getSelectedCard(self):
-        while self.confirmed is False:
-            for event in pygame.event.get():            
-                self.app.event(event)
-            rect = self.app.update()
-            pygame.display.update(rect)
-            pygame.time.wait(20)
-        return self.cards[self.getSelectedItem()]
-    
-    def setCards(self,cards):
-        self.cards = cards
-    def setEsUsed(self,EsUsed):
-        self.EsUsed = EsUsed
+        if self.selectedItem is not None:
+            return self.cards[self.selectedItem]
+        else:
+            return None
 
 class EmergencyStopDialog(ADialog):
     '''Emergency Stop class, create the Emergency Stop Dialog '''
@@ -261,7 +239,6 @@ class EmergencyStopDialog(ADialog):
             Size(400,130),
         )
         self.EsUsed = 0
-        self.app = player.app
         self.confirmed = False
         # create a label in container
         lable = gui.Label('Do you want to use Emergency Stop Card?')
@@ -271,7 +248,7 @@ class EmergencyStopDialog(ADialog):
         # and also a gruop for selection
         table = gui.Table()
         table.tr()
-        g = gui.Group(value=0)
+        g = gui.Group(value=None)
         table.td(gui.Tool(g,gui.Label('Yes'),value = 1))
         table.td(gui.Spacer(width = 50,height = 20))
         table.td(gui.Tool(g,gui.Label('No'),value = 0))
@@ -285,26 +262,19 @@ class EmergencyStopDialog(ADialog):
         # create a confirm button to confirm selection
         self.confirmButton = gui.Button("Confirm")
         def cEsD(self):
-            self.EsUsed = g.value
-            print('ES WINDOW SELECTION IS ', self.EsUsed)
-            self._confirm.play()
-            self.confirmed = True
-            self.close()
+            if g.value is not None:
+                self.EsUsed = g.value
+                self._confirm.play()
+                g.value = None
         self.confirmButton.connect(gui.CLICK,cEsD,self)
         # add confirm button to container
         self.getContainer().add(self.confirmButton,160,100)
-        
+    
     def startEmergencyStopDialog(self):
-        self.open()
-        self.confirmed = False
-
+        self.EsUsed = None
+    
+        
     def getEsUsed(self):
-        while self.confirmed is False:
-            for event in pygame.event.get():            
-                self.app.event(event)
-            rect = self.app.update()
-            pygame.display.update(rect)
-            pygame.time.wait(20)
         return self.EsUsed
 
 
@@ -370,13 +340,14 @@ class HumanPlayer():
             for human player to select whether use Emergency Stop
             HumanPlayer.DeciEmergencyStopDialog()
     '''
-    def __init__(self, playerName,container,app):
+    def __init__(self, playerName,container):
         # initialize parameter
         self.stacks = []                # stacks which will be displayed in drafting window
         self.container = container 
-        self.app = app
         self.name = playerName    # the name of player
         self.isDraftDialogOpen = False
+        self.isPlayDialogOpen = False
+        self.isEmergencyStopDialogOpen = False
 
         # crate initial Drafting window without card
         self.draft_dialog = DraftingDialog(self)
@@ -387,20 +358,38 @@ class HumanPlayer():
 
     def decisionMaking_Drafting(self,stacks):
         self.stacks = stacks
-        self.draft_dialog.paintStacks(self.stacks)
         if self.isDraftDialogOpen is False:
-            self.draft_dialog.open()
+            self.draft_dialog.paintStacks(self.stacks)
+            self.container.add(self.draft_dialog,10,10)
+            
         self.isDraftDialogOpen = True
-        if self.draft_dialog.getSelectedItem():
+        if self.draft_dialog.getSelectedItem() is not None:
+            self.container.remove(self.draft_dialog)
             self.isDraftDialogOpen = False
-        
-        return self.draft_dialog.getSelectedItem()
+            return self.draft_dialog.getSelectedItem()
+        else:
+            return None
 
     def decisionMaking_Playing(self,playingCards,EsUsed):
-        self.play_dialog.paintCards(playingCards,EsUsed)
-        self.play_dialog.open()
-        return self.play_dialog.getSelectedCard()
+        if self.isPlayDialogOpen is False:
+            self.play_dialog.paintCards(playingCards,EsUsed)
+            self.container.add(self.play_dialog,10,10)
+        self.isPlayDialogOpen = True
+        if self.play_dialog.getSelectedItem() is not None:
+            self.container.remove(self.play_dialog)
+            self.isPlayDialogOpen = False
+            return self.play_dialog.getSelectedCard()
+        else:
+            return None
 
     def decisionMaking_EmergencyStop(self):
-        self.Es_Dialog.startEmergencyStopDialog()
-        return self.Es_Dialog.getEsUsed()
+        if self.isEmergencyStopDialogOpen is False:
+            self.Es_Dialog.startEmergencyStopDialog()
+            self.container.add(self.Es_Dialog,600,10)
+        self.isEmergencyStopDialogOpen = True
+        if self.Es_Dialog.getEsUsed() is not None:
+            self.container.remove(self.Es_Dialog)
+            self.isEmergencyStopDialogOpen = False    
+            return self.Es_Dialog.getEsUsed()
+        else:
+            return None

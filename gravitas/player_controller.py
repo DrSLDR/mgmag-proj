@@ -34,7 +34,7 @@ class IPlayerController():
 
 class RandomAI_PC(IPlayerController):
     """player controller that returns random choices as resolution to its functions"""
-    def __init__(self, player, args,container,app):
+    def __init__(self, player, args,container):
         super().__init__(player,args)
 
     def pollDraft(self, state):
@@ -73,49 +73,50 @@ class RandomAI_PC(IPlayerController):
         
 class Human_PC(IPlayerController):
     """Human player Controller, that calls to the GUI for resolution of its functions"""
-    def __init__(self, player, args,container,app):
+    def __init__(self, player, args,container):
         super().__init__(player,args)
         import human_player
-        self.humanPlayerGui = human_player.HumanPlayer(self.player.getName(),container,app)
+        self.humanPlayerGui = human_player.HumanPlayer(self.player.getName(),container)
 
     def pollDraft(self, state):
         """Function that returns the choice of a stack from the draw field"""
         # Bind in the percieved fields
         percievedField = state.deck.percieveCardField()
         selectedStackIndex = self.humanPlayerGui.decisionMaking_Drafting(percievedField)
-        if not len(percievedField) == 0:
+        if selectedStackIndex is not None:
+            fieldOfChoice = percievedField[selectedStackIndex]
+            print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
             # returns the index of the choosen stack
-            #fieldOfChoice = percievedField[selectedStackIndex] # stub: first stack
-            #print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
-            # returns the index of the choosen stack
-            return selectedStackIndex 
-        # returns None as long as no choice is made
-        return None
+            return fieldOfChoice[0]
+        else:
+            # returns None as long as no choice is made
+            return None
 
     def pollPlay(self, state):
         """Function that returns which card the PC want to play"""
         # chooses a card from the players hand
         hand = self.player.getHand()
-        if not len(hand) == 0:
-            cardOfChoice = self.humanPlayerGui.decisionMaking_Playing(hand,
+        cardOfChoice = self.humanPlayerGui.decisionMaking_Playing(hand,
                                                                       self.player.canEmergencyStop())
+        if cardOfChoice is not None:
             print("Human "+self.player.getName()+" played card "+str(cardOfChoice))
             #return choice
             return cardOfChoice
         else:
-            print("Oops, you are trying to play a card from an empty hand")
-        # returns None as long as no choice is made
-        return None
+            # returns None as long as no choice is made
+            return None
 
     def pollEmergencyStop(self, state):
         """Function that returns the choice of using the emergency stop as a boolean"""
         doesPlayES = self.humanPlayerGui.decisionMaking_EmergencyStop()
-        if(doesPlayES):
-            print("Human "+self.player.getName()+" DID play emergency stop")
+        if doesPlayES is not None:        
+            if(doesPlayES):
+                print("Human "+self.player.getName()+" DID play emergency stop")
+            else:
+                print("Human "+self.player.getName()+" did NOT play emergency stop")
+            #return choice
+            return doesPlayES
         else:
-            print("Human "+self.player.getName()+" did NOT play emergency stop")
-        #return choice
-        return doesPlayES
-        # returns None as long as no choice is made
-        return None
+            # returns None as long as no choice is made
+            return None
     

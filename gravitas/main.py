@@ -38,7 +38,7 @@ class MainGui(gui.Desktop):
         self.gameArea = DrawingArea(display.get_width(),
                                     self.gameAreaHeight)
         # Setup the gui area
-        self.menuArea = gui.Container(
+        self.menuArea = gui.Container(width = display.get_width(),
             height=display.get_height()-self.gameAreaHeight)
         tabel = gui.Table(height=display.get_height())
         tabel.tr()
@@ -63,8 +63,7 @@ class GameEngine(object):
         self.disp = disp
         self.app = MainGui(self.disp)
         self.humanPlayerGuiContainer = self.app.getHumanPlayerGuiContainer()
-        self.app.engine = self  
-        self.factory = Factory(args,self.humanPlayerGuiContainer,self.app)
+        self.factory = Factory(args,self.humanPlayerGuiContainer)
 
     def init(self):
         """Initializes the game"""
