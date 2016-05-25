@@ -4,8 +4,8 @@
 tiles = range(0,55) 
 # Specially colored tiles
 hulkTiles = [26,36]
-
-endTiles = [0,len(tiles)]
+# start/finish, both ends depending from where you look
+endTiles = [0,len(tiles)-1]
 
 from collections import namedtuple
 import math
@@ -75,14 +75,22 @@ class Renderer:
         for i in tiles:
             color = black
             if i in hulkTiles:
-                color = (76,153,0) # not red
+                color = (76,153,0) # green
+            if i in endTiles:
+                color = (102,0,0) # dark red
             pos = self.calcScreenPos(i)
-            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            pygame.draw.rect(
+                disp,
+                color,
+                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y)
+            )
             font("%i"%i, pos)
         size = Point(x=30,y=30)
         for (player, pc) in (gamestate.players + gamestate.hulks):
             pos = self.calcScreenPos(player.getPos())
             color = Renderer.colors[player.getColor()]
-
-            pygame.draw.ellipse(disp,color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            pygame.draw.ellipse(
+                disp,color,
+                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y)
+            )
         
