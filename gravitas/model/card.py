@@ -37,8 +37,6 @@ class Card:
         """Return unambiguos card represenation. Whatever that is."""
         return self.__str__()
 
-##### ENDs OF CARD CLASS ########################################################
-
 class Deck:
     """Singleton handling the creation of a deck, shuffling and laying out the 
     card field"""
