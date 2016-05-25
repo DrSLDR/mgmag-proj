@@ -7,7 +7,7 @@ from pygame.locals import *
 from pgu import gui
 
 #import local libs
-import card
+import model.card
 import strings
 
 # define globle parameters

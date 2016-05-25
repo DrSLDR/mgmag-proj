@@ -4,8 +4,8 @@ as loading of configuration)"""
 import pygame
 from pgu import gui, timer
 import random, json
-from player import Player, Ship
-from card import Card, Deck
+from model.player import Player, Ship
+from model.card import Card, Deck
 from gamemanager import State, GameManager
 from player_controller import RandomAI_PC, Human_PC
 

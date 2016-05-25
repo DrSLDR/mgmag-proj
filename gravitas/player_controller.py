@@ -5,10 +5,6 @@ deriving from it. Currently the existing types are
 
 import pygame
 import random
-from player import Player, Ship
-from card import Card, Deck
-
-
 
 class IPlayerController():
     """Interface for implementing the PC's. Used to make the underlying type of PC transparent the game manager"""

@@ -36,7 +36,7 @@ def _calcPosition(tileNumber):
         return Point(x=-k+(m-tileNumber),y=k)
     return Point(x=k,y=k-(m-tileNumber-t))
 
-from player import Ship
+from model.player import Ship
 class Renderer:
     """
     Renders a board
