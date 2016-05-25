@@ -65,10 +65,13 @@ class Renderer:
         return pos
 
     def render(self, font, disp, gamestate):
+        """function that renders the board"""
         import pygame
+        # connections between tiles
         black = (0,0,0)
         points = map(lambda x: self.calcScreenPos(x), tiles)
         pygame.draw.lines(disp, black, False, list(points), 5)
+        # board tiles
         size = Point(x=40,y=40)
         for i in tiles:
             color = black
@@ -77,10 +80,13 @@ class Renderer:
             pos = self.calcScreenPos(i)
             pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             font("%i"%i, pos)
+        # player and hulk ships
         size = Point(x=30,y=30)
         for (player, pc) in (gamestate.players + gamestate.hulks):
             pos = self.calcScreenPos(player.getPos())
             color = Renderer.colors[player.getColor()]
-
             pygame.draw.ellipse(disp,color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
-        
+        # round annotation
+        pos = Point(x=20,y=20)
+        font("Round %i"%(gamestate.round+1), pos)
+
