@@ -19,6 +19,8 @@ def _calcPosition(tileNumber):
     tileNumber = tileNumber + 1 # to start at 0
     # thanks: https://math.stackexchange.com/questions/163080/on-a-two-dimensional-grid-is-there-a-formula-i-can-use-to-spiral-coordinates-in
     # second anwser after spending more than 2 hours on the first.
+    # hours wasted: 3
+    # increase above number if you wanted to "improve" this code
     k=math.ceil((math.sqrt(tileNumber)-1)/2)
     t=2*k+1
     m=t**2 
