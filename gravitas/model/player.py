@@ -1,6 +1,7 @@
 """This file contains the Ship model and Player model"""
 from .card import Card
 from .ship import Ship
+from .board import tiles
 
 class Player(Ship):
     """Player class. Represents a ship with a player"""
@@ -34,7 +35,7 @@ class Player(Ship):
     def canEmergencyStop(self):
         return self._canEmergencyStop
     def distanceToFinish(self):
-        return 54 - self.getPos()
+        return len(tiles) - self.getPos()
 
     def __str__(self):
         return self.getName() + " (" + str(self.getPos()) + ")" 
