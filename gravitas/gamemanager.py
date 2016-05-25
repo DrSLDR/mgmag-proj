@@ -90,6 +90,7 @@ class GameManager:
         else:
             print("Got winner at round " + str(self._state.round) + ", turn " +
                   str(self._state.turn) + ": " + self._state.winner.getName())
+        #TODO return true iff done (ie someone won), else return false
         return self._state
 
     def _initRound(self):

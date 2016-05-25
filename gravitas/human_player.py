@@ -63,8 +63,7 @@ class ADialog(gui.Dialog):
         pygame.mixer.init()
         self._click = pygame.mixer.Sound(strings.Audio.click)
         self._confirm = pygame.mixer.Sound(strings.Audio.confirm)
-        gui.Dialog.__init__(
-            self,
+        super().__init__(
             gui.Label(title),
             self._container,
             namea=title
@@ -78,8 +77,7 @@ class DraftingDialog(ADialog):
     human player can select one of the stacks of cards,
     and then press confirm button to confirm the selection'''
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Drafing Window for %s' % player.name,
             Size(800,150),
         )
@@ -149,8 +147,7 @@ class PlayingDialog(ADialog):
     In playing phase, the human player will select a card to play from this dialog'''
 
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Playing Window for %s' % player.name,
             Size(700,150),
         )
@@ -233,8 +230,7 @@ class PlayingDialog(ADialog):
 class EmergencyStopDialog(ADialog):
     '''Emergency Stop class, create the Emergency Stop Dialog '''
     def __init__(self,player):
-        ADialog.__init__(
-            self,
+        super().__init__(
             'Playing Window for %s' % player.name,
             Size(400,130),
         )
@@ -314,7 +310,7 @@ class RevealCardsDialog(ADialog):
         )
 
     def repaint(self):
-        ADialog.__init__(self,self.title,Size(width = 400, height = 150))
+        super().__init__(self.title,Size(width = 400, height = 150))
 
 class HumanPlayer():
     ''' this class defines the GUI which will be used by a human player
