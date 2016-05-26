@@ -75,11 +75,28 @@ class Factory():
     def createGame(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
-        # Prepares the RNG
-        random.seed() # wut?! You need to do this in python, appearantly not...
-        # see: https://stackoverflow.com/questions/817705/pythons-random-what-happens-if-i-dont-use-seedsomevalue
 
         # Runs over the arguments
+        # Logging
+        if(self.args.loglevel > 0):
+            import logging
+            if(self.args.loglevel == 1):
+                level = logging.CRITICAL
+            elif(self.args.loglevel == 2):
+                level = logging.ERROR
+            elif(self.args.loglevel == 3):
+                level = logging.WARNING
+            elif(self.args.loglevel == 4):
+                level = logging.INFO
+            elif(self.args.loglevel == 5):
+                level = logging.DEBUG
+
+            # Configure and prepare logger
+            logging.basicConfig(
+                filename=self.args.logfile, filemode='w', level=level,
+                format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+            self.log = logging.getLogger(__name__)
+            self.log.info("Log initiated")
         # Configuration file
         try:
             config = self._parseConfig(self.args.config)
