@@ -103,13 +103,31 @@ class Renderer:
             size = Point(x=80, y=60) # size of card
             # draws a grey square filled with with card info
             pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
-            font(card.getName() , Point(x=pos.x-10,y=pos.y-20) )
-            font("%i"%card.getValue(), Point(x=pos.x-5,y=pos.y-5   ) )
-            font("%i"%card.getType() , Point(x=pos.x-5,y=pos.y+10) )
+            # value
+            font("%i"%card.getValue(), Point(x=pos.x-5,y=pos.y-20   ) )
+            # short name
+            font(card.getName() , Point(x=pos.x-5,y=pos.y-5) )
+            #type
+            cardType = card.getType()
+            if cardType == 0:
+                cardTypeStr = ' Normal  '
+            elif cardType == 1:
+                cardTypeStr = 'Repulsor'
+            else: cardTypeStr = ' Tractor  '
+            font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
-        # gets the first human from the state and displays its hand onscreen
+        # gets the first human from the state
         theHuman = gamestate.getHumanPlayer()
         if theHuman is not None:
+            # display human player's name in color of their ship
+            color = Renderer.colors[theHuman.getColor()]  
+            pos = Point(x=620,y=480)
+            size = Point(x=80, y=30) 
+            # 
+            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            font(theHuman.getName(), Point(x=pos.x-20,y=pos.y-5))
+
+            # display their cards
             spacing = 0
             for card in theHuman.getHand():
                 drawCard(card,font, disp, Point(x=700+spacing,y=470))
