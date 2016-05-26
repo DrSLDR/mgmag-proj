@@ -98,3 +98,21 @@ class Renderer:
         pos = Point(x=20,y=20)
         font("Round %i"%(gamestate.round+1), pos)
 
+        def drawCard(card, font, disp, pos):
+            color = (90,90,90) # about the same color as the buttons
+            size = Point(x=80, y=60) # size of card
+            # draws a grey square filled with with card info
+            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            font(card.getName() , Point(x=pos.x-10,y=pos.y-20) )
+            font("%i"%card.getValue(), Point(x=pos.x-5,y=pos.y-5   ) )
+            font("%i"%card.getType() , Point(x=pos.x-5,y=pos.y+10) )
+
+        # gets the first human from the state and displays its hand onscreen
+        theHuman = gamestate.getHumanPlayer()
+        if theHuman is not None:
+            spacing = 0
+            for card in theHuman.getHand():
+                drawCard(card,font, disp, Point(x=700+spacing,y=470))
+                spacing += 100
+
+
