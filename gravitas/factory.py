@@ -16,9 +16,9 @@ class Factory():
 
     def __init__(self, args, guiContainer):
         self.args = args
-        #The player type enumeration dictionary mapping of known player types to
+        #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
-        self._PType = {
+        self._controllerTypes = {
             "human": Human_PC,
             "randAI": RandomAI_PC
         }
@@ -30,21 +30,21 @@ class Factory():
         conflist = json.load(f)
         f.close()
         for c in conflist:
-            if not c['type'] in self._PType:
+            if not c['type'] in self._controllerTypes:
                 print("ERROR: Unknown agent type " + c['type'])
         return conflist
 
     def _createPlayerController(self, player, config):
         """return list of player controllers, whose properties depend on the config
         file"""
-        if self._PType[config['type']] is None:
+        if self._controllerTypes[config['type']] is None:
             print("Non-implemented player controller")
             return None
         else:
             # Bind the arguments
             args = config['arguments']
             # Invoke the constructor
-            return self._PType[config['type']](player, args, self.guiContainer)
+            return self._controllerTypes[config['type']](player, args, self.guiContainer)
 
     def _createState(self, config):
         """create a game state and put the player controllers in there"""
