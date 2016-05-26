@@ -14,7 +14,11 @@ class IPlayerController():
         import inspect
         raise NotImplementedError(
             "%s should implement %s!" % (
-                type(self).__name__, inspect.stack()[1][3]
+                # get the lowest level typename
+                type(self).__name__, 
+                # 0 is this stackframe, 1 is the one above
+                # third argument is the functionname
+                inspect.stack()[1][3] 
             )
         )
 
