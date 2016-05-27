@@ -1,7 +1,7 @@
 [
   {
     "name": "Darwin",
-    "type": "neurotic",
+    "type": "neuroticAI",
     "arguments": {
     }
   },
@@ -19,12 +19,6 @@
   },
   {
     "name": "Rachel",
-    "type": "randAI",
-    "arguments": {
-    }
-  },
-  {
-    "name": "Kimbley",
     "type": "randAI",
     "arguments": {
     }
