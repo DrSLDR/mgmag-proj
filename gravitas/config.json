@@ -1,16 +1,21 @@
 [
     {
-        "name": "Thomas",
-        "type": "human", 
+        "name": "Turing",
+        "type": "neuroticAI", 
         "arguments": {}
     },
     {
-        "name": "Mal",
+        "name": "Babbage",
         "type": "randAI", 
         "arguments": {}
     },
     {
-        "name": "Count",
+        "name": "Lovelace",
+        "type": "randAI", 
+        "arguments": {}
+    },
+    {
+        "name": "Hopper",
         "type": "randAI", 
         "arguments": {}
     }

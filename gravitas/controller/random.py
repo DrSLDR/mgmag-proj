@@ -41,3 +41,7 @@ class RandomAI_PC(IPlayerController):
             print("Random AI "+self.player.getName()+" did NOT play emergency stop")
         #return choice
         return doesPlayEmergencyStop
+
+
+    def informReveal(self, cards):
+        print("Random AI got informed")

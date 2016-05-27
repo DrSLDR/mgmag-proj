@@ -1,6 +1,6 @@
 """A player controller that uses a neural network to determine the next move"""
 
-from .interface import RandomAI_PC
+from .random import RandomAI_PC
 
 import tensorflow as tf
 class Neurotic_PC(RandomAI_PC):
@@ -10,23 +10,30 @@ class Neurotic_PC(RandomAI_PC):
         self.playNetwork = Factory.createPlay()
 
     def pollPlay(self, state):
-        enemies = [x for x in state.players if x.getPos() != player.getPos()]
+        hand = self.player.getHand()
+        enemies = [x for x in state.players if x[0] != self.player]
         feed_dict = {
             "player_position:0": self.player.getPos(),
-            "enemy_position_0:0":enemies[0],
-            "enemy_position_1:0":enemies[1],
-            "enemy_position_2:0":enemies[2],
-            "hulk_position_0:0":state.hulks[0].getPos(),
-            "hulk_position_1:0":state.hulks[1].getPos(),
+            "enemy_position_0:0":enemies[0][0].getPos(),
+            "enemy_position_1:0":enemies[1][0].getPos(),
+            "enemy_position_2:0":enemies[2][0].getPos(),
+            "hulk_position_0:0":state.hulks[0][0].getPos(),
+            "hulk_position_1:0":state.hulks[1][0].getPos(),
         }
-        for (i,card) in enumerate(self.player.getHand()):
-            feed_dict["card_%i_value" % i] = card.getValue()
-            feed_dict["card_%i_effect" % i] = card.getType()
-            feed_dict["card_%i_play_order" % i] = ord(card.getName())[0]
+        for (i,card) in enumerate(hand):
+            feed_dict["card_%i_value:0" % i] = card.getValue()
+            feed_dict["card_%i_effect:0" % i] = card.getType()
+            feed_dict["card_%i_play_order:0" % i] = ord(card.getName()[0])
+        import pprint
+        pprint.PrettyPrinter(indent=4).pprint(feed_dict)
         with tf.Session() as sess:
             prefrences = enumerate(sess.run(self.playNetwork, feed_dict=feed_dict))
             from operator import itemgetter
-            prefrences = list(sorted(prefrences, key=itemgetter(1)))
+            prefrences = list(sorted(prefrences, key=itemgetter(1), reverse=True))
+            for (prefIndex, prefScore)in prefrences:
+                if prefIndex < len(hand):
+                    print("neurotic played %i with score %.2f" % (prefIndex, prefScore))
+                    return hand[prefIndex]
             print(prefrences)
         raise RuntimeError("Neural network failed, we shouldn't reach here")
 
