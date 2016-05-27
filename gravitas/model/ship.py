@@ -19,6 +19,8 @@ class Ship:
         return self._pos
     def getColor(self):
         return self._color
+    def getName(self):
+        return "Hulk"
 
     def distanceTo(self, ship):
         """Returns absolute-valued distance to given ship."""
@@ -42,3 +44,8 @@ class Ship:
             self._pos = 54
         elif self._pos < 0:
             self._pos = 0
+
+    def __str__(self):
+        return self.getName() + " (" + str(self.getPos()) + ")" 
+    def __repr__(self):
+        return self.__str__()
