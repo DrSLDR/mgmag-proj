@@ -8,13 +8,13 @@ InputNode=namedtuple('InputNode', ['name', 'default_value'])
 Operation=namedtuple('Operation', [
     'tensorFunction',
     # where inputs are prerably the inputtupple type in a list
-    'inputs'
+    'arguments'
 ])
 # where source is a member of te Sources tupple, and index just an int
 # cannot go forward in the indeci, only backward (in case of the operations)
 Input=namedtuple('Input', ['source', 'index'])
 from enum import Enum
-Sources = Enum('Sources', 'input operations')
+Sources = Enum('Sources', 'input operation')
 
 # Considered architectures:
 # 1. a matrix of inputs, the problem was that you cannot get a reduced value,
@@ -31,20 +31,30 @@ Sources = Enum('Sources', 'input operations')
 #
 # The final argument will be a pack command, which jams all output nodes in an
 # array so the network only has to consulted once.
+
 class NeuralNetwork:
     def createPlay():
-        inputs = []
+        builder = NeuralNetworkBuilder()
         for i in range(0,8):
-            inputs.append(tf.placeholder_with_default(tf.constant(0), shape=[], name="card_%i_value" % i))
-            inputs.append(tf.placeholder_with_default(tf.constant(0), shape=[], name="card_%i_effect" % i))
-            inputs.append(tf.placeholder_with_default(tf.constant(0), shape=[], name="card_%i_play_order" % i))
-
-        inputs.append(tf.placeholder(tf.int32, shape=[], name="player_position"))
+            builder.addInput("card_%i_value" % i, 1)
+            builder.addInput("card_%i_effect" % i, 0)
+            builder.addInput("card_%i_play_order" % i, 0)
+        builder.addInput("player_position")
         for i in range(0,3):
-            inputs.append(tf.placeholder(tf.int32, shape=[], name="enemy_position_%i" % i))
+            builder.addInput("enemy_position_%i" % i)
         for i in range(0,2):
-            inputs.append(tf.placeholder(tf.int32, shape=[], name="hulk_position_%i" % i))
-        return tf.pack(inputs)
+            builder.addInput("hulk_position_%i" % i)
+        for i in range(0,8):
+            builder.outputNodes.append(Input(Sources.input, i))
+        builder.operationNodes.append(Operation(
+                tensorFunction=tf.add,
+                arguments=[
+                    Input(Sources.input, 3),
+                    Input(Sources.input, len(builder.inputNodes)-1)
+                ]
+        ))
+        builder.outputNodes[3] = Input(Sources.operation, 0)
+        return builder.createOutputTensor()
 
     def cardToTupple(card):
         from collections import namedtuple
@@ -56,6 +66,7 @@ class NeuralNetwork:
                     # network (it only matters that the values are different)
                     name=ord(card.getName()[0]) 
                     )
+
     def process(self, cards):
         """
         Use the neural network to proccess the gamestate/mode.
@@ -82,7 +93,7 @@ def run():
         }))
 
 
-class NeuralNetworkBuilder():
+class NeuralNetworkBuilder:
     """The tensorflow neuralnetworks are immutable, this means we need
     to define a structure around it to do neuro evolution (since we want
     to change the graph)
@@ -96,8 +107,11 @@ class NeuralNetworkBuilder():
 
     def __init__(self):
         self.inputNodes = [] # list of inputnodes
-        self.operationsNodes = [] # list of operations
+        self.operationNodes = [] # list of operations
         self.outputNodes = [] # list of inputs (I mean the namedtuple)
+
+    def addInput(self, name, value=None):
+        self.inputNodes.append(InputNode(name=name, default_value=value))
 
     def _inputTuppleToTensor(tupple):
         if tupple.default_value is None:
@@ -106,7 +120,7 @@ class NeuralNetworkBuilder():
             tf.constant(tupple.default_value), shape=[], name=tupple.name
         )
 
-    def createNetwork(self):
+    def createOutputTensor(self):
         """Creates the neural network based on the configured processing steps"""
         # to create we just go back over the network
         inputTensors = list(
@@ -115,7 +129,7 @@ class NeuralNetworkBuilder():
         operationTensors = []
         tensors = {
             Sources.input: inputTensors,
-            Sources.operations: operationTensors
+            Sources.operation: operationTensors
         }
         def resolveInput(nput): # input is a keyword
             return tensors[nput.source][nput.index]
@@ -123,7 +137,7 @@ class NeuralNetworkBuilder():
             operationTensors.append(
                 operation.tensorFunction(
                     # the star makes from the list arguments
-                    *list(map(resolveInput, operation.inputs))
+                    *[resolveInput(i) for i in operation.arguments]
                 )
             )
         return tf.pack([resolveInput(x) for x in self.outputNodes])
