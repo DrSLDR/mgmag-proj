@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Thomas",
+        "type": "human", 
+        "arguments": {}
+    },
+    {
+        "name": "Mal",
+        "type": "randAII", 
+        "arguments": {}
+    },
+    {
+        "name": "Count",
+        "type": "randAI", 
+        "arguments": {}
+    }
+]
