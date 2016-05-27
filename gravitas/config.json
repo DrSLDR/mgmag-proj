@@ -1,18 +1,24 @@
 [
   {
-    "name": "Neurotic",
+    "name": "Darwin",
     "type": "neurotic",
     "arguments": {
     }
   },
   {
-    "name": "Mal",
+    "name": "Randy",
     "type": "randAI",
     "arguments": {
     }
   },
   {
-    "name": "Count",
+    "name": "Rommel",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Rachel",
     "type": "randAI",
     "arguments": {
     }
