@@ -1,7 +1,7 @@
 [
   {
-    "name": "Thomas",
-    "type": "human",
+    "name": "Neurotic",
+    "type": "neurotic",
     "arguments": {
     }
   },
@@ -16,5 +16,12 @@
     "type": "randAI",
     "arguments": {
     }
+  },
+  {
+    "name": "Kimbley",
+    "type": "randAI",
+    "arguments": {
+    }
   }
+
 ]
