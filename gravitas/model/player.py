@@ -1,6 +1,7 @@
 """This file contains the Ship model and Player model"""
 from .card import Card
 from .ship import Ship
+import copy
 
 class Player(Ship):
     """Player class. Represents a ship with a player"""
@@ -36,7 +37,15 @@ class Player(Ship):
     def distanceToFinish(self):
         return 54 - self.getPos()
 
+    def makeCensoredCopy(self):
+        """Creates a censored copy of the player object, simply meaning a copy
+        without hand info"""
+        selfCopy = copy.copy(self)
+        selfCopy._hand = []
+        return selfCopy
+        
     def __str__(self):
         return self.getName() + " (" + str(self.getPos()) + ")" 
     def __repr__(self):
         return self.__str__()
+

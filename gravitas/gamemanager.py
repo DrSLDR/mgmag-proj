@@ -2,7 +2,7 @@
 from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
-import random, logging
+import random, logging, copy
 
 class State:
     """The game state class. Beyond counters relating to the point in play, it
@@ -46,12 +46,26 @@ class GameManager:
 
     def copyState(self):
         """Returns a copy of the state"""
-        #import copy
-        #return copy.deepcopy(self._state)
-        #YOLO
-        self.log.warning("Returning direct reference to full state. Censoring"+
-                         " copy function not implemented.")
-        return self._state
+        self.log.debug("Inside %s", self.copyState.__name__)
+        self.log.debug("Creating semi-shallow state copy")
+        state = copy.copy(self._state)
+        state.players = []
+        self.log.debug("Creating censored list of players")
+        for p in self._state.players:
+            self.log.debug("Censoring %s", p[0])
+            playerCopy = p[0].makeCensoredCopy()
+            state.addPlayer((playerCopy, None))
+            self.log.debug("Censored player tuple created and added to state")
+
+        self.log.debug("Deepcopying hulks")
+        hulks = copy.deepcopy(self._state.hulks)
+        state.hulks = hulks
+
+        self.log.debug("Deepcopying deck")
+        state.deck = copy.deepcopy(self._state.deck)
+
+        self.log.debug("Returning")
+        return state
 
     def update(self):
         """Function to update the game state. Only public function of the
