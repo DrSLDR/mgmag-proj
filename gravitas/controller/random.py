@@ -35,3 +35,7 @@ class RandomAI_PC(IPlayerController):
         doesPlayEmergencyStop = random.choice([True, False])
         #return choice
         return doesPlayEmergencyStop
+
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function eill help with"""
+        return False

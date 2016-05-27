@@ -16,9 +16,9 @@ class Factory():
 
     def __init__(self, args, guiContainer):
         self.args = args
-        #The player type enumeration dictionary mapping of known player types to
+        #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
-        self._PType = {
+        self._controllerTypes = {
             "human": Human_PC,
             "randAI": RandomAI_PC
         }
@@ -33,7 +33,7 @@ class Factory():
         self.log.debug("Got config file contents as: %s", conflist)
         for c in conflist:
             self.log.debug("Handling object %s", c)
-            if not c['type'] in self._PType:
+            if not c['type'] in self._controllerTypes:
                 self.log.error("Unknown agent type %s in %s", c['type'],
                                c['name'])
         self.log.debug("%s returning", self._parseConfig.__name__)
@@ -43,10 +43,10 @@ class Factory():
         """return list of player controllers, whose properties depend on the
         config file"""
         self.log.debug("Inside %s", self._createPlayerController.__name__)
-        if config['type'] in self._PType:
+        if config['type'] in self._controllerTypes:
             self.log.debug("Player controller definition exists for type %s",
                            config['type'])
-            if self._PType[config['type']] is None:
+            if self._controllerTypes[config['type']] is None:
                 self.log.warning("Player controller type %s is not implemented",
                                  config['type'])
                 self.log.debug("%s returning",
@@ -59,7 +59,7 @@ class Factory():
                 # Invoke the constructor
                 self.log.debug("%s returning",
                                self._createPlayerController.__name__)
-                return self._PType[config['type']](player, args,
+                return self._controllerTypes[config['type']](player, args,
                                                    self.guiContainer)
         else:
             self.log.error("No player controller definition exists for %s",

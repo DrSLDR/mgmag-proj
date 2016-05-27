@@ -2,6 +2,7 @@
 from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
+from controller.human import Human_PC
 import random, logging, copy
 
 class State:
@@ -25,6 +26,14 @@ class State:
 
     def addPlayer(self, player):
         self.players.append(player)
+
+    def getHumanPlayer(self):
+        # finds the first (and hopefully only) human in between the players
+        humans = [p for p in self.players if p[1].isHuman()]
+        if len(humans) == 0 :
+            return None
+        else:
+            return humans[0][0]
 
 class GameManager:
     """Game manager class. Home to all the game's logic."""

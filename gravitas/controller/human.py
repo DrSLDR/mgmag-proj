@@ -49,3 +49,6 @@ class Human_PC(IPlayerController):
             # returns None as long as no choice is made
             return None
     
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function will help with"""
+        return True
