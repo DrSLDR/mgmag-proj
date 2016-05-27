@@ -20,7 +20,6 @@ class Human_PC(IPlayerController):
         selectedStackIndex = self.humanPlayerGui.decisionMaking_Drafting(percievedField)
         if selectedStackIndex is not None:
             fieldOfChoice = percievedField[selectedStackIndex]
-            print("Human "+self.player.getName()+" drew from field "+str(fieldOfChoice[1]))
             # returns the index of the choosen stack
             return fieldOfChoice[0]
         else:
@@ -34,7 +33,6 @@ class Human_PC(IPlayerController):
         cardOfChoice = self.humanPlayerGui.decisionMaking_Playing(hand,
                                                                       self.player.canEmergencyStop())
         if cardOfChoice is not None:
-            print("Human "+self.player.getName()+" played card "+str(cardOfChoice))
             #return choice
             return cardOfChoice
         else:
@@ -45,13 +43,12 @@ class Human_PC(IPlayerController):
         """Function that returns the choice of using the emergency stop as a boolean"""
         doesPlayES = self.humanPlayerGui.decisionMaking_EmergencyStop()
         if doesPlayES is not None:        
-            if(doesPlayES):
-                print("Human "+self.player.getName()+" DID play emergency stop")
-            else:
-                print("Human "+self.player.getName()+" did NOT play emergency stop")
             #return choice
             return doesPlayES
         else:
             # returns None as long as no choice is made
             return None
     
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function will help with"""
+        return True

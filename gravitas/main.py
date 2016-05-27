@@ -8,6 +8,7 @@ from factory import Factory
 from board import Renderer
 from collections import namedtuple
 from strings import Logo
+import logging
 
 class DrawingArea(gui.Widget):
     def __init__(self, width, height):
@@ -69,7 +70,11 @@ class GameEngine(object):
         """Initializes the game"""
         # Call the factory
         self.gameManager = self.factory.createGame()
-        # create board 
+        # Get logger
+        self.log = logging.getLogger("GameEngine")
+        self.log.debug("Inside %s", self.init.__name__)
+        # create board
+        self.log.debug("Creating game board")
         Size = namedtuple('Size', ['width', 'height'])
         self.renderBoard = Renderer(Size(
             self.app.gameArea.rect.width,
@@ -77,11 +82,15 @@ class GameEngine(object):
         )).render # a function
         self.app.update()
         pygame.display.flip()
+        self.log.debug("Creating font")
         self.font = pygame.font.SysFont("", 16)
+        self.log.debug("Creating game clock")
         self.clock = timer.Clock() #pygame.time.Clock()
+        self.log.debug("%s returning", self.init.__name__)
 
     def update(self):
         """updates the game state / execute the game logic"""
+        self.log.debug("Inside %s", self.update.__name__)
         self.gameManager.update()
 
     def render(self, destination, rect):
@@ -98,17 +107,24 @@ class GameEngine(object):
     def run(self):
         """blocking call for the game"""
         self.init()
+        self.log.debug("Inside %s", self.run.__name__)
+        self.log.info("Entering game loop")
         while True:
             # Process events
+            self.log.debug("Handling event queue")
             for ev in pygame.event.get():
+                self.log.debug("Handling event %s", ev)
                 if (ev.type == pygame.QUIT or 
                     ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
+                    self.log.info("Caught exit action. Quitting.")
+                    logging.shutdown()
                     return # cheated out that done variable
                 # Pass the event off to pgu
                 self.app.event(ev)
             # update logic
             self.update()
             # Render the game
+            self.log.debug("Rendering game")
             rect = self.app.get_render_area()
             updates = []
             self.disp.set_clip(rect)
@@ -117,6 +133,7 @@ class GameEngine(object):
                 updates += temp
             self.disp.set_clip()
             # Cap it at 30fps
+            self.log.debug("Waiting for 30fps tick")
             self.clock.tick(30)
             # Give pgu a chance to update the display
             temp = self.app.update()
@@ -127,9 +144,30 @@ class GameEngine(object):
 
 # Runtime script
 # Prep the parser
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", default="config.json", help="Name of "+
-                    "configuration file")
+parser = argparse.ArgumentParser(
+    description="Launches the Gravitas game",
+    formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument("-c", "--config", default="config.json", 
+                    help="Name of configuration file.\n"+
+                    "Checks for \"config.json\" if not given.\n"+
+                    "If configuration file is not found or cannot be\n"+
+                    "parsed, an exception is thrown.")
+parser.add_argument("-l", "--log-level", type=int, dest="loglevel",
+                    choices=range(1,6),
+                    help="Desired log level. The levels are:\n"+
+                    "1 : CRITICAL - Exceptions and crashes\n"+
+                    "2 : ERROR    - Serious, recoverable problems\n"+
+                    "3 : WARNING  - Issues or unexpected events\n"+
+                    "4 : INFO     - Information on program activity\n"+
+                    "5 : DEBUG    - Verbose internal output\n"+
+                    "Logging is disabled by default.")
+parser.add_argument("-f", "--log-file", default="gravitas.log",
+                    dest="logfile",
+                    help="Name of the log file.\n"+
+                    "Defaults to \"gravitas.log\" if not given.\n"+
+                    "Log level must be set for this argument to have\n"+
+                    "effect. Also note that existing logfile will be\n"+
+                    "truncated without asking.")
 # Do the parsering
 args = parser.parse_args()
 # Do everything else

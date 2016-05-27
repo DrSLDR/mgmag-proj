@@ -37,3 +37,7 @@ class IPlayerController():
     def informReveal(self, cards):
         """Informs the PlayerController of the cards which have been played"""
         self._NotImplementError()
+
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function eill help with"""
+        self._NotImplementError()
