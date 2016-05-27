@@ -2,7 +2,7 @@
 from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
-import random
+import random, logging
 
 class State:
     """The game state class. Beyond counters relating to the point in play, it
@@ -33,6 +33,7 @@ class GameManager:
         """Constructs the game manager. Takes an already-constructed
         game-state."""
         self._state = state
+        self.log = logging.getLogger(__name__)
         self._GMStates = {
             "init" : 0,
             "initdraft" : 1,
@@ -47,6 +48,8 @@ class GameManager:
         #import copy
         #return copy.deepcopy(self._state)
         #YOLO
+        self.log.warning("Returning direct reference to full state. Censoring"+
+                         " copy function not implemented.")
         return self._state
 
     """Function to update the game state. Only public function of the GM. Always
@@ -134,7 +137,7 @@ class GameManager:
         """Updates the drafting step. Polls the next player in line for a
         choice. Updates the state to playing when all drafting is done."""
         player = self._state.players[self._draftPlayer]
-        selection = player[1].pollDraft(self._state)
+        selection = player[1].pollDraft(self.copyState())
         
         # Handle draft
         if selection is not None:
@@ -156,7 +159,7 @@ class GameManager:
         player = p[0]
         pc = p[1]
         # Get play
-        play = pc.pollPlay(self._state)
+        play = pc.pollPlay(self.copyState())
 
         # Handle play
         if play is not None:
@@ -229,7 +232,7 @@ class GameManager:
                 # Player can move. Test if Emergency Stop is available
                 if player.canEmergencyStop():
                     # Player is able; poll
-                    useEmergencyStop = pc.pollEmergencyStop(self._state)
+                    useEmergencyStop = pc.pollEmergencyStop(self.copyState())
                 else:
                     # Player is unable
                     useEmergencyStop = False
