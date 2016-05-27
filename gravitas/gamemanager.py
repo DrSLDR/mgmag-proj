@@ -29,7 +29,7 @@ class State:
 
     def getHumanPlayer(self):
         # finds the first (and hopefully only) human in between the players
-        humans = [p for p in self.players if p[1].isHuman()]
+        humans = [p for p in self.players if p[1] and p[1].isHuman()]
         if len(humans) == 0 :
             return None
         else:

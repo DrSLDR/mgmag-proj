@@ -112,6 +112,8 @@ class Factory():
     def createGame(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
+        if not self.args.loglevel:
+            self.args.loglevel = 5 # warning
 
         # Runs over the arguments
         # Logging
