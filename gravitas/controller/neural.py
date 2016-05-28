@@ -25,14 +25,14 @@ class Neurotic_PC(RandomAI_PC):
             feed_dict["card_%i_effect:0" % i] = card.getType()
             feed_dict["card_%i_play_order:0" % i] = ord(card.getName()[0])
         import pprint
-        pprint.PrettyPrinter(indent=4).pprint(feed_dict)
+        self.log.debug(pprint.PrettyPrinter(indent=4).pformat(feed_dict))
         with tf.Session() as sess:
             prefrences = enumerate(sess.run(self.playNetwork, feed_dict=feed_dict))
             from operator import itemgetter
             prefrences = list(sorted(prefrences, key=itemgetter(1), reverse=True))
             for (prefIndex, prefScore)in prefrences:
                 if prefIndex < len(hand):
-                    print("neurotic played %i with score %.2f" % (prefIndex, prefScore))
+                    self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
                     return hand[prefIndex]
             print(prefrences)
         raise RuntimeError("Neural network failed, we shouldn't reach here")
