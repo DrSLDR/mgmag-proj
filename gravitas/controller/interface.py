@@ -6,6 +6,9 @@ class IPlayerController():
 
     def __init__(self, player, args):
         self.player = player
+        import logging
+        # give all pc's a logger
+        self.log = logging.getLogger(type(self).__name__) 
 
     def _NotImplementError(self):
         """Throws an error that a subclass should implement a function
