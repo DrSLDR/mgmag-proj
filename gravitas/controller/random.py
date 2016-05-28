@@ -41,4 +41,4 @@ class RandomAI_PC(IPlayerController):
         return False
         
     def informReveal(self, cards):
-        print("Random ai informed")
+        self.log.info("Random ai informed about %s" % cards)
