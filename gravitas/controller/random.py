@@ -40,4 +40,4 @@ class RandomAI_PC(IPlayerController):
         """The board need to be able to find the human player, which this function eill help with"""
         return False
     def informReveal(self, cards):
-        print("Random ai informed")
+        self.log.info("Random ai informed about %s" % cards)
