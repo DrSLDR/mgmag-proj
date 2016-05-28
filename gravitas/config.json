@@ -19,7 +19,7 @@
   },
   {
     "name": "Rachel",
-    "type": "randAI",
+    "type": "human",
     "arguments": {
     }
   }
