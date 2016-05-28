@@ -52,6 +52,8 @@ class GameManager:
             "reveal" : 5,
             "resolve" : 6
         }
+        self._orderedPlays = []
+        self._plays = []
         self._waited = 0.0
         self._waitUntil = -1.0
         self._human = self._state.getHumanPlayer()
@@ -151,6 +153,11 @@ class GameManager:
                           self._state.round, self._state.turn,
                           self._state.winner.getName())
             return True
+
+        # make sure to never delay the game if there are only AIs
+        if self._human is None:
+            self._waitUntil = -1.0
+
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
@@ -306,6 +313,10 @@ class GameManager:
             self._toResolve = (firstCard, self._plays[firstCard])
             self.log.debug("Next card to resolve is %s", firstCard)
 
+    def getPlayedCards(self):
+        """Function that gets the ordered card-keys, and the playsDictionary, so that the board can display them"""
+        return (self._orderedPlays,self._plays)
+
     def _resolve(self):
         """Turn resolution. Attempts to resolve the first card in the ordered
         play list. Will poll (applicable) players to use the Emergency Stop. Can
@@ -351,6 +362,7 @@ class GameManager:
                         self.log.info("%s used Emergency Stop", player)
                         player.useEmergencyStop()
                     resolved = True
+                    self._waitUntil = 1.1
 
             if resolved:
                 # Check for winner

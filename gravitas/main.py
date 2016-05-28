@@ -102,7 +102,9 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             destination.blit(tmp, position)
-        self.renderBoard(font, disp, self.gameManager.copyState(), self.gameManager.getHuman())
+        self.renderBoard(font, disp, self.gameManager.copyState(), 
+            self.gameManager.getHuman(), # to draw the hand of the human user
+            self.gameManager.getPlayedCards()) # to draw the revealed cards
         return (rect,)
 
     def run(self):

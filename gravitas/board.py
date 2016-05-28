@@ -63,7 +63,7 @@ class Renderer:
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
         return pos
 
-    def render(self, font, disp, gamestate, humanPlayer):
+    def render(self, font, disp, gamestate, humanPlayer, revealedCards):
         """function that renders the board"""
         import pygame
         # connections between tiles
@@ -103,9 +103,8 @@ class Renderer:
         pos = Point(x=20,y=20)
         font("Round %i"%(gamestate.round+1), pos)
 
-        def drawCard(card, font, disp, pos):
+        def drawCard(card, font, disp, pos, borderColor = (120,120,120)):
             color = (90,90,90) # about the same color as the buttons
-            borderColor = (120,120,120)
             size = Point(x=80, y=60) # size of card
             # draws a grey square filled with with card info
             pygame.draw.rect(disp, borderColor, 
@@ -161,6 +160,14 @@ class Renderer:
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, (20,20,20), (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
                 font("ES played" , Point(x=pos.x-28,y=pos.y) )
+
+            # draw revealed cards
+            spacing = (len(gamestate.players)-len(revealedCards) )*100
+            for card in revealedCards[0]:
+                p = revealedCards[1][card]
+                cardBorder = Renderer.colors[p[0].getColor()]
+                drawCard(card, font, disp, Point(x=100+spacing,y=470),cardBorder)
+                spacing += 100
 
 
 
