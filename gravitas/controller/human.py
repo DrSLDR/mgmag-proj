@@ -55,4 +55,4 @@ class Human_PC(IPlayerController):
 
     def informReveal(self, cards):
         """Informs the PlayerController of the cards which have been played"""
-        print("Human informed")
+        self.log.info("Human informed about %s" % cards)

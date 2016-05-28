@@ -19,7 +19,7 @@
   },
   {
     "name": "Rachel",
-    "type": "rainAI",
+    "type": "human",
     "arguments": {
     }
   }
