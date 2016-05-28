@@ -65,6 +65,8 @@ class GameEngine(object):
         self.app = MainGui(self.disp)
         self.humanPlayerGuiContainer = self.app.getHumanPlayerGuiContainer()
         self.factory = Factory(args,self.humanPlayerGuiContainer)
+        self._deltaT = 0.0
+        self._prevTime = 0.0
 
     def init(self):
         """Initializes the game"""
@@ -91,7 +93,7 @@ class GameEngine(object):
     def update(self):
         """updates the game state / execute the game logic"""
         self.log.debug("Inside %s", self.update.__name__)
-        self.gameManager.update()
+        self.gameManager.update(self._deltaT)
 
     def render(self, destination, rect):
         """shows to a player what's going on"""
@@ -101,7 +103,7 @@ class GameEngine(object):
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             destination.blit(tmp, position)
-        self.renderBoard(font, disp, self.gameManager.copyState())
+        self.renderBoard(font, disp, self.gameManager.copyState(), self.gameManager.getHuman())
         return (rect,)
 
     def run(self):
@@ -134,6 +136,9 @@ class GameEngine(object):
             self.disp.set_clip()
             # Cap it at 30fps
             self.log.debug("Waiting for 30fps tick")
+            currTime = self.clock.get_time()
+            self._deltaT = currTime - self._prevTime
+            self._prevTime = currTime
             self.clock.tick(30)
             # Give pgu a chance to update the display
             temp = self.app.update()

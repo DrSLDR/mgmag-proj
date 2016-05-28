@@ -39,10 +39,10 @@ class Renderer:
     # redefine the ship colors as proper tuples.
     colors = {
         Ship.Color.gray: (60,60,60),
-        Ship.Color.red: (204,0,0),
-        Ship.Color.blue: (0,0,153),
-        Ship.Color.yellow: (204,204,0),
-        Ship.Color.green: (0,51,0),
+        Ship.Color.red: (222,0,0),
+        Ship.Color.blue: (0,162,232),
+        Ship.Color.yellow: (254,222,1),
+        Ship.Color.green: (33,217,0),
     }
 
     def __init__(self, screenSize):
@@ -63,7 +63,7 @@ class Renderer:
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
         return pos
 
-    def render(self, font, disp, gamestate):
+    def render(self, font, disp, gamestate, humanPlayer):
         """function that renders the board"""
         import pygame
         # connections between tiles
@@ -90,9 +90,14 @@ class Renderer:
         for (player, pc) in (gamestate.players + gamestate.hulks):
             pos = self.calcScreenPos(player.getPos())
             color = Renderer.colors[player.getColor()]
+            # draw white bordered circle filled with ship-color
+            pygame.draw.ellipse(
+                disp, (250,250,250), 
+                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y)
+            )
             pygame.draw.ellipse(
                 disp,color, 
-                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y)
+                (pos.x-size.x/2+1, pos.y-size.y/2+1, size.x-2,size.y-2)
             )
         # round annotation
         pos = Point(x=20,y=20)
@@ -100,9 +105,13 @@ class Renderer:
 
         def drawCard(card, font, disp, pos):
             color = (90,90,90) # about the same color as the buttons
+            borderColor = (120,120,120)
             size = Point(x=80, y=60) # size of card
             # draws a grey square filled with with card info
-            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            pygame.draw.rect(disp, borderColor, 
+                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            pygame.draw.rect(disp, color, 
+                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
             # value
             font("%i"%card.getValue(), Point(x=pos.x-5,y=pos.y-20   ) )
             # short name
@@ -117,20 +126,45 @@ class Renderer:
             font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
         # gets the first human from the state
-        theHuman = gamestate.getHumanPlayer()
-        if theHuman is not None:
+        
+        if humanPlayer is not None:
             # display human player's name in color of their ship
-            color = Renderer.colors[theHuman.getColor()]  
-            pos = Point(x=620,y=480)
+            color = Renderer.colors[humanPlayer.getColor()]  
+            darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
+            pos = Point(x=620,y=490)
             size = Point(x=80, y=30) 
-            # 
-            pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
-            font(theHuman.getName(), Point(x=pos.x-20,y=pos.y-5))
+            pygame.draw.rect(disp, 
+                color, 
+                (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+            pygame.draw.rect(disp, darkerColor,                
+                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
+            font(humanPlayer.getName(), Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
             spacing = 0
-            for card in theHuman.getHand():
-                drawCard(card,font, disp, Point(x=700+spacing,y=470))
+            for card in humanPlayer.getHand():
+                drawCard(card, font, disp, Point(x=720+spacing,y=470))
                 spacing += 100
+
+            # draw (lack of) ES 
+            size = Point(x=80, y=60) # size of card
+            pos = Point(x=720+spacing,y=470)
+
+            if humanPlayer.canEmergencyStop():
+                # draws ER-rect with a white border (in same color as human ship)
+                pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+                pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
+                font("Emergency" , Point(x=pos.x-28,y=pos.y-10) )
+                font("Stop" , Point(x=pos.x-12,y=pos.y+5 ) )
+            else:
+                # draw empty bordered rect
+                pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
+                pygame.draw.rect(disp, (20,20,20), (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
+                font("ES played" , Point(x=pos.x-28,y=pos.y) )
+
+
+
+
+
 
 

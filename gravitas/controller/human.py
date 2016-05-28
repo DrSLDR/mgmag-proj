@@ -52,3 +52,7 @@ class Human_PC(IPlayerController):
     def isHuman(self):
         """The board need to be able to find the human player, which this function will help with"""
         return True
+
+    def informReveal(self, cards):
+        """Informs the PlayerController of the cards which have been played"""
+        print("Human informed")

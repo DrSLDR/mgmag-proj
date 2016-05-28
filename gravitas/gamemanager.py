@@ -28,7 +28,7 @@ class State:
         self.players.append(player)
 
     def getHumanPlayer(self):
-        # finds the first (and hopefully only) human in between the players
+        # finds the first (and assumed to be the only) human in between the players
         humans = [p for p in self.players if p[1] and p[1].isHuman()]
         if len(humans) == 0 :
             return None
@@ -52,6 +52,9 @@ class GameManager:
             "reveal" : 5,
             "resolve" : 6
         }
+        self._waited = 0.0
+        self._waitUntil = -1.0
+        self._human = self._state.getHumanPlayer()
 
     def copyState(self):
         """Returns a copy of the state"""
@@ -76,9 +79,24 @@ class GameManager:
         self.log.debug("Returning")
         return state
 
-    def update(self):
+    def getHuman(self):
+        return self._human
+
+    def update(self, deltaT):
         """Function to update the game state. Only public function of the
-        GM. Returns True if a winner has been decided."""
+        GM. deltaT is in Seconds. Returns True if a winner has been decided."""
+
+        # timer used to delay the game 
+        # which will help the human user see what happends
+        self._waited += deltaT
+        if not self._waitUntil < self._waited:
+            return False
+        else: 
+            self._waited = 0.0
+            # Note: timer is set depending on the gamestep taken during this update.
+            #       this means that the timer gets set in those particular functions
+            self._waitUntil = -1.0 # default: do not wait
+
         self.log.debug("Inside %s", self.update.__name__)
         if self._state.winner is None:
             self.log.debug("No known winner")
