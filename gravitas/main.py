@@ -99,7 +99,6 @@ class GameEngine(object):
         """shows to a player what's going on"""
         backgroundColor = 0, 0, 255 # which is blue
         destination.fill(backgroundColor)
-        import math
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             destination.blit(tmp, position)
@@ -158,7 +157,7 @@ parser.add_argument("-c", "--config", default="config.json",
                     "If configuration file is not found or cannot be\n"+
                     "parsed, an exception is thrown.")
 parser.add_argument("-l", "--log-level", type=int, dest="loglevel",
-                    choices=range(1,6),
+                    choices=range(1,6), default=5,
                     help="Desired log level. The levels are:\n"+
                     "1 : CRITICAL - Exceptions and crashes\n"+
                     "2 : ERROR    - Serious, recoverable problems\n"+
