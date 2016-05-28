@@ -39,17 +39,36 @@ class Neurotic_PC(RandomAI_PC):
 
 from collections import namedtuple
 
-InputNode=namedtuple('InputNode', ['name', 'default_value'])
-Operation=namedtuple('Operation', [
-    'tensorFunction',
-    # where inputs are prerably the inputtupple type in a list
-    'arguments'
-])
-# where source is a member of te Sources tupple, and index just an int
-# cannot go forward in the indeci, only backward (in case of the operations)
-Input=namedtuple('Input', ['source', 'index'])
-from enum import Enum
-Sources = Enum('Sources', 'input operation')
+# To prevent cycles, we use layers, inputs can only come from layers before
+# the current operation
+Position=namedtuple('Position', ['layer', 'index'])
+
+class Node:
+    """Mutable strcuture for creating the neural network
+    Each node represents an operation. The first nodes are placeholders
+    """
+    def __init__(self):
+        # list of positions where self.position.layer < input.position.layer
+        # ie, we don't want cycles
+        self.inputs = [] 
+        self.position = Position(0,0)
+        # the operation can create a tensor, we want to do this lazily,
+        # so we can still "modify" the tensor graph
+        self.operation = None
+        # The tensor is the end result
+        self.tensor = None
+        # list of positions that use this node
+        # useful to know if we want to delete this node but preserve
+        # connections
+        self.usedBy = set()
+
+    def createTensor(self, nodeDict):
+        """Creates the tensor or returns the current one"""
+        if self.tensor is not None:
+            return self.tensor
+        inputTensors = [nodeDict[p].createTensor(nodeDict) for p in self.inputs]
+        self.tensor = self.operation(*inputTensors)
+        return self.tensor
 
 class Builder:
     """The tensorflow neuralnetworks are immutable, this means we need
@@ -63,16 +82,75 @@ class Builder:
     this class), and later we use this network to figure out what to do.
     """
 
+    inputlayer = 0
+    # to track the nodes in a layer (so we can add a new one
+    # without overiding a previous
+    nodeCountindex = -1 
     def __init__(self):
-        self.inputNodes = [] # list of inputnodes
-        self.operationNodes = [] # list of operations
-        self.outputNodes = [] # list of inputs (I mean the namedtuple)
+        self.nodes = dict() # graph dict
+        self.outputs = [] # list of positions in the nodes
+        self.layerDepth = Builder.inputlayer
 
     def addInput(self, name, value=None):
-        self.inputNodes.append(InputNode(name=name, default_value=value))
+        """Add an placeholder tensor to the inputlayer"""
+        result = Node()
+        result.tensor = tf.placeholder(
+            tf.int32,
+            shape=[],
+            name=name
+        ) if value is None else tf.placeholder_with_default(
+            tf.constant(value),
+            shape=[],
+            name=name
+        )
+        inputCount = self.getNodeCountFor(Builder.inputlayer)
+        result.inputs = None
+        # inputs are always layer 0
+        result.position = Position(Builder.inputlayer,inputCount)
+        self.nodes[result.position] = result
+        self._increaseNodeCountFor(Builder.inputlayer)
 
-    def addOpperation(self, function, arguments):
-        self.operationNodes.append(Operation(function, arguments))
+    def _nodeCountPos(layer):
+        return Position(layer, Builder.nodeCountindex)
+    def getNodeCountFor(self, layer):
+        position = Builder._nodeCountPos(layer)
+        if position not in self.nodes:
+            self.nodes[position] = 0
+        return self.nodes[position]
+    def _increaseNodeCountFor(self, layer):
+        position = Builder._nodeCountPos(layer)
+        self.nodes[position] = self.getNodeCountFor(layer) + 1
+
+    def removeOpperation(self, position):
+        inputs = self.nodes[position].inputs
+        if not inputs:
+            raise ValueError("Trying to remove inputnode")
+        for user in self.nodes[position].usedBy:
+            # remove from the graph by saying it no longer exists
+            user.inputs -= position
+            # the paper sais we should try and link trough the arguments
+            # because removing completly is to destructive
+            user.inputs += inputs[0]
+        del self.nodes[position]
+        
+    def addOpperation(self, function, position, arguments):
+        if position in self.nodes:
+            raise ValueError("Do what? replace it?")
+        for argument in arguments:
+            if argument.layer >= position.layer:
+                raise ValueError(("To prevent cycles, arguments should always "+
+                                 "come from earlier layers. Argument: %s, "+
+                                 "Operation position %s") % (argument, position))
+            self.nodes[argument].usedBy.add(position)
+        result = Node()
+        result.operation = function
+        result.position = position
+        result.inputs = arguments
+        self.nodes[position] = result
+        self._increaseNodeCountFor(position.layer)
+        if position.layer > self.layerDepth:
+            self.layerDepth = position.layer
+
     def _inputTuppleToTensor(tupple):
         if tupple.default_value is None:
             return tf.placeholder(tf.int32, shape=[], name=tupple.name)
@@ -92,24 +170,9 @@ class Builder:
         rather than calling the neural network multiple times
         """
         # to create we just go back over the network
-        inputTensors = list(
-            map(Builder._inputTuppleToTensor, self.inputNodes)
+        return tf.pack(
+            [self.nodes[x].createTensor(self.nodes) for x in self.outputs]
         )
-        operationTensors = []
-        tensors = {
-            Sources.input: inputTensors,
-            Sources.operation: operationTensors
-        }
-        def resolveInput(nput): # input is a keyword
-            return tensors[nput.source][nput.index]
-        for operation in self.operationNodes:
-            operationTensors.append(
-                operation.tensorFunction(
-                    # the star makes from the list arguments
-                    *[resolveInput(i) for i in operation.arguments]
-                )
-            )
-        return tf.pack([resolveInput(x) for x in self.outputNodes])
 
 class Factory:
     def createPlay():
@@ -124,12 +187,11 @@ class Factory:
             builder.addInput("enemy_position_%i" % i)
         for i in range(0,2):
             builder.addInput("hulk_position_%i" % i)
+        import random
+        inputs = list(range(0, builder.getNodeCountFor(Builder.inputlayer)))
         for i in range(0,8):
-            builder.outputNodes.append(Input(Sources.input, i))
-        builder.addOpperation(tf.add, [
-                Input(Sources.input, 3),
-                Input(Sources.input, len(builder.inputNodes)-1)
-            ]
-        )
-        builder.outputNodes[3] = Input(Sources.operation, 0)
+            builder.outputs.append(Position(Builder.inputlayer, inputs.pop(random.randrange(len(inputs)))))
+        pos = Position(1, builder.getNodeCountFor(builder.layerDepth))
+        builder.addOpperation(tf.add, pos, [Position(Builder.inputlayer, 1), Position(Builder.inputlayer, 3)])
+        builder.outputs[3] = pos
         return builder.createOutputTensor()

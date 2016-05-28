@@ -97,6 +97,7 @@ class GameEngine(object):
         """shows to a player what's going on"""
         backgroundColor = 0, 0, 255 # which is blue
         destination.fill(backgroundColor)
+        import math
         def font(text, position, color=(255,255,255)):
             tmp = self.font.render(text, True, color)
             destination.blit(tmp, position)
