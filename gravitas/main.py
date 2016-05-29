@@ -159,7 +159,7 @@ parser.add_argument("-c", "--config", default="config.json",
                     "If configuration file is not found or cannot be\n"+
                     "parsed, an exception is thrown.")
 parser.add_argument("-l", "--log-level", type=int, dest="loglevel",
-                    choices=range(1,6), default=5,
+                    choices=range(6), default=0,
                     help="Desired log level. The levels are:\n"+
                     "1 : CRITICAL - Exceptions and crashes\n"+
                     "2 : ERROR    - Serious, recoverable problems\n"+

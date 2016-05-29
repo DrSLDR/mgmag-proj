@@ -110,23 +110,27 @@ class Factory():
         return GameManager(state)
 
     def _configureLogger(self):
-        if(self.args.loglevel <= 0):
-            raise ValueError("Log level <= 0")
         import logging
-        if(self.args.loglevel == 1):
-            level = logging.CRITICAL
-        elif(self.args.loglevel == 2):
-            level = logging.ERROR
-        elif(self.args.loglevel == 3):
-            level = logging.WARNING
-        elif(self.args.loglevel == 4):
-            level = logging.INFO
-        elif(self.args.loglevel == 5):
-            level = logging.DEBUG
-        # Configure and prepare logger
-        logging.basicConfig(
-            filename=self.args.logfile, filemode='w', level=level,
-            format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+        if(self.args.loglevel == 0):
+            # Create dummy logger
+            logging.basicConfig(level=51)
+        else:
+            if(self.args.loglevel == 1):
+                level = logging.CRITICAL
+            elif(self.args.loglevel == 2):
+                level = logging.ERROR
+            elif(self.args.loglevel == 3):
+                level = logging.WARNING
+            elif(self.args.loglevel == 4):
+                level = logging.INFO
+            elif(self.args.loglevel == 5):
+                level = logging.DEBUG
+            # Configure and prepare logger
+            logging.basicConfig(
+                filename=self.args.logfile, filemode='w', level=level,
+                format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+
+        # Declare
         self.log = logging.getLogger(__name__)
         self.log.info("Log initiated")
 
@@ -140,7 +144,7 @@ class Factory():
         try:
             config = self._parseConfig(self.args.config)
         except Exception as e:
-            self.log.critical("Failed to parse log file!")
+            self.log.critical("Failed to parse config file!")
             self.log.critical(e)
             raise e
         
