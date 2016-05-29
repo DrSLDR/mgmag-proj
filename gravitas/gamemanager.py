@@ -28,7 +28,7 @@ class State:
         self.players.append(player)
 
     def getHumanPlayer(self):
-        # finds the first (and hopefully only) human in between the players
+        # finds the first (and assumed to be the only) human in between the players
         humans = [p for p in self.players if p[1] and p[1].isHuman()]
         if len(humans) == 0 :
             return None
@@ -52,6 +52,12 @@ class GameManager:
             "reveal" : 5,
             "resolve" : 6
         }
+        self._toResolve = None
+        self._orderedPlays = []
+        self._plays = []
+        self._waited = 0.0
+        self._waitUntil = -1.0
+        self._human = self._state.getHumanPlayer()
 
     def copyState(self):
         """Returns a copy of the state"""
@@ -76,9 +82,24 @@ class GameManager:
         self.log.debug("Returning")
         return state
 
-    def update(self):
+    def getHuman(self):
+        return self._human
+
+    def update(self, deltaT):
         """Function to update the game state. Only public function of the
-        GM. Returns True if a winner has been decided."""
+        GM. deltaT is in Seconds. Returns True if a winner has been decided."""
+
+        # timer used to delay the game 
+        # which will help the human user see what happends
+        self._waited += deltaT
+        if not self._waitUntil < self._waited:
+            return False
+        else: 
+            self._waited = 0.0
+            # Note: timer is set depending on the gamestep taken during this update.
+            #       this means that the timer gets set in those particular functions
+            self._waitUntil = -1.0 # default: do not wait
+
         self.log.debug("Inside %s", self.update.__name__)
         if self._state.winner is None:
             self.log.debug("No known winner")
@@ -118,10 +139,12 @@ class GameManager:
                     # Reveal plays
                     self.log.info("Game is in reveal state")
                     self._reveal()
+                    self._waitUntil = 1.1
                 elif self._state.GMState == self._GMStates['resolve']:
                     # Resolve plays; may set winner
                     self.log.info("Game is in resolve state")
                     self._resolve()
+
             else:
                 self.log.info("Game is over. Figuring out winner.")
                 # Figure out non-clear victory
@@ -133,6 +156,11 @@ class GameManager:
                           self._state.round, self._state.turn,
                           self._state.winner.getName())
             return True
+
+        # make sure to never delay the game if there are only AIs
+        if self._human is None:
+            self._waitUntil = -1.0
+
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
@@ -288,11 +316,19 @@ class GameManager:
             self._toResolve = (firstCard, self._plays[firstCard])
             self.log.debug("Next card to resolve is %s", firstCard)
 
+    def getPlayedCards(self):
+        """Function that gets the ordered card-keys, and the playsDictionary, so that the board can display them"""
+        if self._toResolve is None:
+            return (self._orderedPlays,self._plays)
+        else:
+            return ([self._toResolve[0]]+self._orderedPlays,self._plays)
+
     def _resolve(self):
         """Turn resolution. Attempts to resolve the first card in the ordered
         play list. Will poll (applicable) players to use the Emergency Stop. Can
         also set the game winner if applicable."""
         self.log.debug("Inside %s", self._resolve.__name__)
+
         # Check if there is a play to resolve
         if self._toResolve is None:
             self.log.debug("No next resolution is set")
@@ -307,7 +343,8 @@ class GameManager:
             pc = self._toResolve[1][1]
             resolved = False
             self.log.debug("Attempting to resolve play %s by %s", card, player)
-            
+            self._waitUntil = 1.1
+
             # Determine if the player can move
             target = self._playerCanMove(player)
             if target is not None or card.getType() == Card.Type.tractor:
@@ -322,6 +359,7 @@ class GameManager:
                     # Player is unable
                     self.log.info("%s cannot use Emergency Stop", player)
                     useEmergencyStop = False
+                
 
                 # Test if a decision was made
                 if useEmergencyStop is not None:
@@ -348,6 +386,7 @@ class GameManager:
             self.log.debug("End of resolution step. Ticking state to initplay")
             self._state.GMState = self._GMStates['initplay']
             self._state.turn += 1
+
 
     def _playerCanMove(self, player):
         """Determines if the player is stuck or not. If the player is stuck,
