@@ -372,6 +372,10 @@ class GameManager:
                         player.useEmergencyStop()
                     resolved = True
 
+            else:
+                self.log.info("%s is stuck and cannot move", player)
+                resolved = True
+
             if resolved:
                 # Check for winner
                 self.log.debug("End of resolution. Seeing if %s won", player)
