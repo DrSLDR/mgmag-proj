@@ -317,62 +317,61 @@ class GameManager:
             # Bind the first card to be resolved
             self._initNextResolve()
         
-        # Check again; if this fails, resolution is all done
+        # Check again; if this passes, resolution is all done
         if self._toResolve is None:
-            # Bind the relevant variables
-            card = self._toResolve[0]
-            player = self._toResolve[1][0]
-            pc = self._toResolve[1][1]
-            resolved = False
-            self.log.debug("Attempting to resolve play %s by %s", card, player)
-            self._waitUntil = 1.1
-
-            # Determine if the player can move
-            target = self._playerCanMove(player)
-            if target is not None or card.getType() == Card.Type.tractor:
-                # Player can move. Test if Emergency Stop is available
-                self.log.debug("Player isn't stuck. Targeting %s. Resolution "+
-                               "continues", target)
-                if player.canEmergencyStop():
-                    # Player is able; poll
-                    self.log.info("Polling %s to use Emergency Stop", player)
-                    useEmergencyStop = pc.pollEmergencyStop(self.copyState())
-                else:
-                    # Player is unable
-                    self.log.info("%s cannot use Emergency Stop", player)
-                    useEmergencyStop = False
-                
-
-                # Test if a decision was made
-                if useEmergencyStop is not None:
-                    # Execute resolution
-                    if not useEmergencyStop:
-                        self.log.info("Resolving %s played by %s", card, player)
-                        self._resolvePlay(player, card, target)
-                    else:
-                        self.log.info("%s used Emergency Stop", player)
-                        player.useEmergencyStop()
-                    resolved = True
-
-            else:
-                self.log.info("%s is stuck and cannot move", player)
-                resolved = True
-
-            if resolved:
-                # Check for winner
-                self.log.debug("End of resolution. Seeing if %s won", player)
-                if player.distanceToFinish() == 0:
-                    self.log.info("%s has won!", player)
-                    self._state.winner = self._toResolve[1][0]
-
-                # Clear the play
-                self._toResolve = None
-        else:
             # Set the state to next play and tick the turn counter
             self.log.debug("End of resolution step. Ticking state to initplay")
             self._state.GMState = self.GMStates['initplay']
             self._state.turn += 1
+            return
 
+        # Bind the relevant variables
+        card = self._toResolve[0]
+        player = self._toResolve[1][0]
+        pc = self._toResolve[1][1]
+        resolved = False
+        self.log.debug("Attempting to resolve play %s by %s", card, player)
+
+        # Determine if the player can move
+        target = self._playerCanMove(player)
+        if target is not None or card.getType() == Card.Type.tractor:
+            # Player can move. Test if Emergency Stop is available
+            self.log.debug("Player isn't stuck. Targeting %s. Resolution "+
+                           "continues", target)
+            if player.canEmergencyStop():
+                # Player is able; poll
+                self.log.info("Polling %s to use Emergency Stop", player)
+                useEmergencyStop = pc.pollEmergencyStop(self.copyState())
+            else:
+                # Player is unable
+                self.log.info("%s cannot use Emergency Stop", player)
+                useEmergencyStop = False
+                    
+
+            # Test if a decision was made
+            if useEmergencyStop is not None:
+                # Execute resolution
+                if not useEmergencyStop:
+                    self.log.info("Resolving %s played by %s", card, player)
+                    self._resolvePlay(player, card, target)
+                else:
+                    self.log.info("%s used Emergency Stop", player)
+                    player.useEmergencyStop()
+                resolved = True
+
+        else:
+            self.log.info("%s is stuck and cannot move", player)
+            resolved = True
+
+        if resolved:
+            # Check for winner
+            self.log.debug("End of resolution. Seeing if %s won", player)
+            if player.distanceToFinish() == 0:
+                self.log.info("%s has won!", player)
+                self._state.winner = self._toResolve[1][0]
+
+            # Clear the play
+            self._toResolve = None
 
     def _playerCanMove(self, player):
         """Determines if the player is stuck or not. If the player is stuck,
