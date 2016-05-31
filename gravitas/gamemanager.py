@@ -317,7 +317,8 @@ class GameManager:
             self.log.debug("Next card to resolve is %s", firstCard)
 
     def getPlayedCards(self):
-        """Function that gets the ordered card-keys, and the playsDictionary, so that the board can display them"""
+        """Function that gets the ordered card-keys, and the playsDictionary, 
+        so that the board can display them"""
         if self._toResolve is None:
             return (self._orderedPlays,self._plays)
         else:
@@ -336,7 +337,7 @@ class GameManager:
             self._initNextResolve()
         
         # Check again; if this fails, resolution is all done
-        if self._toResolve is not None:
+        if self._toResolve is None:
             # Bind the relevant variables
             card = self._toResolve[0]
             player = self._toResolve[1][0]

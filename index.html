@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="css/reveal.css">
     <link rel="stylesheet" href="css/theme/night.css">
 
+    <style>
+     p.source{
+         font-size: 60%;
+     }
+    </style>
     <!-- Theme used for syntax highlighting of code -->
     <link rel="stylesheet" href="lib/css/zenburn.css">
 
@@ -39,60 +44,104 @@
         </section>
 
         <section data-markdown>
-          # Applied neuro evolution
-
+            <script type="text/template">
+            # Applied
+            ## neuro evolution
             1. Symbolic representation
-            2. Mutation steps
-            3. The evolution cycle
+            1. Mutation steps
+            1. The evolution cycle
 
+            Jacob Schrum and Risto Miikkulainen.
+            "Evolving Multi-modal Behavior in NPCs". <br/>
+            S. Whiteson, P. Stone, K. O. Stanley, R. Miikkulainen, and N. Kohl,
+            “Automatic feature selection in neuroevolution,” <br />
+            K. O. Stanley and R. Miikkulainen. "Evolving neural networks through
+            augmenting topologies".  Evolutionary Computation <!-- .element: class="source"-->
+        </script>
         </section>
+
+        <section>
         <section data-markdown>
-          # Neural networks!
+          # Neural network
             ![](img/1-nn.svg)
         </section>
 
-        <section data-markdown>
-          # A Neat beginning
-            ![](img/2-nn.svg)
+        <section data-markdown style="ul{text-align:left}">
+            <script type="text/template">
+            # Nodes
+
+            ## Input
+            * Cards in hand
+            * Player positions
+            * Hulk positions
+            * Known cards?
+
+            ## Output
+            * Single node with card index.
+            * Multiple nodes as card preferences.<!-- .element: class="left"-->
+
+            ## Hidden
+            Tensorflow math operation (think add/subtract, multply, power
+            etc.).
+            </script>
+        </section>
         </section>
 
+        <section>
+            <section data-markdown>
+                # Applying evolution
+                0. Create an initial population.
+                1. Create offspring
+                2. Competition
+                3. Selection
+                4. Repetition
+            </section>
         <section data-markdown>
-          # A FS-Neat beginning
+          # FS-Neat
             ![](img/3-nn.svg)
+            To create the initial population.
         </section>
 
         <section data-markdown>
-          # Add operation transformation
+          # Add mutation
             ![](img/4-nn.svg)
         </section>
+
         <section data-markdown>
-          # Add link transformation
+          # Link mutation
             ![](img/5-nn.svg)
         </section>
+
         <section data-markdown>
-          # Merge node transformation
+          # Merge mutation
             ![](img/6-nn.svg)
         </section>
-
-        <section data-markdown>
-            # Evolution
-
-            0. Create an initial population.
-            1. Create offspring
-                * in our case by mutation,
-                * you can also do crossover (but this is difficult with neural networks)
-
-            2. Rate the fitness
-                * This is the difficult part
-                * play the game, give score to performance.
-                * Use an average of multpile games
-
-            3. Apply selection (kill off some of the parents/offspring)
-                * several possibilities, truncate or tournement etc.
-            4. Rinse and repeat. (step 1)
-
         </section>
 
+        <section>
+        <section data-markdown>
+            # Competition
+            Play the game, give score to performance.
+
+            ## Possible scoring schemes
+            1. win/lose
+            2. Progress on board
+            3. Relative progress
+
+            ## Find a good game number
+
+            Use an average of multpile games
+        </section>
+        <section data-markdown>
+            # Selection
+            kill off some of the parents/offspring.
+
+            ## Posibilities
+            1. Truncate
+            2. Tournement
+            3. Proportional
+        </section>
+        </section>
       </div>
     </div>
 
