@@ -43,7 +43,7 @@ class GameManager:
         game-state."""
         self._state = state
         self.log = logging.getLogger(__name__)
-        self._GMStates = {
+        self.GMStates = {
             "init" : 0,
             "initdraft" : 1,
             "drafting" : 2,
@@ -55,8 +55,6 @@ class GameManager:
         self._toResolve = None
         self._orderedPlays = []
         self._plays = []
-        self._waited = 0.0
-        self._waitUntil = -1.0
         self._human = self._state.getHumanPlayer()
 
     def copyState(self):
@@ -85,20 +83,9 @@ class GameManager:
     def getHuman(self):
         return self._human
 
-    def update(self, deltaT):
+    def update(self):
         """Function to update the game state. Only public function of the
         GM. deltaT is in Seconds. Returns True if a winner has been decided."""
-
-        # timer used to delay the game 
-        # which will help the human user see what happends
-        self._waited += deltaT
-        if not self._waitUntil < self._waited:
-            return False
-        else: 
-            self._waited = 0.0
-            # Note: timer is set depending on the gamestep taken during this update.
-            #       this means that the timer gets set in those particular functions
-            self._waitUntil = -1.0 # default: do not wait
 
         self.log.debug("Inside %s", self.update.__name__)
         if self._state.winner is None:
@@ -106,23 +93,23 @@ class GameManager:
             if self._state.round < 6:
                 self.log.info("Game is not over. In round %i",
                                self._state.round)
-                if self._state.GMState == self._GMStates['init']:
+                if self._state.GMState == self.GMStates['init']:
                     # Initializes the round
                     self.log.info("Game is in init state")
                     self._initRound()
-                elif self._state.GMState == self._GMStates['initdraft']:
+                elif self._state.GMState == self.GMStates['initdraft']:
                     # Prepare the draft
                     self.log.info("Game is in initdraft state")
                     self._initDraft()
-                elif self._state.GMState == self._GMStates['drafting']:
+                elif self._state.GMState == self.GMStates['drafting']:
                     # Calls for drafting
                     self.log.info("Game is in drafting state")
                     self._draft()
-                elif self._state.GMState == self._GMStates['initplay']:
+                elif self._state.GMState == self.GMStates['initplay']:
                     # Prepare for play
                     self.log.info("Game is in initplay state")
                     self._initTurn()
-                elif self._state.GMState == self._GMStates['playing']:
+                elif self._state.GMState == self.GMStates['playing']:
                     self.log.info("Game is in playing state")
                     if self._state.turn < 6:
                         # Play game
@@ -134,13 +121,12 @@ class GameManager:
                         self.log.info("End of round %i", self._state.round)
                         self._state.turn = 0
                         self._state.round += 1
-                        self._state.GMState = self._GMStates['init']
-                elif self._state.GMState == self._GMStates['reveal']:
+                        self._state.GMState = self.GMStates['init']
+                elif self._state.GMState == self.GMStates['reveal']:
                     # Reveal plays
                     self.log.info("Game is in reveal state")
                     self._reveal()
-                    self._waitUntil = 1.1
-                elif self._state.GMState == self._GMStates['resolve']:
+                elif self._state.GMState == self.GMStates['resolve']:
                     # Resolve plays; may set winner
                     self.log.info("Game is in resolve state")
                     self._resolve()
@@ -157,11 +143,6 @@ class GameManager:
                           self._state.winner.getName())
             return True
 
-        # make sure to never delay the game if there are only AIs
-        if self._human is None:
-            self._waitUntil = -1.0
-
-
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
         readies a drafting field, and sets the state to drafting."""
@@ -174,7 +155,7 @@ class GameManager:
             p[0].resetEmergencyStop()
         # Sets the next state
         self.log.debug("Ticking game state to initdraft")
-        self._state.GMState = self._GMStates['initdraft']
+        self._state.GMState = self.GMStates['initdraft']
 
     def _sortPlayers(self):
         """Sorts the players based on distance to the warp gate. If two or more
@@ -215,7 +196,7 @@ class GameManager:
         self._draftPlayer = 0
         # Sets drafting
         self.log.debug("Ticking state to drafting")
-        self._state.GMState = self._GMStates['drafting']
+        self._state.GMState = self.GMStates['drafting']
 
     def _draft(self):
         """Updates the drafting step. Polls the next player in line for a
@@ -242,7 +223,7 @@ class GameManager:
         if self._draftsRemaining == 0:
             # End drafting
             self.log.debug("End of drafting. Ticking state to initplay")
-            self._state.GMState = self._GMStates['initplay']
+            self._state.GMState = self.GMStates['initplay']
                 
     def _turn(self):
         """Turn update function. Polls a player to play."""
@@ -265,7 +246,7 @@ class GameManager:
             self._playersRemaining.remove(p)
         # Update state if neccessary
         if len(self._playersRemaining) == 0:
-            self._state.GMState = self._GMStates['reveal']
+            self._state.GMState = self.GMStates['reveal']
         
     def _initTurn(self):
         """Turn initialization function. Prepares the plays dictionary, players
@@ -279,7 +260,7 @@ class GameManager:
             self._playersRemaining.append(p)
         # Sets the state to playing
         self.log.debug("Ticking state to playing")
-        self._state.GMState = self._GMStates['playing']
+        self._state.GMState = self.GMStates['playing']
         
     def _turnSelectPlayer(self):
         """Selects a random player to poll for play. Uses randomization since
@@ -306,7 +287,7 @@ class GameManager:
 
         # Updates state
         self.log.debug("Ticking state to resolve")
-        self._state.GMState = self._GMStates['resolve']
+        self._state.GMState = self.GMStates['resolve']
 
     def _initNextResolve(self):
         """Prepares the next play to be resolved."""
@@ -389,7 +370,7 @@ class GameManager:
         else:
             # Set the state to next play and tick the turn counter
             self.log.debug("End of resolution step. Ticking state to initplay")
-            self._state.GMState = self._GMStates['initplay']
+            self._state.GMState = self.GMStates['initplay']
             self._state.turn += 1
 
 
