@@ -83,15 +83,37 @@
             </script>
           </section>
 
-          <section data-markdown>
-            <script type="text/template">
-              ## Our questions
+        </section>
 
-              - Is there an optimal strategy for Gravwell?
-              - Can we write a learning AI to find it?
-              - Or, at least, can we beat a player that plays random cards? <!-- .element: class="fragment" data-fragment-index="1" -->
-            </script>
-          </section>
+        <section data-markdown>
+          <script type="text/template">
+            # Our questions
+
+            - Is there an optimal strategy for Gravwell?
+            - Can we write a learning AI to find it?
+            - Or, at least, can we beat a player that plays random cards? <!-- .element: class="fragment" data-fragment-index="1" -->
+          </script>
+        </section>
+
+        <section>
+            <h1>Complexity</h1>
+
+            <h3>Board states</h3>
+            <span class="fragment" data-fragment-index="1">For a game
+            with <i>n</i> players,</span><span class="fragment"
+            data-fragment-index="2"> when <i>n = 2</i> there are 164 board
+            states,</span><span class="fragment" data-fragment-index="3">
+            when <i>n = 3</i> there are 276 board
+            states,</span><span class="fragment" data-fragment-index="4"> and
+            when <i>n = 4</i> there are 348 board states.</span>
+
+            <h3 class="fragment" data-fragment-index="5">Action sequences</h3>
+            <p class="fragment" data-fragment-index="6">For <i>n = 2</i> there
+            are 3,541,822,404,120,000 sequences.</p>
+            <p class="fragment" data-fragment-index="7">For <i>n = 3</i> there
+            are 10,504,782,893,404,800,000 sequences.</p>
+            <p class="fragment" data-fragment-index="8">For <i>n = 4</i> there
+            are 51,703,228,303,476,750,000 sequences.</p>
 
         </section>
 
@@ -119,6 +141,29 @@
             2. Decision tree (symbolic AI)
             3. Reinforcement learning
       </section>
+        <section>
+          <section data-markdown>
+            # Random
+
+            > With luck on your side, you can do without brains.
+            >
+            > Giordano Bruno
+
+          </section>
+          <section data-markdown>
+            <script type="text/template">
+              Randomly selects cards.
+
+              Randomly plays cards.
+
+              Randomly plays Emergency Stop.
+
+              Still manages to win games.  <!-- .element: class="fragment" data-fragment-index="1" -->
+
+              Sometimes.  <!-- .element: class="fragment" data-fragment-index="2" -->
+            </script>
+          </section>
+        </section>
         <section data-markdown>
             <script type="text/template">
             # Applied
