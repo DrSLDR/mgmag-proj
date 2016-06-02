@@ -294,11 +294,17 @@
         </section>
 
         <section data-markdown>
+       # The algorithm
+
         1. Take random $Q(s,a)$ values
         2. For every round:
-            1. Choose an action $a$ from s derived $Q(a,s)$
-            2. 
-            
+            1. Choose an action $a$ using $Q(s)$
+            2. $(s', r) \gets Execute(a)$
+            3. Choose $a'$ using $Q(s')$
+            4. update $Q(s,a)$
+            5. $s\gets s'$
+            6. $a \gets a'$
+
         </section>
       </div>
     </div>
