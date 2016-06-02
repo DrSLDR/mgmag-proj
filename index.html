@@ -83,15 +83,37 @@
             </script>
           </section>
 
-          <section data-markdown>
-            <script type="text/template">
-              ## Our questions
+        </section>
 
-              - Is there an optimal strategy for Gravwell?
-              - Can we write a learning AI to find it?
-              - Or, at least, can we beat a player that plays random cards? <!-- .element: class="fragment" data-fragment-index="1" -->
-            </script>
-          </section>
+        <section data-markdown>
+          <script type="text/template">
+            # Our questions
+
+            - Is there an optimal strategy for Gravwell?
+            - Can we write a learning AI to find it?
+            - Or, at least, can we beat a player that plays random cards? <!-- .element: class="fragment" data-fragment-index="1" -->
+          </script>
+        </section>
+
+        <section>
+            <h1>Complexity</h1>
+
+            <h3>Board states</h3>
+            <span class="fragment" data-fragment-index="1">For a game
+            with <i>n</i> players,</span><span class="fragment"
+            data-fragment-index="2"> when <i>n = 2</i> there are 164 board
+            states,</span><span class="fragment" data-fragment-index="3">
+            when <i>n = 3</i> there are 276 board
+            states,</span><span class="fragment" data-fragment-index="4"> and
+            when <i>n = 4</i> there are 348 board states.</span>
+
+            <h3 class="fragment" data-fragment-index="5">Action sequences</h3>
+            <p class="fragment" data-fragment-index="6">For <i>n = 2</i> there
+            are 3,541,822,404,120,000 sequences.</p>
+            <p class="fragment" data-fragment-index="7">For <i>n = 3</i> there
+            are 73,533,480,253,833,600,000 sequences.</p>
+            <p class="fragment" data-fragment-index="8">For <i>n = 4</i> there
+            are 2,533,458,186,870,360,750,000 sequences.</p>
 
         </section>
 
@@ -119,6 +141,29 @@
             2. Decision tree (symbolic AI)
             3. Reinforcement learning
       </section>
+        <section>
+          <section data-markdown>
+            # Random
+
+            > With luck on your side, you can do without brains.
+            >
+            > Giordano Bruno
+
+          </section>
+          <section data-markdown>
+            <script type="text/template">
+              Randomly selects cards.
+
+              Randomly plays cards.
+
+              Randomly plays Emergency Stop.
+
+              Still manages to win games.  <!-- .element: class="fragment" data-fragment-index="1" -->
+
+              Sometimes.  <!-- .element: class="fragment" data-fragment-index="2" -->
+            </script>
+          </section>
+        </section>
         <section data-markdown>
             <script type="text/template">
             # Applied
@@ -218,6 +263,49 @@
             3. Proportional
         </section>
         </section>
+        <section data-markdown>
+          <script type="text/template">
+            # Reinforcement learning
+
+            * We use sarsa an approach similiar to hearts
+            * Gravwell and hearts share the hidden information aspect.
+
+            Sturtevant, N. R., & White, A. M. (2006).
+            Feature construction for reinforcement learning in hearts. <!-- .element: class="source"-->
+            ![](img/rl.png)
+          </script>
+        </section>
+        <section>
+            <h1> Sarsa </h1>
+            Shares similiartities with Temporal Difference learning.
+
+            $$Q(s_i, a_i) \gets (1-\alpha) \cdot Q(s_i,a_i) + \alpha
+            [r_i + \lambda Q( s_{i+1},a_{i+1})]$$
+
+            <ul>
+                <li>Q value is used for the propencity of an action</li>
+                <li>$\alpha$ learning rate</li>
+                <li>$\lambda$ discount factor</li>
+                <li>$s_i$ the state at time $i$ </li>
+                <li>$a_i$ the action at time $i$</li>
+                <li>$r_i$ the reward from an action at time $i$</li>
+            </ul>
+            <img src="img/sarsa.png" />
+        </section>
+
+        <section data-markdown>
+       # The algorithm
+
+        1. Take random $Q(s,a)$ values
+        2. For every round:
+            1. Choose an action $a$ using $Q(s)$
+            2. $(s', r) \gets Execute(a)$
+            3. Choose $a'$ using $Q(s')$
+            4. update $Q(s,a)$
+            5. $s\gets s'$
+            6. $a \gets a'$
+
+        </section>
       </div>
     </div>
 
@@ -234,7 +322,8 @@
           { src: 'plugin/markdown/marked.js' },
           { src: 'plugin/markdown/markdown.js' },
           { src: 'plugin/notes/notes.js', async: true },
-          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+            { src: 'plugin/math/math.js', async: true }
         ]
       });
 
