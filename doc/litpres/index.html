@@ -218,6 +218,43 @@
             3. Proportional
         </section>
         </section>
+        <section data-markdown>
+          <script type="text/template">
+            # Reinforcement learning
+
+            * We use sarsa an approach similiar to hearts
+            * Gravwell and hearts share the hidden information aspect.
+
+            Sturtevant, N. R., & White, A. M. (2006).
+            Feature construction for reinforcement learning in hearts. <!-- .element: class="source"-->
+            ![](img/rl.png)
+          </script>
+        </section>
+        <section>
+            <h1> Sarsa </h1>
+            Shares similiartities with Temporal Difference learning.
+
+            $$Q(s_i, a_i) \gets (1-\alpha) \cdot Q(s_i,a_i) + \alpha
+            [r_i + \lambda Q( s_{i+1},a_{i+1})]$$
+
+            <ul>
+                <li>Q value is used for the propencity of an action</li>
+                <li>$\alpha$ learning rate</li>
+                <li>$\lambda$ discount factor</li>
+                <li>$s_i$ the state at time $i$ </li>
+                <li>$a_i$ the action at time $i$</li>
+                <li>$r_i$ the reward from an action at time $i$</li>
+            </ul>
+            <img src="img/sarsa.png" />
+        </section>
+
+        <section data-markdown>
+        1. Take random $Q(s,a)$ values
+        2. For every round:
+            1. Choose an action $a$ from s derived $Q(a,s)$
+            2. 
+            
+        </section>
       </div>
     </div>
 
@@ -234,7 +271,8 @@
           { src: 'plugin/markdown/marked.js' },
           { src: 'plugin/markdown/markdown.js' },
           { src: 'plugin/notes/notes.js', async: true },
-          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+            { src: 'plugin/math/math.js', async: true }
         ]
       });
 
