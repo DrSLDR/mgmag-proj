@@ -264,6 +264,14 @@
             3. Proportional
         </section>
         </section>
+        <section data-markdown>
+            # Problems
+            ## For Neuro evolution
+
+            * Use of emergency stop
+            * Draft round and play rounds are different strategies
+           
+        </section>
 
         <section data-markdown>
           <script type="text/template">
@@ -278,8 +286,29 @@
           </script>
         </section>
 
+
         <section>
-            <h1> Sarsa </h1>
+        <section>
+            <h1> SARSA </h1>
+            <h2> The algorithm</h2>
+
+            <ol>
+                <li> Take random $Q(s,a)$ values</li>
+                <li> For every round:
+                    <ol>
+                        <li>Choose an action $a$ using $Q(s)$ </li>
+                        <li>$(s', r) \gets Execute(a)$ </li>
+                        <li>Choose $a'$ using $Q(s')$ </li>
+                        <li>update $Q(s,a)$ </li>
+                        <li>$s\gets s'$ </li>
+                        <li>$a \gets a'$ </li>
+                    </ol>
+                </li>
+            </ol>
+        </section>
+
+        <section>
+            <h1> Update function </h1>
             Shares similiartities with Temporal Difference learning.
 
             $$Q(s_i, a_i) \gets (1-\alpha) \cdot Q(s_i,a_i) + \alpha
@@ -295,23 +324,17 @@
             </ul>
             <img src="img/sarsa.png" />
         </section>
+        </section>
+        <section data-markdown>
+            # Problems
+            ## For SARSA
 
-        <section>
-            <h1> The algorithm </h1>
-
-            <ol>
-                <li> Take random $Q(s,a)$ values</li>
-                <li> For every round:
-                    <ol>
-                        <li>Choose an action $a$ using $Q(s)$ </li>
-                        <li>$(s', r) \gets Execute(a)$ </li>
-                        <li>Choose $a'$ using $Q(s')$ </li>
-                        <li>update $Q(s,a)$ </li>
-                        <li>$s\gets s'$ </li>
-                        <li>$a \gets a'$ </li>
-                    </ol>
-                </li>
-            </ol>
+            * Huge state space
+            * Use of emergency stop
+            * Consideration of type of played cards
+              (repulsor/regular/tractor)
+            * Draft round has no reward.
+           
         </section>
       </div>
     </div>
