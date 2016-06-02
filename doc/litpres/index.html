@@ -248,6 +248,7 @@
             1. win/lose
             2. Progress on board
             3. Relative progress
+            4. $ \frac{Player position}{Players ahead + 1}$
 
             ## Find a good game number
 
@@ -263,11 +264,12 @@
             3. Proportional
         </section>
         </section>
+
         <section data-markdown>
           <script type="text/template">
             # Reinforcement learning
 
-            * We use sarsa an approach similiar to hearts
+            * We use an approached called SARSA a type of RL
             * Gravwell and hearts share the hidden information aspect.
 
             Sturtevant, N. R., & White, A. M. (2006).
@@ -275,6 +277,7 @@
             ![](img/rl.png)
           </script>
         </section>
+
         <section>
             <h1> Sarsa </h1>
             Shares similiartities with Temporal Difference learning.
@@ -283,7 +286,7 @@
             [r_i + \lambda Q( s_{i+1},a_{i+1})]$$
 
             <ul>
-                <li>Q value is used for the propencity of an action</li>
+                <li>Q value is used for the propensity of an action</li>
                 <li>$\alpha$ learning rate</li>
                 <li>$\lambda$ discount factor</li>
                 <li>$s_i$ the state at time $i$ </li>
@@ -293,18 +296,22 @@
             <img src="img/sarsa.png" />
         </section>
 
-        <section data-markdown>
-       # The algorithm
+        <section>
+            <h1> The algorithm </h1>
 
-        1. Take random $Q(s,a)$ values
-        2. For every round:
-            1. Choose an action $a$ using $Q(s)$
-            2. $(s', r) \gets Execute(a)$
-            3. Choose $a'$ using $Q(s')$
-            4. update $Q(s,a)$
-            5. $s\gets s'$
-            6. $a \gets a'$
-
+            <ol>
+                <li> Take random $Q(s,a)$ values</li>
+                <li> For every round:
+                    <ol>
+                        <li>Choose an action $a$ using $Q(s)$ </li>
+                        <li>$(s', r) \gets Execute(a)$ </li>
+                        <li>Choose $a'$ using $Q(s')$ </li>
+                        <li>update $Q(s,a)$ </li>
+                        <li>$s\gets s'$ </li>
+                        <li>$a \gets a'$ </li>
+                    </ol>
+                </li>
+            </ol>
         </section>
       </div>
     </div>
