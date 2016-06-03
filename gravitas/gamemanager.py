@@ -229,60 +229,62 @@ class GameManager:
         GM. deltaT is in Seconds. Returns True if a winner has been decided."""
 
         self.log.debug("Inside %s", self.update.__name__)
-        if self._state.winner is None:
-            self.log.debug("No known winner")
-            if self._state.round < 6:
-                self.log.info("Game is not over. In round %i",
-                               self._state.round)
-                if self._state.GMState == self.GMStates['init']:
-                    # Initializes the round
-                    self.log.info("Game is in init state")
-                    self._initRound()
-                elif self._state.GMState == self.GMStates['initdraft']:
-                    # Prepare the draft
-                    self.log.info("Game is in initdraft state")
-                    self._initDraft()
-                elif self._state.GMState == self.GMStates['drafting']:
-                    # Calls for drafting
-                    self.log.info("Game is in drafting state")
-                    self._draft()
-                elif self._state.GMState == self.GMStates['initplay']:
-                    # Prepare for play
-                    self.log.info("Game is in initplay state")
-                    self._initTurn()
-                elif self._state.GMState == self.GMStates['playing']:
-                    self.log.info("Game is in playing state")
-                    if self._state.turn < 6:
-                        # Play game
-                        self.log.info("Round is not over. At turn %i",
-                                      self._state.turn)
-                        self._turn()
-                    else:
-                        # End round
-                        self.log.info("End of round %i", self._state.round)
-                        self._state.turn = 0
-                        self._state.round += 1
-                        self._state.GMState = self.GMStates['init']
-                elif self._state.GMState == self.GMStates['reveal']:
-                    # Reveal plays
-                    self.log.info("Game is in reveal state")
-                    self._reveal()
-                elif self._state.GMState == self.GMStates['resolve']:
-                    # Resolve plays; may set winner
-                    self.log.info("Game is in resolve state")
-                    self._resolve()
-
-            else:
-                self.log.info("Game is over. Figuring out winner.")
-                # Figure out non-clear victory
-                if self._state.winner is None:
-                    self._sortPlayers()
-                    self._state.winner = self._state.players[0][0]
-        else:
+        if self._state.winner is not None:
             self.log.info("Got winner at round %i, turn %i: %s",
                           self._state.round, self._state.turn,
                           self._state.winner.getName())
             return True
+        self.log.debug("No known winner")
+
+        if self._state.round > 5:
+            self.log.info("Game is over. Figuring out winner.")
+            # Figure out non-clear victory
+            if self._state.winner is None:
+                self._sortPlayers()
+                self._state.winner = self._state.players[0][0]
+            return False # next update winner is announced
+
+        self.log.info("Game is not over. In round %i",
+                        self._state.round)
+        # we are to cool for function tables
+        if self._state.GMState == self.GMStates['init']:
+            # Initializes the round
+            self.log.info("Game is in init state")
+            self._initRound()
+        elif self._state.GMState == self.GMStates['initdraft']:
+            # Prepare the draft
+            self.log.info("Game is in initdraft state")
+            self._initDraft()
+        elif self._state.GMState == self.GMStates['drafting']:
+            # Calls for drafting
+            self.log.info("Game is in drafting state")
+            self._draft()
+        elif self._state.GMState == self.GMStates['initplay']:
+            # Prepare for play
+            self.log.info("Game is in initplay state")
+            self._initTurn()
+        elif self._state.GMState == self.GMStates['playing']:
+            self.log.info("Game is in playing state")
+            if self._state.turn < 6:
+                # Play game
+                self.log.info("Round is not over. At turn %i",
+                                self._state.turn)
+                self._turn()
+            else:
+                # End round
+                self.log.info("End of round %i", self._state.round)
+                self._state.turn = 0
+                self._state.round += 1
+                self._state.GMState = self.GMStates['init']
+        elif self._state.GMState == self.GMStates['reveal']:
+            # Reveal plays
+            self.log.info("Game is in reveal state")
+            self._reveal()
+        elif self._state.GMState == self.GMStates['resolve']:
+            # Resolve plays; may set winner
+            self.log.info("Game is in resolve state")
+            self._resolve()
+        return False
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
