@@ -65,8 +65,8 @@ class GameEngine(object):
         self.app = MainGui(self.disp)
         self.humanPlayerGuiContainer = self.app.getHumanPlayerGuiContainer()
         self.factory = Factory(args,self.humanPlayerGuiContainer)
-        self._standardFPS = 30
-        self._reducedFPS = 2
+        self._deltaT = 0.0
+        self._prevTime = 0.0
 
     def init(self):
         """Initializes the game"""
@@ -93,7 +93,7 @@ class GameEngine(object):
     def update(self):
         """updates the game state / execute the game logic"""
         self.log.debug("Inside %s", self.update.__name__)
-        self.gameManager.update()
+        self.gameManager.update(self._deltaT)
 
     def render(self, destination, rect):
         """shows to a player what's going on"""
@@ -135,16 +135,12 @@ class GameEngine(object):
             if (temp):
                 updates += temp
             self.disp.set_clip()
-            # Cap speed
-            self.log.debug("Retrieving state")
-            state = self.gameManager.copyState()
-            if state.GMState >= self.gameManager.GMStates['reveal']:
-                fps = self._reducedFPS
-                self.log.debug("Running at reduced (%i fps) speed", fps)
-            else:
-                fps = self._standardFPS
-                self.log.debug("Normal (%i fps) loop speed", fps)
-            self.clock.tick(fps)
+            # Cap it at 30fps
+            self.log.debug("Waiting for 30fps tick")
+            currTime = self.clock.get_time()
+            self._deltaT = currTime - self._prevTime
+            self._prevTime = currTime
+            self.clock.tick(30)
             # Give pgu a chance to update the display
             temp = self.app.update()
             if (temp):

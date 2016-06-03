@@ -184,6 +184,8 @@ class GameManager:
         self._toResolve = None
         self._orderedPlays = []
         self._plays = []
+        self._waited = 0.0
+        self._waitUntil = -1.0
         self._human = self._state.getHumanPlayer()
 
     def copyState(self):
@@ -229,9 +231,20 @@ class GameManager:
         human["canES"] = self._human.canEmergencyStop()
         return human
 
-    def update(self):
+    def update(self, deltaT):
         """Function to update the game state. Only public function of the
         GM. deltaT is in Seconds. Returns True if a winner has been decided."""
+
+        # timer used to delay the game (because temporarily reducing fps creates black screens!)
+        # which will help the human user see what happends
+        self._waited += deltaT
+        if not self._waitUntil < self._waited:
+            return False
+        else: 
+            self._waited = 0.0
+            # Note: timer is set depending on the gamestep taken during this update.
+            #       this means that the timer gets set in those particular functions
+            self._waitUntil = -1.0 # default: do not wait
 
         self.log.debug("Inside %s", self.update.__name__)
         if self._state.winner is None:
@@ -272,6 +285,7 @@ class GameManager:
                     # Reveal plays
                     self.log.info("Game is in reveal state")
                     self._reveal()
+                    self._waitUntil = 1.1
                 elif self._state.GMState == self.GMStates['resolve']:
                     # Resolve plays; may set winner
                     self.log.info("Game is in resolve state")
@@ -288,6 +302,10 @@ class GameManager:
                           self._state.round, self._state.turn,
                           self._state.winner.getName())
             return True
+
+        # make sure to never delay in the headless game
+        if self._human is None:
+            self._waitUntil = -1.0
 
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
@@ -490,6 +508,7 @@ class GameManager:
             self.log.debug("End of resolution step. Ticking state to initplay")
             self._state.GMState = self.GMStates['initplay']
             self._state.turn += 1
+
             return
 
         # Bind the relevant variables
@@ -498,6 +517,7 @@ class GameManager:
         pc = self._toResolve[1][1]
         resolved = False
         self.log.debug("Attempting to resolve play %s by %s", card, player)
+        self._waitUntil = 1.1
 
         # Determine if the player can move
         target = self._state.getTarget(player)
