@@ -20,6 +20,13 @@ class State:
         self.winner = None
         self.deck = Deck()
         self.GMState = 0
+        self.eventlog = []
+        self.EVENT = {
+            "DRAFT"     : 0,
+            "PLAY"      : 1,
+            "EMERGENCY" : 2
+        }
+        self.log = logging.getLogger("state")
 
     def addHulk(self, position):
         self.hulks.append((Ship(pos=position), None))
@@ -34,6 +41,128 @@ class State:
             return None
         else:
             return humans[0][0]
+
+    def addEventLogItem(self, item):
+        """Adds the provided item to the event log. Item must be a dictionary
+        type object with the format { "player" : Reference to the player who
+        commited the action; "event" : Type of event. This can be DRAFT, PLAY,
+        EMERGENCY; "info" : Details. Card, if DRAFT or PLAY, None if EMERGENCY }
+
+        """
+        self.log.debug("Adding %s to event log", item)
+        self.eventlog.append(item)
+        self.log.debug("Log is now %s", self.eventlog)
+
+    def getLastEvents(self, number=1):
+        """Returns the last item from the event log. If number is specified, a
+        list of that many items are returned instead.
+
+        """
+        if number == 1:
+            es = self.eventlog[-1]
+        else:
+            es = self.eventlog[-number:]
+        self.log.debug("Returning %s from event log", es)
+        return es
+
+    def _playerSurroundings(self, player, hulks=True):
+        """Determines the player surroundings. This function is not intended to
+        be called directly from outside the State. It will return a tuple with a
+        reference to the closest (target) ship, the number of players ahead, and
+        the number of players behind. If the player is stuck, the target will be
+        None.
+
+        """
+        self.log.debug("Inside %s", self._playerSurroundings.__name__)
+        # Set up the math
+        nearestAhead = None
+        nearestBehind = None
+        distanceAhead = 100
+        distanceBehind = 100
+        numberAhead = 0
+        numberBehind = 0
+
+        # Loop over all ships on the board
+        self.log.debug("Looping over all ships on the board")
+        if hulks:
+            shiplist = self.players + self.hulks
+        else:
+            shiplist = self.players
+        for ship in shiplist:
+            s = ship[0]
+            # Ignore the player being resolved
+            if not s == player:
+                # Ignore ships in the singularity
+                if not s.getPos() == 0:
+                    self.log.debug("Got valid ship %s on tile %i", s, s.getPos())
+                    # The ship is behind the player
+                    if player.directionTo(s) == -1:
+                        self.log.debug("Ship is behind player")
+                        numberBehind += 1
+                        if player.distanceTo(s) < distanceBehind:
+                            distanceBehind = player.distanceTo(s)
+                            nearestBehind = s
+                            self.log.debug("Ship is the closest behind at "+
+                                          "distance %i", distanceBehind)
+                    # The ship is ahead of the player
+                    else:
+                        self.log.debug("Ship is ahead of player")
+                        numberAhead += 1 
+                        if player.distanceTo(s) < distanceAhead:
+                            distanceAhead = player.distanceTo(s)
+                            nearestAhead = s
+                            self.log.debug("Ship is the closest ahead at "+
+                                          "distance %i", distanceAhead)
+
+        # Determine if the player can move
+        if distanceAhead == distanceBehind:
+            # Equidistant. Equal numbers?
+            self.log.debug("Equal distance between ships ahead and behind")
+            if numberAhead == numberBehind:
+                # Stuck ship
+                self.log.debug("Equal number of ships on both sides. Player "+
+                              "is stuck. Returning")
+                return (None, numberAhead, numberBehind)
+            else:
+                # Not stuck. Determine target
+                if numberAhead > numberBehind:
+                    self.log.debug("More ships ahead. Target set. Returning")
+                    return (nearestAhead, numberAhead, numberBehind)
+                else:
+                    self.log.debug("More ships behind. Target set. Returning")
+                    return (nearestBehind, numberAhead, numberBehind)
+        else:
+            # There is a closest ship. Determine target.
+            if distanceAhead < distanceBehind:
+                self.log.debug("Ship ahead is closest. Target set. Returning")
+                return (nearestAhead, numberAhead, numberBehind)
+            else:
+                self.log.debug("Ship behind is closest. Target set. Returning")
+                return (nearestBehind, numberAhead, numberBehind)
+
+    def getTarget(self, player):
+        """Returns the target ship of the player, i.e. the closest ship. Returns
+        None if the player is stuck.
+
+        """
+        self.log.debug("Entering %s", self.getTarget.__name__)
+        return self._playerSurroundings(player)[0]
+
+    def getShipsAhead(self, player, hulks=True):
+        """Returns the number of ships ahead of the player. If hulks is set to
+        False, hulks will be discounted so that only player ships are counted.
+
+        """
+        self.log.debug("Entering %s", self.getShipsAhead.__name__)
+        return self._playerSurroundings(player, hulks=hulks)[1]
+
+    def getShipsBehind(self, player, hulks=True):
+        """Returns the number of ships behind the player. If hulks is set to
+        False, hulks will be discounted so that only player ships are counted.
+
+        """
+        self.log.debug("Entering %s", self.getShipsBehind.__name__)
+        return self._playerSurroundings(player, hulks=hulks)[2]
 
 class GameManager:
     """Game manager class. Home to all the game's logic."""
@@ -62,13 +191,25 @@ class GameManager:
         self.log.debug("Inside %s", self.copyState.__name__)
         self.log.debug("Creating semi-shallow state copy")
         state = copy.copy(self._state)
+        
+        self.log.debug("Creating censored player list")
         state.players = []
-        self.log.debug("Creating censored list of players")
-        for p in self._state.players:
-            self.log.debug("Censoring %s", p[0])
-            playerCopy = p[0].makeCensoredCopy()
+        mappings = {}
+        for (player, pc) in self._state.players:
+            self.log.debug("Censoring %s", player)
+            playerCopy = player.makeCensoredCopy()
             state.addPlayer((playerCopy, None))
             self.log.debug("Censored player tuple created and added to state")
+            mappings[player] = playerCopy
+            self.log.debug("Mapping %s to %s made", player, playerCopy)
+
+        # self.log.debug("Writing new state event log")
+        # state.eventlog = []
+        # for event in self._state.eventlog:
+        #     self.log.debug("Rewriting %s", event)
+        #     state.addEventLogItem({'player': mappings[event['player']],
+        #                            'event': event['event'],
+        #                            'info': event['info']})
 
         self.log.debug("Deepcopying hulks")
         hulks = copy.deepcopy(self._state.hulks)
@@ -77,7 +218,7 @@ class GameManager:
         self.log.debug("Deepcopying deck")
         state.deck = copy.deepcopy(self._state.deck)
 
-        self.log.debug("Returning")
+        self.log.debug("%s returning", self.copyState.__name__)
         return state
 
     def getHuman(self):
@@ -203,6 +344,8 @@ class GameManager:
         choice. Updates the state to playing when all drafting is done."""
         self.log.debug("Inside %s", self._draft.__name__)
         player = self._state.players[self._draftPlayer]
+        self.log.debug("Current field is %s",
+                       self._state.deck.percieveCardField())
         self.log.info("Polling %s to draft", player[0])
         selection = player[1].pollDraft(self.copyState())
         
@@ -212,6 +355,10 @@ class GameManager:
             cards = self._state.deck.takeFromField(selection)
             self.log.info("%s drafted cards %s", player[0], cards)
             player[0].addCards(cards)
+            self.log.debug("Visible card was %s", cards[0])
+            self._state.addEventLogItem({'player': player[0],
+                                         'event': self._state.EVENT['DRAFT'],
+                                         'info': cards[0]})
             self.log.debug("Hand of %s is now %s", player[0],
                            player[0].getHand()) 
             self._draftPlayer += 1
@@ -280,6 +427,14 @@ class GameManager:
             self.log.debug("Informing %s of plays", p[0])
             p[1].informReveal(cards)
 
+        # Write plays to event log
+        self.log.debug("Writing plays to event log")
+        for play in self._plays:
+            self.log.debug("Handling play %s by %s", play, self._plays[play])
+            self._state.addEventLogItem({'player':self._plays[play][0],
+                                         'event':self._state.EVENT['PLAY'],
+                                         'info':play})
+
         # Prepares the resolution
         self._orderedPlays = Deck.sortByResolution(self._plays)
         self.log.info("Order of resolution will be %s", self._orderedPlays)
@@ -340,7 +495,7 @@ class GameManager:
         self.log.debug("Attempting to resolve play %s by %s", card, player)
 
         # Determine if the player can move
-        target = self._playerCanMove(player)
+        target = self._state.getTarget(player)
         if target is not None or card.getType() == Card.Type.tractor:
             # Player can move. Test if Emergency Stop is available
             self.log.debug("Player isn't stuck. Targeting %s. Resolution "+
@@ -353,7 +508,6 @@ class GameManager:
                 # Player is unable
                 self.log.info("%s cannot use Emergency Stop", player)
                 useEmergencyStop = False
-                    
 
             # Test if a decision was made
             if useEmergencyStop is not None:
@@ -364,6 +518,10 @@ class GameManager:
                 else:
                     self.log.info("%s used Emergency Stop", player)
                     player.useEmergencyStop()
+                    self._state.addEventLogItem(
+                        {'player':player,
+                         'event':self._state.EVENT['EMERGENCY'],
+                         'info':None})
                 resolved = True
 
         else:
@@ -379,73 +537,6 @@ class GameManager:
 
             # Clear the play
             self._toResolve = None
-
-    def _playerCanMove(self, player):
-        """Determines if the player is stuck or not. If the player is stuck,
-        returns None, else returns the target ship (the one the player will
-        travel towards)"""
-        self.log.debug("Inside %s", self._playerCanMove.__name__)
-        # Set up the math
-        nearestAhead = None
-        nearestBehind = None
-        distanceAhead = 100
-        distanceBehind = 100
-        numberAhead = 0
-        numberBehind = 0
-
-        # Loop over all ships on the board
-        self.log.debug("Looping over all ships on the board")
-        for ship in (self._state.players + self._state.hulks):
-            s = ship[0]
-            # Ignore the player being resolved
-            if not s == player:
-                # Ignore ships in the singularity
-                if not s.getPos() == 0:
-                    self.log.debug("Got valid ship %s on tile %i", s, s.getPos())
-                    # The ship is behind the player
-                    if player.directionTo(s) == -1:
-                        self.log.debug("Ship is behind player")
-                        numberBehind += 1
-                        if player.distanceTo(s) < distanceBehind:
-                            distanceBehind = player.distanceTo(s)
-                            nearestBehind = s
-                            self.log.debug("Ship is the closest behind at "+
-                                           "distance %i", distanceBehind)
-                    # The ship is ahead of the player
-                    else:
-                        self.log.debug("Ship is ahead of player")
-                        numberAhead += 1 
-                        if player.distanceTo(s) < distanceAhead:
-                            distanceAhead = player.distanceTo(s)
-                            nearestAhead = s
-                            self.log.debug("Ship is the closest ahead at "+
-                                           "distance %i", distanceAhead)
-
-        # Determine if the player can move
-        if distanceAhead == distanceBehind:
-            # Equidistant. Equal numbers?
-            self.log.debug("Equal distance between ships ahead and behind")
-            if numberAhead == numberBehind:
-                # Stuck ship
-                self.log.debug("Equal number of ships on both sides. Player "+
-                               "is stuck. Returning")
-                return None
-            else:
-                # Not stuck. Determine target
-                if numberAhead > numberBehind:
-                    self.log.debug("More ships ahead. Target set. Returning")
-                    return nearestAhead
-                else:
-                    self.log.debug("More ships behind. Target set. Returning")
-                    return nearestBehind
-        else:
-            # There is a closest ship. Determine target.
-            if distanceAhead < distanceBehind:
-                self.log.debug("Ship ahead is closest. Target set. Returning")
-                return nearestAhead
-            else:
-                self.log.debug("Ship behind is closest. Target set. Returning")
-                return nearestBehind
     
     def _resolvePlay(self, player, card, target):
         """Resolves an individual play and moves the player accordingly"""
