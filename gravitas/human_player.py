@@ -462,6 +462,7 @@ class MainGui(gui.Desktop):
         if (temp):
             updates += temp
         self.screen.set_clip()
+        self.log.debug("The screen is %s", self.screen)
         # Give pgu a chance to update the display
         temp = self.update()
         if (temp):

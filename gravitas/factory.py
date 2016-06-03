@@ -164,12 +164,13 @@ class Factory():
 
     def createGUIEngine(self):
         display = pygame.display.set_mode((1366, 768))
-        self.guiContainer = MainGui(display)
+        gui = MainGui(display)
+        self.guiContainer = gui.menuArea
         (engine, manager) = self.createHeadless()
-        self.guiContainer.gameManager = manager
-        self.guiContainer.update()
+        gui.gameManager = manager
+        gui.update()
         pygame.display.flip()
-        engine.updateables.append(ScreenRenderer(self.guiContainer))
+        engine.updateables.append(ScreenRenderer(gui))
 
         throthle = FrameRateThrottler(engine, manager)
         return engine
