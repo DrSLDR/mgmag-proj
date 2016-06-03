@@ -2,6 +2,7 @@
 # This is not needed if you have PGU installed
 import sys
 
+import logging
 import pygame
 from pygame.locals import *
 from pgu import gui
@@ -299,7 +300,7 @@ class RevealCardsDialog(ADialog):
     def _repaint(self):
         super().__init__(self.title,Size(width = 400, height = 150))
 
-class HumanPlayer():
+class HumanPlayer:
     ''' this class defines the GUI which will be used by a human player
         It includes the  following functions:
         1.  create a human player object with 2 arguments,
@@ -379,3 +380,131 @@ class HumanPlayer():
             return self._Es_Dialog.getEsUsed()
         else:
             return None
+
+class DrawingArea(gui.Widget):
+    def __init__(self, width, height):
+        gui.Widget.__init__(self, width=width, height=height)
+        self.imageBuffer = pygame.Surface((width, height))
+    def paint(self, surface):
+        # Paint whatever has been captured in the buffer
+        surface.blit(self.imageBuffer, (0, 0))
+    # Call self function to take a snapshot of whatever has been rendered
+    # onto the display over self widget.
+    def save_background(self):
+        display = pygame.displaylay.get_surface()
+        self.imageBuffer.blit(display, self.get_abs_rect())
+
+class MainGui(gui.Desktop):
+    """It describes all the buttons and stuff like that. This is
+    where pgu comes in,"""
+    gameAreaHeight = 500
+    gameArea = None
+    menuArea = None
+
+    def __init__(self, screen):
+        self.gameManager = None # required, but dependency cycle
+        self.log = logging.getLogger(type(self).__name__)
+        super().__init__()
+
+        container = gui.Container()
+        # Setup the 'game' area where the action takes place
+        self.gameArea = DrawingArea(screen.get_width(),
+                                    self.gameAreaHeight)
+        # Setup the gui area
+        self.menuArea = gui.Container(width = screen.get_width(),
+            height=screen.get_height()-self.gameAreaHeight)
+        tabel = gui.Table(height=screen.get_height())
+        tabel.tr()
+        tabel.td(self.gameArea)
+        tabel.tr()
+        tabel.td(self.menuArea)
+        container.add(tabel,0,0)
+        self.init(container, screen)
+
+        # create board
+        self.log.debug("Creating game board")
+        Size = namedtuple('Size', ['width', 'height'])
+
+        from board import Renderer
+        self.boardFunction = Renderer(Size(
+            self.gameArea.rect.width,
+            self.gameArea.rect.height
+        )).render # a function
+
+        self.log.debug("Creating font")
+        self.font = pygame.font.SysFont("", 16)
+
+    def get_render_area(self):
+        return self.gameArea.get_abs_rect()
+    def getHumanPlayerGuiContainer(self):
+        return self.menuArea
+    def handleEvents(self):
+        # Process events
+        self.log.debug("Handling event queue")
+        for ev in pygame.event.get():
+            self.log.debug("Handling event %s", ev)
+            if (ev.type == pygame.QUIT or 
+                ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
+                self.log.info("Caught exit action. Quitting.")
+                logging.shutdown()
+                exit() # that's a way to end the game I guess
+            # Pass the event off to pgu
+            self.event(ev)
+
+
+    def render(self):
+        # Render the game
+        self.log.debug("Rendering game")
+        rect = self.get_render_area()
+        updates = []
+        self.screen.set_clip(rect)
+        temp = self.renderBoard(rect)
+        if (temp):
+            updates += temp
+        self.screen.set_clip()
+        self.log.debug("The screen is %s", self.screen)
+        # Give pgu a chance to update the display
+        temp = self.update()
+        if (temp):
+            updates += temp
+        pygame.display.update(updates)
+
+    def renderBoard(self, rect):
+        """shows to a player what's going on"""
+        backgroundColor = 0, 0, 255 # which is blue
+        self.screen.fill(backgroundColor)
+        def font(text, position, color=(255,255,255)):
+            tmp = self.font.render(text, True, color)
+            self.screen.blit(tmp, position)
+        self.boardFunction(font, self.screen, self.gameManager.copyState(), 
+            self.gameManager.getHuman(), # to draw the hand of the human user
+            self.gameManager.getPlayedCards()) # to draw the revealed cards
+        return (rect,)
+
+class ScreenRenderer:
+    def __init__(self, window):
+        self.window = window
+    def update(self):
+        self.window.log.debug("rending pgu")
+        self.window.handleEvents()
+        self.window.render()
+
+class FrameRateThrottler:
+    def __init__(self, gameManger, gameEngine):
+        self.gameManger = gameManger
+        self.gameEngine = gameEngine
+        self.log = logging.getLogger(type(self).__name__)
+
+    def update(self):
+        # Cap speed
+        self.log.debug("Retrieving state")
+        state = self.gameManager.copyState()
+
+        fps = 0
+        if state.GMState >= self.gameManager.GMStates['reveal']:
+            fps = self._reducedFPS
+            self.log.debug("Running at reduced (%i fps) speed", fps)
+        else:
+            fps = self._standardFPS
+            self.log.debug("Normal (%i fps) loop speed", fps)
+        self.gameEngine.framerateTrottle

@@ -11,11 +11,13 @@ from gamemanager import State, GameManager
 from controller.random import RandomAI_PC
 from controller.human import Human_PC
 from controller.neural import Neurotic_PC
+from engine import GameEngine
+from human_player import MainGui, FrameRateThrottler, ScreenRenderer
 
 class Factory():
     """ A factory which can create playerControllers, states and the Gamemanager"""
 
-    def __init__(self, args, guiContainer):
+    def __init__(self, args):
         self.args = args
         #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
@@ -24,7 +26,7 @@ class Factory():
             "randAI": RandomAI_PC,
             "neuroticAI": Neurotic_PC
         }
-        self.guiContainer = guiContainer
+        self.guiContainer = None
 
     def _parseConfig(self, config):
         """Helper function that reads the configuration file"""
@@ -45,30 +47,29 @@ class Factory():
         """return list of player controllers, whose properties depend on the
         config file"""
         self.log.debug("Inside %s", self._createPlayerController.__name__)
-        if config['type'] in self._controllerTypes:
-            self.log.debug("Player controller definition exists for type %s",
-                           config['type'])
-            if self._controllerTypes[config['type']] is None:
-                self.log.warning("Player controller type %s is not implemented",
-                                 config['type'])
-                self.log.debug("%s returning",
-                               self._createPlayerController.__name__)
-                return None
-            else:
-                self.log.debug("Constructing player controller")
-                # Bind the arguments
-                args = config['arguments']
-                # Invoke the constructor
-                self.log.debug("%s returning",
-                               self._createPlayerController.__name__)
-                return self._controllerTypes[config['type']](player, args,
-                                                   self.guiContainer)
-        else:
+        if config['type'] not in self._controllerTypes:
             self.log.error("No player controller definition exists for %s",
                            config['type'])
             self.log.debug("%s returning",
                            self._createPlayerController.__name__)
             return None
+
+        self.log.debug("Player controller definition exists for type %s",
+                        config['type'])
+        if self._controllerTypes[config['type']] is None:
+            self.log.warning("Player controller type %s is not implemented",
+                                config['type'])
+            self.log.debug("%s returning",
+                            self._createPlayerController.__name__)
+            return None
+        self.log.debug("Constructing player controller")
+        # Bind the arguments
+        args = config['arguments']
+        # Invoke the constructor
+        self.log.debug("%s returning",
+                        self._createPlayerController.__name__)
+        return self._controllerTypes[config['type']](player, args,
+                                                self.guiContainer)
 
     def _createState(self, config):
         """create a game state and put the player controllers in there"""
@@ -112,27 +113,32 @@ class Factory():
         return GameManager(state)
 
     def _configureLogger(self):
-        if(self.args.loglevel <= 0):
-            raise ValueError("Log level <= 0")
         import logging
-        if(self.args.loglevel == 1):
-            level = logging.CRITICAL
-        elif(self.args.loglevel == 2):
-            level = logging.ERROR
-        elif(self.args.loglevel == 3):
-            level = logging.WARNING
-        elif(self.args.loglevel == 4):
-            level = logging.INFO
-        elif(self.args.loglevel == 5):
-            level = logging.DEBUG
-        # Configure and prepare logger
-        logging.basicConfig(
-            filename=self.args.logfile, filemode='w', level=level,
-            format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+        if(self.args.loglevel == 0):
+            # Create dummy logger
+            logging.basicConfig(level=51)
+        else:
+            if(self.args.loglevel == 1):
+                level = logging.CRITICAL
+            elif(self.args.loglevel == 2):
+                level = logging.ERROR
+            elif(self.args.loglevel == 3):
+                level = logging.WARNING
+            elif(self.args.loglevel == 4):
+                level = logging.INFO
+            elif(self.args.loglevel == 5):
+                level = logging.DEBUG
+            # Configure and prepare logger
+            logging.basicConfig(
+                filename=self.args.logfile, filemode='w', level=level,
+                format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+
+        # Declare
         self.log = logging.getLogger(__name__)
         self.log.info("Log initiated")
 
-    def createGame(self):
+
+    def createGameManager(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
         self._configureLogger()
@@ -142,12 +148,32 @@ class Factory():
         try:
             config = self._parseConfig(self.args.config)
         except Exception as e:
-            self.log.critical("Failed to parse log file!")
+            self.log.critical("Failed to parse config file!")
             self.log.critical(e)
             raise e
         
         # Create and return the game manager
         self.log.info("Starting creation of Game Manager")
         gm = self._createGameManager(config)
-        self.log.debug("%s returning", self.createGame.__name__)
+        self.log.debug("%s returning", self.createGameManager.__name__)
         return gm
+
+    def createHeadless(self):
+        gamemanager = self.createGameManager()
+        engine = GameEngine()
+        engine.updateables.append(gamemanager)
+        return (engine, gamemanager)
+
+    def createGUIEngine(self):
+        display = pygame.display.set_mode((1366, 768))
+        gui = MainGui(display)
+        self.guiContainer = gui.menuArea
+        (engine, manager) = self.createHeadless()
+        gui.gameManager = manager
+        gui.update()
+        pygame.display.flip()
+        engine.updateables.append(ScreenRenderer(gui))
+
+        throthle = FrameRateThrottler(engine, manager)
+        return engine
+
