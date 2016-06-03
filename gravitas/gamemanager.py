@@ -300,10 +300,17 @@ class GameManager:
     def getPlayedCards(self):
         """Function that gets the ordered card-keys, and the playsDictionary, 
         so that the board can display them"""
+
+        # turn _plays into a dict of cardNames and player-colours
+        cardOwnerColorNr = {}
+        for cardKey in self._plays:
+            print(cardKey)
+            cardOwnerColorNr[cardKey.getName()] = self._plays[cardKey][0].getColor()
+
         if self._toResolve is None:
-            return (self._orderedPlays,self._plays)
+            return (self._orderedPlays.copy(),cardOwnerColorNr)
         else:
-            return ([self._toResolve[0]]+self._orderedPlays,self._plays)
+            return ([self._toResolve[0]]+self._orderedPlays.copy(), cardOwnerColorNr)
 
     def _resolve(self):
         """Turn resolution. Attempts to resolve the first card in the ordered

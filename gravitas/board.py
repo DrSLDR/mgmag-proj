@@ -164,8 +164,8 @@ class Renderer:
             # draw revealed cards
             spacing = (len(gamestate.players)-len(revealedCards) )*100
             for card in revealedCards[0]:
-                p = revealedCards[1][card]
-                cardBorder = Renderer.colors[p[0].getColor()]
+                colorNr = revealedCards[1][card.getName()]
+                cardBorder = Renderer.colors[colorNr]
                 drawCard(card, font, disp, Point(x=100+spacing,y=470),cardBorder)
                 spacing += 100
 
