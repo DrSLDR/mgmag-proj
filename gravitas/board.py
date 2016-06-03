@@ -63,7 +63,7 @@ class Renderer:
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
         return pos
 
-    def render(self, font, disp, gamestate, humanPlayer, revealedCards):
+    def render(self, font, disp, gamestate, human, revealedCards):
         """function that renders the board"""
         import pygame
         # connections between tiles
@@ -126,9 +126,9 @@ class Renderer:
 
         # gets the first human from the state
         
-        if humanPlayer is not None:
+        if human is not None:
             # display human player's name in color of their ship
-            color = Renderer.colors[humanPlayer.getColor()]  
+            color = Renderer.colors[human["color"]]  
             darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
             pos = Point(x=620,y=490)
             size = Point(x=80, y=30) 
@@ -137,11 +137,11 @@ class Renderer:
                 (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             pygame.draw.rect(disp, darkerColor,                
                 (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
-            font(humanPlayer.getName(), Point(x=pos.x-20,y=pos.y-5))
+            font(human["name"], Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
             spacing = 0
-            for card in humanPlayer.getHand():
+            for card in human["hand"]:
                 drawCard(card, font, disp, Point(x=720+spacing,y=470))
                 spacing += 100
 
@@ -149,7 +149,7 @@ class Renderer:
             size = Point(x=80, y=60) # size of card
             pos = Point(x=720+spacing,y=470)
 
-            if humanPlayer.canEmergencyStop():
+            if human["canES"]:
                 # draws ER-rect with a white border (in same color as human ship)
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))

@@ -222,7 +222,12 @@ class GameManager:
         return state
 
     def getHuman(self):
-        return self._human
+        human = {}
+        human["name"] = self._human.getName()
+        human["color"] = self._human.getColor()
+        human["hand"] = copy.deepcopy(self._human.getHand())
+        human["canES"] = self._human.canEmergencyStop()
+        return human
 
     def update(self):
         """Function to update the game state. Only public function of the
