@@ -20,6 +20,13 @@ class State:
         self.winner = None
         self.deck = Deck()
         self.GMState = 0
+        self.eventlog = []
+        self.EVENT = {
+            "DRAFT"     : 0,
+            "PLAY"      : 1,
+            "MOVE"      : 2,
+            "EMERGENCY" : 3
+        }
 
     def addHulk(self, position):
         self.hulks.append((Ship(pos=position), None))
@@ -34,6 +41,30 @@ class State:
             return None
         else:
             return humans[0][0]
+
+    def addEventLogItem(self, item):
+        """Adds the provided item to the event log. Item must be a dictionary
+        type object with the format { "player" : Reference to the player who
+        commited the action "action" : Action done. This can be DRAFT, PLAY,
+        MOVE, EMERGENCY "info" : Details. Card, if DRAFT or PLAY after reveal,
+        distance if MOVE, None if EMERGENCY }
+
+        """
+        logging.debug("Adding %s to event log", item)
+        self.eventlog.append(item)
+        logging.debug("Log is now %s", self.eventlog)
+
+    def getLastEvents(self, number=1):
+        """Returns the last item from the event log. If number is specified, a
+        list of that many items are returned instead.
+
+        """
+        if number == 1:
+            es = self.eventlog[-1]
+        else:
+            es = self.eventlog[-number:]
+        logging.debug("Returning %s from event log", es)
+        return es
 
     def _playerSurroundings(self, player, hulks=True):
         """Determines the player surroundings. This function is not intended to
