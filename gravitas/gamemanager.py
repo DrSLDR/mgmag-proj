@@ -203,13 +203,13 @@ class GameManager:
             mappings[player] = playerCopy
             self.log.debug("Mapping %s to %s made", player, playerCopy)
 
-        self.log.debug("Writing new state event log")
-        state.eventlog = []
-        for event in self._state.eventlog:
-            self.log.debug("Rewriting %s", event)
-            state.addEventLogItem({'player': mappings[event['player']],
-                                   'event': event['event'],
-                                   'info': event['info']})
+        # self.log.debug("Writing new state event log")
+        # state.eventlog = []
+        # for event in self._state.eventlog:
+        #     self.log.debug("Rewriting %s", event)
+        #     state.addEventLogItem({'player': mappings[event['player']],
+        #                            'event': event['event'],
+        #                            'info': event['info']})
 
         self.log.debug("Deepcopying hulks")
         hulks = copy.deepcopy(self._state.hulks)
