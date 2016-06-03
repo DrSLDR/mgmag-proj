@@ -24,8 +24,7 @@ class State:
         self.EVENT = {
             "DRAFT"     : 0,
             "PLAY"      : 1,
-            "MOVE"      : 2,
-            "EMERGENCY" : 3
+            "EMERGENCY" : 2
         }
         self.log = logging.getLogger("state")
 
@@ -47,8 +46,7 @@ class State:
         """Adds the provided item to the event log. Item must be a dictionary
         type object with the format { "player" : Reference to the player who
         commited the action; "event" : Type of event. This can be DRAFT, PLAY,
-        MOVE, EMERGENCY "info" : Details. Card, if DRAFT or PLAY, distance if
-        MOVE, None if EMERGENCY }
+        EMERGENCY; "info" : Details. Card, if DRAFT or PLAY, None if EMERGENCY }
 
         """
         self.log.debug("Adding %s to event log", item)
@@ -429,6 +427,14 @@ class GameManager:
             self.log.debug("Informing %s of plays", p[0])
             p[1].informReveal(cards)
 
+        # Write plays to event log
+        self.log.debug("Writing plays to event log")
+        for play in self._plays:
+            self.log.debug("Handling play %s by %s", play, self._plays[play])
+            self._state.addEventLogItem({'player':self._plays[play][0],
+                                         'event':self._state.EVENT['PLAY'],
+                                         'info':play})
+
         # Prepares the resolution
         self._orderedPlays = Deck.sortByResolution(self._plays)
         self.log.info("Order of resolution will be %s", self._orderedPlays)
@@ -505,6 +511,10 @@ class GameManager:
                 else:
                     self.log.info("%s used Emergency Stop", player)
                     player.useEmergencyStop()
+                    self._state.addEventLogItem(
+                        {'player':player,
+                         'event':self._state.EVENT['EMERGENCY'],
+                         'info':None})
                 resolved = True
 
         else:
