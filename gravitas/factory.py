@@ -10,11 +10,13 @@ from model.card import Card, Deck
 from gamemanager import State, GameManager
 from controller.random import RandomAI_PC
 from controller.human import Human_PC
+from engine import GameEngine
+from human_player import MainGui, FrameRateThrottler, ScreenRenderer
 
 class Factory():
     """ A factory which can create playerControllers, states and the Gamemanager"""
 
-    def __init__(self, args, guiContainer):
+    def __init__(self, args):
         self.args = args
         #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
@@ -22,7 +24,7 @@ class Factory():
             "human": Human_PC,
             "randAI": RandomAI_PC
         }
-        self.guiContainer = guiContainer
+        self.guiContainer = None
 
     def _parseConfig(self, config):
         """Helper function that reads the configuration file"""
@@ -43,30 +45,29 @@ class Factory():
         """return list of player controllers, whose properties depend on the
         config file"""
         self.log.debug("Inside %s", self._createPlayerController.__name__)
-        if config['type'] in self._controllerTypes:
-            self.log.debug("Player controller definition exists for type %s",
-                           config['type'])
-            if self._controllerTypes[config['type']] is None:
-                self.log.warning("Player controller type %s is not implemented",
-                                 config['type'])
-                self.log.debug("%s returning",
-                               self._createPlayerController.__name__)
-                return None
-            else:
-                self.log.debug("Constructing player controller")
-                # Bind the arguments
-                args = config['arguments']
-                # Invoke the constructor
-                self.log.debug("%s returning",
-                               self._createPlayerController.__name__)
-                return self._controllerTypes[config['type']](player, args,
-                                                   self.guiContainer)
-        else:
+        if config['type'] not in self._controllerTypes:
             self.log.error("No player controller definition exists for %s",
                            config['type'])
             self.log.debug("%s returning",
                            self._createPlayerController.__name__)
             return None
+
+        self.log.debug("Player controller definition exists for type %s",
+                        config['type'])
+        if self._controllerTypes[config['type']] is None:
+            self.log.warning("Player controller type %s is not implemented",
+                                config['type'])
+            self.log.debug("%s returning",
+                            self._createPlayerController.__name__)
+            return None
+        self.log.debug("Constructing player controller")
+        # Bind the arguments
+        args = config['arguments']
+        # Invoke the constructor
+        self.log.debug("%s returning",
+                        self._createPlayerController.__name__)
+        return self._controllerTypes[config['type']](player, args,
+                                                self.guiContainer)
 
     def _createState(self, config):
         """create a game state and put the player controllers in there"""
@@ -134,7 +135,8 @@ class Factory():
         self.log = logging.getLogger(__name__)
         self.log.info("Log initiated")
 
-    def createGame(self):
+
+    def createGameManager(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
         self._configureLogger()
@@ -151,5 +153,24 @@ class Factory():
         # Create and return the game manager
         self.log.info("Starting creation of Game Manager")
         gm = self._createGameManager(config)
-        self.log.debug("%s returning", self.createGame.__name__)
+        self.log.debug("%s returning", self.createGameManager.__name__)
         return gm
+
+    def createHeadless(self):
+        gamemanager = self.createGameManager()
+        engine = GameEngine()
+        engine.updateables.append(gamemanager)
+        return (engine, gamemanager)
+
+    def createGUIEngine(self):
+        display = pygame.display.set_mode((1366, 768))
+        self.guiContainer = MainGui(display)
+        (engine, manager) = self.createHeadless()
+        self.guiContainer.gameManager = manager
+        self.guiContainer.update()
+        pygame.display.flip()
+        engine.updateables.append(ScreenRenderer(self.guiContainer))
+
+        throthle = FrameRateThrottler(engine, manager)
+        return engine
+
