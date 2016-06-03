@@ -30,6 +30,8 @@ class GameEngine(object):
         self.log.debug("Inside %s", self.update.__name__)
         for updatable in self.updateables:
             self.log.debug("updating %s", type(updatable).__name__)
+            # by default a python method returns none, which is false
+            # but if a method returns truth, we know the game is over
             if updatable.update():
                 return True # winner
         return False
