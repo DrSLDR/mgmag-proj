@@ -29,9 +29,15 @@ parser.add_argument("-f", "--log-file", default="gravitas.log",
                     "Log level must be set for this argument to have\n"+
                     "effect. Also note that existing logfile will be\n"+
                     "truncated without asking.")
+parser.add_argument("--headless", type=bool, default=False,
+                    help="Run without a GUI, useful for statistical analyses")
 
 # Do the parsering
 args = parser.parse_args()
 from factory import Factory
 factory = Factory(args)
-factory.createGUIEngine().run()
+
+if args.headless:
+    factory.createHeadless()[0].run()
+else: # guess I use else afterall
+    factory.createGUIEngine().run()
