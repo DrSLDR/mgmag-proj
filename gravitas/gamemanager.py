@@ -27,6 +27,7 @@ class State:
             "MOVE"      : 2,
             "EMERGENCY" : 3
         }
+        self.log = logging.getLogger("state")
 
     def addHulk(self, position):
         self.hulks.append((Ship(pos=position), None))
@@ -45,14 +46,14 @@ class State:
     def addEventLogItem(self, item):
         """Adds the provided item to the event log. Item must be a dictionary
         type object with the format { "player" : Reference to the player who
-        commited the action "action" : Action done. This can be DRAFT, PLAY,
-        MOVE, EMERGENCY "info" : Details. Card, if DRAFT or PLAY after reveal,
-        distance if MOVE, None if EMERGENCY }
+        commited the action; "event" : Type of event. This can be DRAFT, PLAY,
+        MOVE, EMERGENCY "info" : Details. Card, if DRAFT or PLAY, distance if
+        MOVE, None if EMERGENCY }
 
         """
-        logging.debug("Adding %s to event log", item)
+        self.log.debug("Adding %s to event log", item)
         self.eventlog.append(item)
-        logging.debug("Log is now %s", self.eventlog)
+        self.log.debug("Log is now %s", self.eventlog)
 
     def getLastEvents(self, number=1):
         """Returns the last item from the event log. If number is specified, a
@@ -63,7 +64,7 @@ class State:
             es = self.eventlog[-1]
         else:
             es = self.eventlog[-number:]
-        logging.debug("Returning %s from event log", es)
+        self.log.debug("Returning %s from event log", es)
         return es
 
     def _playerSurroundings(self, player, hulks=True):
@@ -74,7 +75,7 @@ class State:
         None.
 
         """
-        logging.debug("Inside %s", self._playerSurroundings.__name__)
+        self.log.debug("Inside %s", self._playerSurroundings.__name__)
         # Set up the math
         nearestAhead = None
         nearestBehind = None
@@ -84,7 +85,7 @@ class State:
         numberBehind = 0
 
         # Loop over all ships on the board
-        logging.debug("Looping over all ships on the board")
+        self.log.debug("Looping over all ships on the board")
         if hulks:
             shiplist = self.players + self.hulks
         else:
@@ -95,50 +96,50 @@ class State:
             if not s == player:
                 # Ignore ships in the singularity
                 if not s.getPos() == 0:
-                    logging.debug("Got valid ship %s on tile %i", s, s.getPos())
+                    self.log.debug("Got valid ship %s on tile %i", s, s.getPos())
                     # The ship is behind the player
                     if player.directionTo(s) == -1:
-                        logging.debug("Ship is behind player")
+                        self.log.debug("Ship is behind player")
                         numberBehind += 1
                         if player.distanceTo(s) < distanceBehind:
                             distanceBehind = player.distanceTo(s)
                             nearestBehind = s
-                            logging.debug("Ship is the closest behind at "+
+                            self.log.debug("Ship is the closest behind at "+
                                           "distance %i", distanceBehind)
                     # The ship is ahead of the player
                     else:
-                        logging.debug("Ship is ahead of player")
+                        self.log.debug("Ship is ahead of player")
                         numberAhead += 1 
                         if player.distanceTo(s) < distanceAhead:
                             distanceAhead = player.distanceTo(s)
                             nearestAhead = s
-                            logging.debug("Ship is the closest ahead at "+
+                            self.log.debug("Ship is the closest ahead at "+
                                           "distance %i", distanceAhead)
 
         # Determine if the player can move
         if distanceAhead == distanceBehind:
             # Equidistant. Equal numbers?
-            logging.debug("Equal distance between ships ahead and behind")
+            self.log.debug("Equal distance between ships ahead and behind")
             if numberAhead == numberBehind:
                 # Stuck ship
-                logging.debug("Equal number of ships on both sides. Player "+
+                self.log.debug("Equal number of ships on both sides. Player "+
                               "is stuck. Returning")
                 return (None, numberAhead, numberBehind)
             else:
                 # Not stuck. Determine target
                 if numberAhead > numberBehind:
-                    logging.debug("More ships ahead. Target set. Returning")
+                    self.log.debug("More ships ahead. Target set. Returning")
                     return (nearestAhead, numberAhead, numberBehind)
                 else:
-                    logging.debug("More ships behind. Target set. Returning")
+                    self.log.debug("More ships behind. Target set. Returning")
                     return (nearestBehind, numberAhead, numberBehind)
         else:
             # There is a closest ship. Determine target.
             if distanceAhead < distanceBehind:
-                logging.debug("Ship ahead is closest. Target set. Returning")
+                self.log.debug("Ship ahead is closest. Target set. Returning")
                 return (nearestAhead, numberAhead, numberBehind)
             else:
-                logging.debug("Ship behind is closest. Target set. Returning")
+                self.log.debug("Ship behind is closest. Target set. Returning")
                 return (nearestBehind, numberAhead, numberBehind)
 
     def getTarget(self, player):
@@ -146,7 +147,7 @@ class State:
         None if the player is stuck.
 
         """
-        logging.debug("Entering %s", self.getTarget.__name__)
+        self.log.debug("Entering %s", self.getTarget.__name__)
         return self._playerSurroundings(player)[0]
 
     def getShipsAhead(self, player, hulks=True):
@@ -154,7 +155,7 @@ class State:
         False, hulks will be discounted so that only player ships are counted.
 
         """
-        logging.debug("Entering %s", self.getShipsAhead.__name__)
+        self.log.debug("Entering %s", self.getShipsAhead.__name__)
         return self._playerSurroundings(player, hulks=hulks)[1]
 
     def getShipsBehind(self, player, hulks=True):
@@ -162,7 +163,7 @@ class State:
         False, hulks will be discounted so that only player ships are counted.
 
         """
-        logging.debug("Entering %s", self.getShipsBehind.__name__)
+        self.log.debug("Entering %s", self.getShipsBehind.__name__)
         return self._playerSurroundings(player, hulks=hulks)[2]
 
 class GameManager:
@@ -192,13 +193,25 @@ class GameManager:
         self.log.debug("Inside %s", self.copyState.__name__)
         self.log.debug("Creating semi-shallow state copy")
         state = copy.copy(self._state)
+        
+        self.log.debug("Creating censored player list")
         state.players = []
-        self.log.debug("Creating censored list of players")
-        for p in self._state.players:
-            self.log.debug("Censoring %s", p[0])
-            playerCopy = p[0].makeCensoredCopy()
+        mappings = {}
+        for (player, pc) in self._state.players:
+            self.log.debug("Censoring %s", player)
+            playerCopy = player.makeCensoredCopy()
             state.addPlayer((playerCopy, None))
             self.log.debug("Censored player tuple created and added to state")
+            mappings[player] = playerCopy
+            self.log.debug("Mapping %s to %s made", player, playerCopy)
+
+        self.log.debug("Writing new state event log")
+        state.eventlog = []
+        for event in self._state.eventlog:
+            self.log.debug("Rewriting %s", event)
+            state.addEventLogItem({'player': mappings[event['player']],
+                                   'event': event['event'],
+                                   'info': event['info']})
 
         self.log.debug("Deepcopying hulks")
         hulks = copy.deepcopy(self._state.hulks)
@@ -207,7 +220,7 @@ class GameManager:
         self.log.debug("Deepcopying deck")
         state.deck = copy.deepcopy(self._state.deck)
 
-        self.log.debug("Returning")
+        self.log.debug("%s returning", self.copyState.__name__)
         return state
 
     def getHuman(self):
