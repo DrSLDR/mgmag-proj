@@ -66,7 +66,7 @@ Available: http://nn.cs.utexas.edu/keyword?whiteson:gecco05
 [Added by Jappie, explains FS-NEAT better than evolving multi-modal behavior]
 
 K. O. Stanley and R. Miikkulainen. "Evolving neural networks through
-augmenting topologies".  Evolutionary Computation , 10(2):99–127, 2002.
+augmenting topologies".  Evolutionary Computation, 10(2):99–127, 2002.
 Available: http://nn.cs.utexas.edu/?stanley:ec02
 [Added by Jappie, explains NEAT in tedious detail]
 
@@ -87,3 +87,7 @@ State Evaluation, Inference, and Search in Trich-Based Card Games', IJCAI-09,
 2009 [Added by Eva]
 
 Imran Ghory, 'Reinforcement learning in board games', May 2004 [Added by Eva]
+
+Sturtevant, N. R., & White, A. M. (2006). Feature construction for
+reinforcement learning in hearts. In Computers and Games (pp. 122-134).
+Springer Berlin Heidelberg.

@@ -65,8 +65,8 @@ class GameEngine(object):
         self.app = MainGui(self.disp)
         self.humanPlayerGuiContainer = self.app.getHumanPlayerGuiContainer()
         self.factory = Factory(args,self.humanPlayerGuiContainer)
-        self._deltaT = 0.0
-        self._prevTime = 0.0
+        self._standardFPS = 30
+        self._reducedFPS = 2
 
     def init(self):
         """Initializes the game"""
@@ -93,7 +93,7 @@ class GameEngine(object):
     def update(self):
         """updates the game state / execute the game logic"""
         self.log.debug("Inside %s", self.update.__name__)
-        self.gameManager.update(self._deltaT)
+        self.gameManager.update()
 
     def render(self, destination, rect):
         """shows to a player what's going on"""
@@ -135,12 +135,16 @@ class GameEngine(object):
             if (temp):
                 updates += temp
             self.disp.set_clip()
-            # Cap it at 30fps
-            self.log.debug("Waiting for 30fps tick")
-            currTime = self.clock.get_time()
-            self._deltaT = currTime - self._prevTime
-            self._prevTime = currTime
-            self.clock.tick(30)
+            # Cap speed
+            self.log.debug("Retrieving state")
+            state = self.gameManager.copyState()
+            if state.GMState >= self.gameManager.GMStates['reveal']:
+                fps = self._reducedFPS
+                self.log.debug("Running at reduced (%i fps) speed", fps)
+            else:
+                fps = self._standardFPS
+                self.log.debug("Normal (%i fps) loop speed", fps)
+            self.clock.tick(fps)
             # Give pgu a chance to update the display
             temp = self.app.update()
             if (temp):
@@ -159,7 +163,7 @@ parser.add_argument("-c", "--config", default="config.json",
                     "If configuration file is not found or cannot be\n"+
                     "parsed, an exception is thrown.")
 parser.add_argument("-l", "--log-level", type=int, dest="loglevel",
-                    choices=range(1,6), default=5,
+                    choices=range(6), default=0,
                     help="Desired log level. The levels are:\n"+
                     "1 : CRITICAL - Exceptions and crashes\n"+
                     "2 : ERROR    - Serious, recoverable problems\n"+
