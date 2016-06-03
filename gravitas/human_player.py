@@ -447,7 +447,7 @@ class MainGui(gui.Desktop):
                 ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
                 self.log.info("Caught exit action. Quitting.")
                 logging.shutdown()
-                return # cheated out that done variable
+                exit() # that's a way to end the game I guess
             # Pass the event off to pgu
             self.event(ev)
 
