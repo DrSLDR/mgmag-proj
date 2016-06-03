@@ -346,6 +346,8 @@ class GameManager:
         choice. Updates the state to playing when all drafting is done."""
         self.log.debug("Inside %s", self._draft.__name__)
         player = self._state.players[self._draftPlayer]
+        self.log.debug("Current field is %s",
+                       self._state.deck.percieveCardField())
         self.log.info("Polling %s to draft", player[0])
         selection = player[1].pollDraft(self.copyState())
         
@@ -355,6 +357,10 @@ class GameManager:
             cards = self._state.deck.takeFromField(selection)
             self.log.info("%s drafted cards %s", player[0], cards)
             player[0].addCards(cards)
+            self.log.debug("Visible card was %s", cards[0])
+            self._state.addEventLogItem({'player': player[0],
+                                         'event': self._state.EVENT['DRAFT'],
+                                         'info': cards[0]})
             self.log.debug("Hand of %s is now %s", player[0],
                            player[0].getHand()) 
             self._draftPlayer += 1
