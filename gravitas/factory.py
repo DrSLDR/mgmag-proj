@@ -172,6 +172,7 @@ class Factory():
         pygame.display.flip()
         engine.updateables.append(ScreenRenderer(gui))
 
-        throthle = FrameRateThrottler(engine, manager)
+        throthle = FrameRateThrottler(manager, engine)
+        engine.updateables.append(throthle)
         return engine
 

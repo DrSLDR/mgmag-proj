@@ -491,7 +491,9 @@ class ScreenRenderer:
 
 class FrameRateThrottler:
     def __init__(self, gameManger, gameEngine):
-        self.gameManger = gameManger
+        self._standardFPS = 30
+        self._reducedFPS = 2
+        self.gameManager = gameManger
         self.gameEngine = gameEngine
         self.log = logging.getLogger(type(self).__name__)
 
@@ -507,4 +509,4 @@ class FrameRateThrottler:
         else:
             fps = self._standardFPS
             self.log.debug("Normal (%i fps) loop speed", fps)
-        self.gameEngine.framerateTrottle
+        self.gameEngine.framerateThrottle = fps
