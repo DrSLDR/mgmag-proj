@@ -16,8 +16,6 @@ class GameEngine(object):
     interface and keeps updating that hole."""
     def __init__(self):
         self.updateables = []
-        self._standardFPS = 30
-        self._reducedFPS = 2
         self.framerateThrottle = 0 # 0 for no throttle
 
         # Get logger
@@ -32,7 +30,9 @@ class GameEngine(object):
         self.log.debug("Inside %s", self.update.__name__)
         for updatable in self.updateables:
             self.log.debug("updating %s", type(updatable).__name__)
-            updatable.update()
+            if updatable.update():
+                return True # winner
+        return False
 
     def run(self):
         """blocking call for the game"""
@@ -40,5 +40,6 @@ class GameEngine(object):
         self.log.info("Entering game loop")
         while True:
             # update logic
-            self.update()
+            if self.update():
+                return
             self.clock.tick(self.framerateThrottle)
