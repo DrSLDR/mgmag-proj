@@ -36,7 +36,7 @@ parser.add_argument("--headless", type=bool, default=False,
 # executing the script like this allows for injection of a factory
 # in case you want to have many games that are configured in the same way
 def run(factory):
-    (engine, manager) = factory.createHeadless() if args.headless else factory.createGUIEngine()
+    (engine, manager) = factory.createHeadless() if factory.args.headless else factory.createGUIEngine()
     engine.run()
     return [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
 
