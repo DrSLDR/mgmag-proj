@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""This file starts the game, it also contains the engine (ticking
-at a certain pase) and it starts everything else"""
+"""Contains the engine that keeps updating everything"""
 
 import pygame, argparse
 from pgu import gui, timer
@@ -9,11 +8,10 @@ from strings import Logo
 import logging
 
 class GameEngine(object):
-    """In our main drawing are we don't want to use pgu because
-    its event driven, so you can't do any movement (since you need
-    events to move, so you'll get stupid stuff like only movement
-    on mouse move). The game engine punches a hole in the pgu
-    interface and keeps updating that hole."""
+    """Keeps up calling update on some updatables until one of the updatables
+    returns some truth (so not none or false)
+    also allows throttling of game update speed with framerateThrottle
+    """
     def __init__(self):
         self.updateables = []
         self.framerateThrottle = 0 # 0 for no throttle

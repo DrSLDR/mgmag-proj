@@ -51,3 +51,4 @@ if __name__ == "__main__":
     # output the information we need for statistics
     import json
     print(json.dumps(run(factory)))
+    
