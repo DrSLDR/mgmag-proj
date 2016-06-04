@@ -25,6 +25,7 @@ class Factory():
             "randAI": RandomAI_PC
         }
         self.guiContainer = None
+        self._configureLogger() # cause you know, need it to operate
 
     def _parseConfig(self, config):
         """Helper function that reads the configuration file"""
@@ -69,12 +70,13 @@ class Factory():
         return self._controllerTypes[config['type']](player, args,
                                                 self.guiContainer)
 
-    def _createState(self, config):
+    def createState(self):
         """create a game state and put the player controllers in there"""
-        self.log.debug("Inside %s", self._createState.__name__)
+        self.log.debug("Inside %s", self.createState.__name__)
         # create empty state
         state = State()
 
+        config = self._parseConfig(self.args.config)
         # Create the player objects
         availColors = [1,2,3,4]
         for p in config:
@@ -100,13 +102,13 @@ class Factory():
             self.log.info("More than two players. Adding tile 26 hulk to state")
             state.addHulk(26)
 
-        self.log.debug("%s returning", self._createState.__name__)
+        self.log.debug("%s returning", self.createState.__name__)
         return state
 
-    def _createGameManager(self, config):
+    def _createGameManager(self):
         """Given the game manager configuration, create the game manager"""
         self.log.debug("Inside %s", self._createGameManager.__name__)
-        state = self._createState(config)
+        state = self.createState()
         self.log.debug("%s returning", self._createGameManager.__name__)
         return GameManager(state)
 
@@ -139,22 +141,15 @@ class Factory():
     def createGameManager(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
-        self._configureLogger()
         # Configuration file
         self.log.info("Attempting to parse configuration file %s",
                       self.args.config)
-        try:
-            config = self._parseConfig(self.args.config)
-        except Exception as e:
-            self.log.critical("Failed to parse config file!")
-            self.log.critical(e)
-            raise e
-        
         # Create and return the game manager
         self.log.info("Starting creation of Game Manager")
-        gm = self._createGameManager(config)
+        gm = self._createGameManager()
         self.log.debug("%s returning", self.createGameManager.__name__)
         return gm
+        
 
     def createHeadless(self):
         gamemanager = self.createGameManager()
