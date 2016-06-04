@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Turing",
+    "type": "randIgnoreEmergency",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Babbage",
+    "type": "randIgnoreEmergency",
+    "arguments": {
+    }
+  }
+]

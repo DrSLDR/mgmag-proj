@@ -8,7 +8,7 @@ from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
 from gamemanager import State, GameManager
-from controller.random import RandomAI_PC
+from controller.random import RandomAI_PC, RandomIgnoreEmergency
 from controller.human import Human_PC
 from engine import GameEngine
 from human_player import MainGui, FrameRateThrottler, ScreenRenderer
@@ -22,7 +22,8 @@ class Factory():
         #the constructor for their respective player controller. 
         self._controllerTypes = {
             "human": Human_PC,
-            "randAI": RandomAI_PC
+            "randAI": RandomAI_PC,
+            "randIgnoreEmergency": RandomIgnoreEmergency
         }
         self.guiContainer = None
         self._configureLogger() # cause you know, need it to operate
@@ -40,6 +41,7 @@ class Factory():
                 self.log.error("Unknown agent type %s in %s", c['type'],
                                c['name'])
         self.log.debug("%s returning", self._parseConfig.__name__)
+        random.shuffle(conflist) # random play order
         return conflist
 
     def _createPlayerController(self, player, config):

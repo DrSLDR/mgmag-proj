@@ -42,3 +42,7 @@ class RandomAI_PC(IPlayerController):
         
     def informReveal(self, cards):
         self.log.info("Random ai informed about %s" % cards)
+
+class RandomIgnoreEmergency(RandomAI_PC):
+    def pollEmergencyStop(self, state):
+        return False

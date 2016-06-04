@@ -18,30 +18,38 @@ from factory import Factory
 
 acceptedMinimum = 30
 
-currentGameCount = 4 # the amount of games we test
-nextChange = 4 # how much to increase currentGameCount next time
-changeFactor = 2 # keep on dubbeling untill we found a valid number
-playerCount = 4 # if we fall below this number we currentGameCount is the magick number
+currentGameCount = 240 # the amount of games we test
+change = 40 # how much to increase currentGameCount next time
+playerCount = 2
+leeway = 1.1 # allow some deviation
 
-args = main.parser.parse_args(['-c', 'conf/allrand.json', '--headless', 't'])
+args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't'])
 factory = Factory(args)
-balcount = 0
 
 def isBalanced(gameCount):
+    if not gameCount % playerCount == 0:
+        raise ValueError("game count has to be devidable by playercount")
     scoreboard = dict((p[0].getName(),0) for p in factory.createState().players)
     for _ in range(0,gameCount):
         score = main.run(factory)
         scoreboard[score[-1][0]] += 1
-        if scoreboard[score[-1][0]] > gameCount/playerCount:
-            print("imbalanced %s", json.dumps(scoreboard))
+        if scoreboard[score[-1][0]] > (gameCount/playerCount) * leeway :
+            print("imbalanced %s" % json.dumps(scoreboard))
             return False
-    print("balanced %s", json.dumps(scoreboard))
+    print("balanced %s" % json.dumps(scoreboard))
     return True
 
-for _ in range(0,acceptedMinimum):
-    # output the information we need for statistics
-    if isBalanced(currentGameCount):
+while True:
+    balcount = 0
+    for _ in range(0,acceptedMinimum):
+        # output the information we need for statistics
+        if not isBalanced(currentGameCount):
+            currentGameCount += change
+            break
         balcount += 1
-    result = main.run(factory)
+    print("count %i, games played %i" % (balcount, currentGameCount-change))
+    if balcount == (acceptedMinimum-1):
+        break
 
-print("balanced count %i" % balcount)
+print("Magick number is %i" % currentGameCount)
+
