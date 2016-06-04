@@ -174,5 +174,5 @@ class Factory():
 
         throtle = FrameRateThrottler(manager, engine)
         engine.updateables.append(throtle)
-        return engine
+        return (engine, manager)
 

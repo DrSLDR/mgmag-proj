@@ -233,11 +233,6 @@ class GameManager:
             self.log.info("Got winner at round %i, turn %i: %s",
                           self._state.round, self._state.turn,
                           self._state.winner.getName())
-            # output the information we need for statistics
-            import json
-            print(json.dumps(
-                [(p[0].getName(), p[0].getPos()) for p in self._state.players]
-            ))
             return True # return truth to end the game
         self.log.debug("No known winner")
 

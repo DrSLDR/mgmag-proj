@@ -37,7 +37,11 @@ args = parser.parse_args()
 from factory import Factory
 factory = Factory(args)
 
-if args.headless:
-    factory.createHeadless()[0].run()
-else: # guess I use else afterall
-    factory.createGUIEngine().run()
+(engine, manager) = factory.createHeadless() if args.headless else factory.createGUIEngine()
+engine.run()
+
+# output the information we need for statistics
+import json
+print(json.dumps(
+    [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
+))
