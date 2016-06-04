@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This file starts the game by creating a GUI with pygame"""
+"""This file starts a game"""
 
 import argparse
 
@@ -32,16 +32,22 @@ parser.add_argument("-f", "--log-file", default="gravitas.log",
 parser.add_argument("--headless", type=bool, default=False,
                     help="Run without a GUI, useful for statistical analyses")
 
-# Do the parsering
-args = parser.parse_args()
-from factory import Factory
-factory = Factory(args)
 
-(engine, manager) = factory.createHeadless() if args.headless else factory.createGUIEngine()
-engine.run()
+# executing the script like this allows for injection of a factory
+# in case you want to have many games that are configured in the same way
+def run(factory):
+    (engine, manager) = factory.createHeadless() if args.headless else factory.createGUIEngine()
+    engine.run()
+    return [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
 
-# output the information we need for statistics
-import json
-print(json.dumps(
-    [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
-))
+# only execute this if we want to execute this script explicitly
+# this is handy for using this code base as a library (which statistical
+# analyses does)
+if __name__ == "__main__":
+    # Do the parsering
+    args = parser.parse_args()
+    from factory import Factory
+    factory = Factory(args)
+    # output the information we need for statistics
+    import json
+    print(json.dumps(run(factory)))
