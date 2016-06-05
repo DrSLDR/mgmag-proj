@@ -18,13 +18,14 @@ from factory import Factory
 
 acceptedMinimum = 30
 
-currentGameCount = 240 # the amount of games we test
+currentGameCount = 320 # the amount of games we test
 change = 40 # how much to increase currentGameCount next time
-playerCount = 2
 leeway = 1.1 # allow some deviation
 
-args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't'])
+args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't', '-l', '0'])
 factory = Factory(args)
+
+playerCount = len(factory.createState().players)
 
 def isBalanced(gameCount):
     if not gameCount % playerCount == 0:
@@ -47,7 +48,9 @@ while True:
             currentGameCount += change
             break
         balcount += 1
-    print("count %i, games played %i" % (balcount, currentGameCount-change))
+    print("count %i, games current count %i, games played %i" % (
+        balcount, currentGameCount-change, (currentGameCount-change)*balcount
+    ))
     if balcount == (acceptedMinimum-1):
         break
 
