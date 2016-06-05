@@ -593,21 +593,19 @@ class GameManager:
         # Loop until all collisions handled
         while True:
             # Disregard everything if the player is in the singularity
-            if not player.getPos() == 0:
-                collision = False
-                for ship in (self._state.players + self._state.hulks):
-                    s = ship[0]
-                    if not s == player:
-                        if s.getPos() == player.getPos():
-                            # Collision
-                            collision = True
-                            break
-                if collision:
-                    player.move(direction)
+            if player.getPos() == 0:
+                return
+            collision = False
+            for (ship, _) in (self._state.players + self._state.hulks):
+                if ship == player:
+                    continue
+                if ship.getPos() == player.getPos():
+                    # Collision
+                    collision = True
                     self.log.info("%s collided with %s. Continuing movement to"+
-                                  " tile %i", player.getName(), s,
-                                  player.getPos())
-                else:
+                                    " tile %i", player.getName(), ship,
+                                    player.getPos())
                     break
-            else:
-                break
+            if not collision:
+                return
+            player.move(direction)
