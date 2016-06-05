@@ -18,9 +18,9 @@ from factory import Factory
 
 acceptedMinimum = 30
 
-currentGameCount = 320 # the amount of games we test
-change = 40 # how much to increase currentGameCount next time
-leeway = 1.1 # allow some deviation
+currentGameCount = 4 # the amount of games we test
+change = 2 # how much to increase currentGameCount next time
+leeway = 0.05 # fraction of deviation allowed
 
 args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't', '-l', '0'])
 factory = Factory(args)
@@ -31,11 +31,17 @@ def isBalanced(gameCount):
     if not gameCount % playerCount == 0:
         raise ValueError("game count has to be devidable by playercount")
     scoreboard = dict((p[0].getName(),0) for p in factory.createState().players)
+    avgDistance = 0
     for _ in range(0,gameCount):
-        score = main.run(factory)
-        scoreboard[score[-1][0]] += 1
-        if scoreboard[score[-1][0]] > (gameCount/playerCount) * leeway :
-            print("imbalanced %s" % json.dumps(scoreboard))
+        scores = main.run(factory)
+        for score in scores:
+            scoreboard[score[0]] += score[1]/gameCount
+            avgDistance += (score[1]/playerCount)/gameCount
+
+    for value in scoreboard.values():
+        fraction = (abs(value - avgDistance)/avgDistance)
+        if fraction > leeway :
+            print("imbalanced %s fraction: %f" % (json.dumps(scoreboard), fraction))
             return False
     print("balanced %s" % json.dumps(scoreboard))
     return True
@@ -48,10 +54,10 @@ while True:
             currentGameCount += change
             break
         balcount += 1
-    print("count %i, games current count %i, games played %i" % (
+    print("count %i, magick nr size: %i, games played %i" % (
         balcount, currentGameCount-change, (currentGameCount-change)*balcount
     ))
-    if balcount == (acceptedMinimum-1):
+    if balcount == acceptedMinimum:
         break
 
 print("Magick number is %i" % currentGameCount)
