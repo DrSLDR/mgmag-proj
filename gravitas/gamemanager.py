@@ -461,7 +461,7 @@ class GameManager:
         # turn _plays into a dict of cardNames and player-colours
         cardOwnerColorNr = {}
         for cardKey in self._plays:
-            print(cardKey)
+            self.log.debug("card %s " % cardKey)
             cardOwnerColorNr[cardKey.getName()] = self._plays[cardKey][0].getColor()
 
         if self._toResolve is None:
