@@ -49,7 +49,7 @@ def callog(f):
     """Wraps a function to log called arguments and returned data"""
     @wraps(f)
     def wrapper(ref, *args, **kwargs):
-        ref.log.debug("%s called with arguments %s", f.__name__, args)
+        ref.log.debug("%s called with arguments %s, %s", f.__name__, args, kwargs)
         ret = f(ref, *args, **kwargs)
         ref.log.debug("%s returning %s", f.__name__, ret)
         return ret
