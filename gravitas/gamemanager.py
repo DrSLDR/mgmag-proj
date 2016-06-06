@@ -596,24 +596,17 @@ class GameManager:
     @callog
     def _resolveCollision(self, player, direction):
         """Handles post-resolution placement so that no collisions occur"""
-        # Loop until all collisions handled
-        while True:
-            # Disregard everything if the player is in the singularity
-            if not player.getPos() == 0:
-                collision = False
-                for ship in (self._state.players + self._state.hulks):
-                    s = ship[0]
-                    if not s == player:
-                        if s.getPos() == player.getPos():
-                            # Collision
-                            collision = True
-                            break
-                if collision:
-                    player.move(direction)
-                    self.log.info("%s collided with %s. Continuing movement to"+
-                                  " tile %i", player.getName(), s,
-                                  player.getPos())
-                else:
+        # Disregard everything if the player is in the singularity
+        collision = False
+        if not player.getPos() == 0:
+            for (s, pc) in (self._state.players + self._state.hulks):
+                if not s == player and s.getPos() == player.getPos():
+                    # Collision
+                    collision = True
                     break
-            else:
-                break
+            if collision:
+                player.move(direction)
+                self.log.info("%s collided with %s. Continuing movement to"+
+                              " tile %i", player.getName(), s,
+                              player.getPos())
+                self._resolveCollision(player, direction)
