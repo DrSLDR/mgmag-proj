@@ -590,8 +590,12 @@ class GameManager:
     def _resolveCollision(self, player, direction):
         """Handles post-resolution placement so that no collisions occur"""
         self.log.debug("Inside %s", self._resolveCollision.__name__)
+        collNumber = 0
         # Loop until all collisions handled
         while True:
+            collNumber += 1
+            if collNumber > 200:
+                raise RuntimeError("STOP COLLIDING DEMMIT")
             # Disregard everything if the player is in the singularity
             if player.getPos() == 0:
                 return
