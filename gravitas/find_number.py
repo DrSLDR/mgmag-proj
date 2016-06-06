@@ -15,11 +15,12 @@ since 30 is the accepted minimum of statistic
 import main
 import json
 from factory import Factory
+# how many times does "balanced" need to come out before we accept it as
+# "ballenced"
+acceptedMinimum = 30 
 
-acceptedMinimum = 30
-
-currentGameCount = 4 # the amount of games we test
-change = 2 # how much to increase currentGameCount next time
+currentGameCount = 104 # the amount of games we test
+change = 4 # how much to increase currentGameCount next time
 leeway = 0.05 # fraction of deviation allowed
 
 args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't', '-l', '0'])
@@ -29,7 +30,7 @@ playerCount = len(factory.createState().players)
 
 def isBalanced(gameCount):
     if not gameCount % playerCount == 0:
-        raise ValueError("game count has to be devidable by playercount")
+        raise ValueError("game count %i has to be devidable by playercount %i" % (gameCount, playerCount))
     scoreboard = dict((p[0].getName(),0) for p in factory.createState().players)
     avgDistance = 0
     for _ in range(0,gameCount):
