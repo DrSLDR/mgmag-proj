@@ -29,7 +29,7 @@ parser.add_argument("-f", "--log-file", default="gravitas.log",
                     "Log level must be set for this argument to have\n"+
                     "effect. Also note that existing logfile will be\n"+
                     "truncated without asking.")
-parser.add_argument("--headless", type=bool, default=False,
+parser.add_argument("--headless", action="store_true",
                     help="Run without a GUI, useful for statistical analyses")
 
 
@@ -38,7 +38,8 @@ parser.add_argument("--headless", type=bool, default=False,
 def run(factory):
     (engine, manager) = factory.createHeadless() if factory.args.headless else factory.createGUIEngine()
     engine.run()
-    return [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
+    state = manager.copyState()
+    return [(p, state.getPlayer(p).ship.getPos()) for p in state.players]
 
 # only execute this if we want to execute this script explicitly
 # this is handy for using this code base as a library (which statistical
