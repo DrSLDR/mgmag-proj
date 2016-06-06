@@ -19,7 +19,7 @@ from factory import Factory
 # "ballenced"
 acceptedMinimum = 30 
 
-currentGameCount = 104 # the amount of games we test
+currentGameCount = 172 # the amount of games we test
 change = 4 # how much to increase currentGameCount next time
 leeway = 0.05 # fraction of deviation allowed
 
