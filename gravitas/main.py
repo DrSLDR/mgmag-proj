@@ -38,7 +38,8 @@ parser.add_argument("--headless", action="store_true",
 def run(factory):
     (engine, manager) = factory.createHeadless() if factory.args.headless else factory.createGUIEngine()
     engine.run()
-    return [(p[0].getName(), p[0].getPos()) for p in manager.copyState().players]
+    state = manager.copyState()
+    return [(p, state.getPlayer(p).ship.getPos()) for p in state.players]
 
 # only execute this if we want to execute this script explicitly
 # this is handy for using this code base as a library (which statistical

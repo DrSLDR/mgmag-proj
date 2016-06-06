@@ -84,17 +84,19 @@ class Factory():
             pc = self._createPlayerController(player, p)
             if pc is not None:
                 self.log.info("Adding %s's player tuple to state", p['name'])
-                state.addPlayer((player, pc))
+                state.addPlayer(player, pc)
             else:
                 self.log.error("No player controller created for %s. Skipping.",
                                p['name'])
 
         # Create NPC ships ("hulks")
+        # Angry Marines all up in this
+        # See https://1d4chan.org/wiki/Angry_Marines for ship name references
         self.log.info("Adding tile 36 hulk to state")
-        state.addHulk(36)
+        state.addHulk("Litany of Litany's Litany", 36)
         if len(config) > 2:
             self.log.info("More than two players. Adding tile 26 hulk to state")
-            state.addHulk(26)
+            state.addHulk("Belligerent Engine", 26)
 
         return state
 
