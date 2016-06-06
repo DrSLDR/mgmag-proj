@@ -29,7 +29,7 @@ parser.add_argument("-f", "--log-file", default="gravitas.log",
                     "Log level must be set for this argument to have\n"+
                     "effect. Also note that existing logfile will be\n"+
                     "truncated without asking.")
-parser.add_argument("--headless", type=bool, default=False,
+parser.add_argument("--headless", action="store_true",
                     help="Run without a GUI, useful for statistical analyses")
 
 
