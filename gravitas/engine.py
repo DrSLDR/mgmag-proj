@@ -5,6 +5,7 @@ import pygame, argparse
 from pgu import gui, timer
 from collections import namedtuple
 from strings import Logo
+from functools import wraps
 import logging
 
 class GameEngine(object):
@@ -43,3 +44,13 @@ class GameEngine(object):
             if self.update():
                 return
             self.clock.tick(self.framerateThrottle)
+
+def callog(f):
+    """Wraps a function to log called arguments and returned data"""
+    @wraps(f)
+    def wrapper(ref, *args, **kwargs):
+        ref.log.debug("%s called with arguments %s", f.__name__, args)
+        ret = f(ref, *args, **kwargs)
+        ref.log.debug("%s returning %s", f.__name__, ret)
+        return ret
+    return wrapper

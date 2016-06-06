@@ -3,14 +3,20 @@ from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
 from controller.human import Human_PC
+from engine import callog
 import random, logging, copy
 
 class State:
     """The game state class. Beyond counters relating to the point in play, it
     also contains the reference to the deck and the lists of players (and
-    hulks). The player list is a list of pairs (Player (or Ship) object,
-    PlayerController (or None for hulks)). The State should be treated as
-    read-only; only the Game Manger (and Factory) should write the state."""
+    hulks). The player list is a dictionary from unique player names to player
+    tuples (Player (or Ship) object, PlayerController (or None for hulks)).
+
+    The State should be treated as read-only; only the Game Manger (and Factory)
+    should write the state. For security, all entities reading the State should
+    call the GameManager's copyState function to get a censored, unique copy.
+
+    """
     def __init__(self):
        # Bookkeeping
         self.turn = 0
@@ -28,12 +34,15 @@ class State:
         }
         self.log = logging.getLogger("state")
 
+    @callog
     def addHulk(self, position):
         self.hulks.append((Ship(pos=position), None))
 
+    @callog
     def addPlayer(self, player):
         self.players.append(player)
 
+    @callog
     def getHumanPlayer(self):
         # finds the first (and assumed to be the only) human in between the players
         humans = [p for p in self.players if p[1] and p[1].isHuman()]
@@ -42,6 +51,7 @@ class State:
         else:
             return humans[0][0]
 
+    @callog
     def addEventLogItem(self, item):
         """Adds the provided item to the event log. Item must be a dictionary
         type object with the format { "player" : Reference to the player who
@@ -51,8 +61,9 @@ class State:
         """
         self.log.debug("Adding %s to event log", item)
         self.eventlog.append(item)
-        self.log.debug("Log is now %s", self.eventlog)
+        #TODO rewrite
 
+    @callog
     def getLastEvents(self, number=1):
         """Returns the last item from the event log. If number is specified, a
         list of that many items are returned instead.
@@ -62,9 +73,9 @@ class State:
             es = self.eventlog[-1]
         else:
             es = self.eventlog[-number:]
-        self.log.debug("Returning %s from event log", es)
         return es
 
+    @callog
     def _playerSurroundings(self, player, hulks=True):
         """Determines the player surroundings. This function is not intended to
         be called directly from outside the State. It will return a tuple with a
@@ -73,7 +84,6 @@ class State:
         None.
 
         """
-        self.log.debug("Inside %s", self._playerSurroundings.__name__)
         # Set up the math
         nearestAhead = None
         nearestBehind = None
@@ -121,47 +131,47 @@ class State:
             if numberAhead == numberBehind:
                 # Stuck ship
                 self.log.debug("Equal number of ships on both sides. Player "+
-                              "is stuck. Returning")
+                              "is stuck.")
                 return (None, numberAhead, numberBehind)
             else:
                 # Not stuck. Determine target
                 if numberAhead > numberBehind:
-                    self.log.debug("More ships ahead. Target set. Returning")
+                    self.log.debug("More ships ahead. Target set")
                     return (nearestAhead, numberAhead, numberBehind)
                 else:
-                    self.log.debug("More ships behind. Target set. Returning")
+                    self.log.debug("More ships behind. Target set")
                     return (nearestBehind, numberAhead, numberBehind)
         else:
             # There is a closest ship. Determine target.
             if distanceAhead < distanceBehind:
-                self.log.debug("Ship ahead is closest. Target set. Returning")
+                self.log.debug("Ship ahead is closest. Target set")
                 return (nearestAhead, numberAhead, numberBehind)
             else:
-                self.log.debug("Ship behind is closest. Target set. Returning")
+                self.log.debug("Ship behind is closest. Target set")
                 return (nearestBehind, numberAhead, numberBehind)
 
+    @callog
     def getTarget(self, player):
         """Returns the target ship of the player, i.e. the closest ship. Returns
         None if the player is stuck.
 
         """
-        self.log.debug("Entering %s", self.getTarget.__name__)
         return self._playerSurroundings(player)[0]
 
+    @callog
     def getShipsAhead(self, player, hulks=True):
         """Returns the number of ships ahead of the player. If hulks is set to
         False, hulks will be discounted so that only player ships are counted.
 
         """
-        self.log.debug("Entering %s", self.getShipsAhead.__name__)
         return self._playerSurroundings(player, hulks=hulks)[1]
 
+    @callog
     def getShipsBehind(self, player, hulks=True):
         """Returns the number of ships behind the player. If hulks is set to
         False, hulks will be discounted so that only player ships are counted.
 
         """
-        self.log.debug("Entering %s", self.getShipsBehind.__name__)
         return self._playerSurroundings(player, hulks=hulks)[2]
 
 class GameManager:
@@ -186,9 +196,9 @@ class GameManager:
         self._plays = []
         self._human = self._state.getHumanPlayer()
 
+    @callog
     def copyState(self):
         """Returns a copy of the state"""
-        self.log.debug("Inside %s", self.copyState.__name__)
         self.log.debug("Creating semi-shallow state copy")
         state = copy.copy(self._state)
         
@@ -199,9 +209,7 @@ class GameManager:
             self.log.debug("Censoring %s", player)
             playerCopy = player.makeCensoredCopy()
             state.addPlayer((playerCopy, None))
-            self.log.debug("Censored player tuple created and added to state")
             mappings[player] = playerCopy
-            self.log.debug("Mapping %s to %s made", player, playerCopy)
 
         # self.log.debug("Writing new state event log")
         # state.eventlog = []
@@ -218,17 +226,15 @@ class GameManager:
         self.log.debug("Deepcopying deck")
         state.deck = copy.deepcopy(self._state.deck)
 
-        self.log.debug("%s returning", self.copyState.__name__)
         return state
 
     def getHuman(self):
         return self._human
 
+    @callog
     def update(self):
         """Function to update the game state. Only public function of the
-        GM. deltaT is in Seconds. Returns True if a winner has been decided."""
-
-        self.log.debug("Inside %s", self.update.__name__)
+        GM. Returns True if a winner has been decided."""
         if self._state.winner is not None:
             self.log.info("Got winner at round %i, turn %i: %s",
                           self._state.round, self._state.turn,
@@ -247,6 +253,7 @@ class GameManager:
         self.log.info("Game is not over. In round %i",
                         self._state.round)
         # we are to cool for function tables
+        # you bet
         if self._state.GMState == self.GMStates['init']:
             # Initializes the round
             self.log.info("Game is in init state")
@@ -286,10 +293,10 @@ class GameManager:
             self._resolve()
         return False
 
+    @callog
     def _initRound(self):
         """Initializes the round. Sorts the players, resets all Emergency Stops,
         readies a drafting field, and sets the state to drafting."""
-        self.log.debug("Inside %s", self._initRound.__name__)
         # Sort the players
         self._sortPlayers()
         # Reset all players Emergency Stop
@@ -299,11 +306,11 @@ class GameManager:
         # Sets the next state
         self.log.debug("Ticking game state to initdraft")
         self._state.GMState = self.GMStates['initdraft']
-
+    
+    @callog
     def _sortPlayers(self):
         """Sorts the players based on distance to the warp gate. If two or more
         players are in the singularity, their order is randomized."""
-        self.log.debug("Inside %s", self._sortPlayers.__name__)
         # Pull all players in the singularity into a separate list
         self.log.debug("Sorting out players in the Singularity")
         inS = []
@@ -329,10 +336,10 @@ class GameManager:
         self._state.players.reverse()
         self.log.debug("Order of players is now %s", self._state.players)
 
+    @callog
     def _initDraft(self):
         """Initializes the drafting step. Prepares the field and sets the
         drafting parameters."""
-        self.log.debug("Inside %s", self._initDraft.__name__)
         self._field = self._state.deck.createCardField(len(self._state.players))
         self.log.info("Generated fields %s", self._field)
         self._draftsRemaining = 3
@@ -341,10 +348,10 @@ class GameManager:
         self.log.debug("Ticking state to drafting")
         self._state.GMState = self.GMStates['drafting']
 
+    @callog
     def _draft(self):
         """Updates the drafting step. Polls the next player in line for a
         choice. Updates the state to playing when all drafting is done."""
-        self.log.debug("Inside %s", self._draft.__name__)
         player = self._state.players[self._draftPlayer]
         self.log.debug("Current field is %s",
                        self._state.deck.percieveCardField())
@@ -373,10 +380,10 @@ class GameManager:
             # End drafting
             self.log.debug("End of drafting. Ticking state to initplay")
             self._state.GMState = self.GMStates['initplay']
-                
+
+    @callog
     def _turn(self):
         """Turn update function. Polls a player to play."""
-        self.log.debug("Inside %s", self._turn.__name__)
         # Gets the player to poll
         p = self._turnSelectPlayer()
         player = p[0]
@@ -396,11 +403,11 @@ class GameManager:
         # Update state if neccessary
         if len(self._playersRemaining) == 0:
             self._state.GMState = self.GMStates['reveal']
-        
+
+    @callog
     def _initTurn(self):
         """Turn initialization function. Prepares the plays dictionary, players
         remaining list."""
-        self.log.debug("Inside %s", self._initTurn.__name__)
         # Prepares dictionary containing mappings of cards to players
         self._plays = {}
         # Prepares list of players which have yet to play
@@ -410,19 +417,18 @@ class GameManager:
         # Sets the state to playing
         self.log.debug("Ticking state to playing")
         self._state.GMState = self.GMStates['playing']
-        
+
+    @callog
     def _turnSelectPlayer(self):
         """Selects a random player to poll for play. Uses randomization since
         playing does not have to be in order."""
-        self.log.debug("Inside %s", self._turnSelectPlayer.__name__)
         self.log.debug("Remaining players are %s", self._playersRemaining)
-        self.log.debug("%s returning", self._turnSelectPlayer.__name__)
         return random.choice(self._playersRemaining)
 
+    @callog
     def _reveal(self):
         """Turn reveal. Sends revealed cards to all player controllers. Also
         prepares resolution."""
-        self.log.debug("Inside %s", self._reveal.__name__)        
         # Informs all PCs
         cards = list(self._plays.keys())
         for p in self._state.players:
@@ -446,14 +452,15 @@ class GameManager:
         self.log.debug("Ticking state to resolve")
         self._state.GMState = self.GMStates['resolve']
 
+    @callog
     def _initNextResolve(self):
         """Prepares the next play to be resolved."""
-        self.log.debug("Inside %s", self._initNextResolve.__name__)
         if len(self._orderedPlays) > 0:
             firstCard = self._orderedPlays.pop(0)
             self._toResolve = (firstCard, self._plays[firstCard])
             self.log.debug("Next card to resolve is %s", firstCard)
 
+    @callog
     def getPlayedCards(self):
         """Function that gets the ordered card-keys, and the playsDictionary, 
         so that the board can display them"""
@@ -469,12 +476,11 @@ class GameManager:
         else:
             return ([self._toResolve[0]]+self._orderedPlays.copy(), cardOwnerColorNr)
 
+    @callog
     def _resolve(self):
         """Turn resolution. Attempts to resolve the first card in the ordered
         play list. Will poll (applicable) players to use the Emergency Stop. Can
         also set the game winner if applicable."""
-        self.log.debug("Inside %s", self._resolve.__name__)
-
         # Check if there is a play to resolve
         if self._toResolve is None:
             self.log.debug("No next resolution is set")
@@ -539,10 +545,10 @@ class GameManager:
 
             # Clear the play
             self._toResolve = None
-    
+
+    @callog
     def _resolvePlay(self, player, card, target):
         """Resolves an individual play and moves the player accordingly"""
-        self.log.debug("Inside %s", self._resolvePlay.__name__)
         if card.getType() == Card.Type.normal:
             # Normal movement
             d = player.directionTo(target)
@@ -587,9 +593,9 @@ class GameManager:
                               s.getName(), card.getValue(), s.getPos())
                 self._resolveCollision(s, d)
 
+    @callog
     def _resolveCollision(self, player, direction):
         """Handles post-resolution placement so that no collisions occur"""
-        self.log.debug("Inside %s", self._resolveCollision.__name__)
         # Loop until all collisions handled
         while True:
             # Disregard everything if the player is in the singularity
