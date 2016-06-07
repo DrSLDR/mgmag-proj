@@ -89,9 +89,9 @@ class Renderer:
         size = Point(x=30,y=30)
         playerPCDict = ChainMap({},gamestate.players,gamestate.hulks)
 
-        for player in playerPCDict:
-            pos = self.calcScreenPos(playerPCDict[player][0].getPos())
-            color = Renderer.colors[playerPCDict[player][0].getColor()]
+        for key in playerPCDict:
+            pos = self.calcScreenPos(playerPCDict[key][0].getPos())
+            color = Renderer.colors[playerPCDict[key][0].getColor()]
             # draw white bordered circle filled with ship-color
             pygame.draw.ellipse(
                 disp, (250,250,250), 
@@ -127,7 +127,6 @@ class Renderer:
             font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
         # gets the first human from the state
-        
         if humanPlayer in playerPCDict:
             human = playerPCDict[humanPlayer][0]
 
@@ -153,7 +152,7 @@ class Renderer:
             size = Point(x=80, y=60) # size of card
             pos = Point(x=720+spacing,y=470)
 
-            if humanPlayer.canEmergencyStop():
+            if human.canEmergencyStop():
                 # draws ER-rect with a white border (in same color as human ship)
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
