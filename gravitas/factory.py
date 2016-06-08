@@ -10,6 +10,7 @@ from model.card import Card, Deck
 from gamemanager import State, GameManager
 from controller.random import RandomAI_PC, RandomIgnoreEmergency
 from controller.human import Human_PC
+from controller.symbolic import SymbolicAI_PC
 from engine import GameEngine, callog
 from human_player import MainGui, FrameRateThrottler, ScreenRenderer
 
@@ -23,6 +24,7 @@ class Factory():
         self._controllerTypes = {
             "human": Human_PC,
             "randAI": RandomAI_PC,
+            "symbolic": SymbolicAI_PC,
             "randIgnoreEmergency": RandomIgnoreEmergency
         }
         self.guiContainer = None
