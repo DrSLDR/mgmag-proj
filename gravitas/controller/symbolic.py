@@ -72,9 +72,9 @@ class SymbolicAI_PC(IPlayerController):
         # return default
         return False
 
-    def isHuman(self):
-        """The board need to be able to find the human player, which this function eill help with"""
-        return False
+    def announceWinner(self, state):
+        """Function that updates the PC after the last turn"""
+        return None
         
     def informReveal(self, cards):
         """The definitive set of played cards in a round are shown to the player"""
@@ -82,3 +82,6 @@ class SymbolicAI_PC(IPlayerController):
         self._reveal = cards
         self._playedCard = [c for c in cards if cards[c] == self.player.getName()][0] # find unique card owned by player
 
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function eill help with"""
+        return False
