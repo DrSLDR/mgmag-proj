@@ -1,14 +1,27 @@
 [
   {
     "name": "Turing",
-    "type": "randIgnoreEmergency",
+    "type": "randAI",
     "arguments": {
     }
   },
   {
     "name": "Babbage",
-    "type": "randIgnoreEmergency",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Claus",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Einstein",
+    "type": "randAI",
     "arguments": {
     }
   }
+
 ]

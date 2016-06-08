@@ -15,26 +15,34 @@ since 30 is the accepted minimum of statistic
 import main
 import json
 from factory import Factory
+# how many times does "balanced" need to come out before we accept it as
+# "ballenced"
+acceptedMinimum = 30 
 
-acceptedMinimum = 30
+currentGameCount = 280 # the amount of games we test
+change = 4 # how much to increase currentGameCount next time
+leeway = 0.05 # fraction of deviation allowed
 
-currentGameCount = 240 # the amount of games we test
-change = 40 # how much to increase currentGameCount next time
-playerCount = 2
-leeway = 1.1 # allow some deviation
-
-args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't'])
+args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', '-l', '0'])
 factory = Factory(args)
+
+playerCount = len(factory.createState().players)
 
 def isBalanced(gameCount):
     if not gameCount % playerCount == 0:
-        raise ValueError("game count has to be devidable by playercount")
-    scoreboard = dict((p[0].getName(),0) for p in factory.createState().players)
+        raise ValueError("game count %i has to be devidable by playercount %i" % (gameCount, playerCount))
+    scoreboard = dict((p,0) for p in factory.createState().players)
+    avgDistance = 0
     for _ in range(0,gameCount):
-        score = main.run(factory)
-        scoreboard[score[-1][0]] += 1
-        if scoreboard[score[-1][0]] > (gameCount/playerCount) * leeway :
-            print("imbalanced %s" % json.dumps(scoreboard))
+        scores = main.run(factory)
+        for score in scores:
+            scoreboard[score[0]] += score[1]/gameCount
+            avgDistance += (score[1]/playerCount)/gameCount
+
+    for value in scoreboard.values():
+        fraction = (abs(value - avgDistance)/avgDistance)
+        if fraction > leeway :
+            print("imbalanced %s fraction: %f" % (json.dumps(scoreboard), fraction))
             return False
     print("balanced %s" % json.dumps(scoreboard))
     return True
@@ -47,8 +55,10 @@ while True:
             currentGameCount += change
             break
         balcount += 1
-    print("count %i, games played %i" % (balcount, currentGameCount-change))
-    if balcount == (acceptedMinimum-1):
+    print("count %i, magick nr size: %i, games played %i" % (
+        balcount, currentGameCount-change, (currentGameCount-change)*balcount
+    ))
+    if balcount == acceptedMinimum:
         break
 
 print("Magick number is %i" % currentGameCount)
