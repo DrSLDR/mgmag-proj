@@ -19,11 +19,11 @@ from factory import Factory
 # "ballenced"
 acceptedMinimum = 30 
 
-currentGameCount = 172 # the amount of games we test
+currentGameCount = 260 # the amount of games we test
 change = 4 # how much to increase currentGameCount next time
 leeway = 0.05 # fraction of deviation allowed
 
-args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', 't', '-l', '0'])
+args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', '-l', '0'])
 factory = Factory(args)
 
 playerCount = len(factory.createState().players)
@@ -31,7 +31,7 @@ playerCount = len(factory.createState().players)
 def isBalanced(gameCount):
     if not gameCount % playerCount == 0:
         raise ValueError("game count %i has to be devidable by playercount %i" % (gameCount, playerCount))
-    scoreboard = dict((p[0].getName(),0) for p in factory.createState().players)
+    scoreboard = dict((p,0) for p in factory.createState().players)
     avgDistance = 0
     for _ in range(0,gameCount):
         scores = main.run(factory)
