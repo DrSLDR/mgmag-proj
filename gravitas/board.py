@@ -2,7 +2,7 @@
 """
 from model import board
 
-from collections import namedtuple
+from collections import namedtuple, ChainMap
 import math
 
 Point=namedtuple('Point',['x','y'])
@@ -87,9 +87,11 @@ class Renderer:
             font("%i"%i, pos)
         # player and hulk ships
         size = Point(x=30,y=30)
-        for (player, pc) in (gamestate.players + gamestate.hulks):
-            pos = self.calcScreenPos(player.getPos())
-            color = Renderer.colors[player.getColor()]
+        playerPCDict = ChainMap({},gamestate.players,gamestate.hulks)
+
+        for key in playerPCDict:
+            pos = self.calcScreenPos(playerPCDict[key][0].getPos())
+            color = Renderer.colors[playerPCDict[key][0].getColor()]
             # draw white bordered circle filled with ship-color
             pygame.draw.ellipse(
                 disp, (250,250,250), 
@@ -125,10 +127,11 @@ class Renderer:
             font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
         # gets the first human from the state
-        
-        if humanPlayer is not None:
+        if humanPlayer in playerPCDict:
+            human = playerPCDict[humanPlayer][0]
+
             # display human player's name in color of their ship
-            color = Renderer.colors[humanPlayer.getColor()]  
+            color = Renderer.colors[human.getColor()]  
             darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
             pos = Point(x=620,y=490)
             size = Point(x=80, y=30) 
@@ -137,11 +140,11 @@ class Renderer:
                 (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             pygame.draw.rect(disp, darkerColor,                
                 (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
-            font(humanPlayer.getName(), Point(x=pos.x-20,y=pos.y-5))
+            font(human.getName(), Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
             spacing = 0
-            for card in humanPlayer.getHand():
+            for card in human.getHand():
                 drawCard(card, font, disp, Point(x=720+spacing,y=470))
                 spacing += 100
 
@@ -149,7 +152,7 @@ class Renderer:
             size = Point(x=80, y=60) # size of card
             pos = Point(x=720+spacing,y=470)
 
-            if humanPlayer.canEmergencyStop():
+            if human.canEmergencyStop():
                 # draws ER-rect with a white border (in same color as human ship)
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))

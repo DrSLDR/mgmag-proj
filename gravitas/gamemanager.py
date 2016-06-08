@@ -69,7 +69,7 @@ class State:
         if len(humans) == 0 :
             return None
         else:
-            return humans[0][0]
+            return humans[0] # string
 
     @callog
     def addEventLogItem(self, player, event, info=None):
@@ -509,8 +509,7 @@ class GameManager:
         # turn _plays into a dict of cardNames and player-colours
         cardOwnerColorNr = {}
         for cardKey in self._plays:
-            self.log.debug("card %s " % cardKey)
-            cardOwnerColorNr[cardKey.getName()] = self._plays[cardKey][0].getColor()
+            cardOwnerColorNr[cardKey.getName()] = self._state.players[self._plays[cardKey]][0].getColor()
 
         if self._toResolve is None:
             return (self._orderedPlays.copy(),cardOwnerColorNr)
