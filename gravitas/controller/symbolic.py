@@ -2,6 +2,7 @@
 
 import random
 from .interface import IPlayerController
+from model.card import Card
 
 class SymbolicAI_PC(IPlayerController):
     """player controller that returns resolutes its choices using a decision tree.
@@ -11,44 +12,65 @@ class SymbolicAI_PC(IPlayerController):
 
     def pollDraft(self, state):
         """Function that returns the choice of a stack from the draw field"""
+        """RANDOM choice"""
+        
         # Bind in the percieved fields
         percievedField = state.deck.percieveCardField()
+
+        #code from random
         # if there are cards left on the field, choose a stack
         if not len(percievedField) == 0:
             fieldOfChoice = random.choice(percievedField)
             # returns the index of the choosen stack
             return fieldOfChoice[0]
-        print("Oops, you are trying to choose a stack from an empty field") 
+        # end code
         return None
 
     def pollPlay(self, state):
         """Function that returns which card the PC want to play"""
+        """RANDOM choice"""
+
+        # get closest ship
+        target = state.getShip(state.getTarget(self.player.getName())).ship
         hand = self.player.getHand()
+
+        # code from random
         if not len(hand) == 0:
             cardOfChoice = random.choice(hand)
             # returns the choosen card here
             return cardOfChoice
-        print("Oops, you are trying to play a card from an empty hand")
+        # end code
+
         return None
 
     def pollEmergencyStop(self, state):
-        """Function that returns the choice of using the emergency stop as a boolean"""
+        """Function that returns the choice of using the emergency stop as a boolean.
+        Right now the choice is rather egocentric; no other-player-bullying is done."""
 
-        # get closest ship and its distance to the player
-        target = state.getTarget(self.player.getName())
+        # get closest ship
+        target = state.getShip(state.getTarget(self.player.getName())).ship
+
         if target is None:
             # player is stuck, don't waste ES!
             return False
 
-        if self._playerCard.getType() == Card.Type.tractor:
-            # choosing ES with this cardType is complex...
+        if self._playedCard.getType() == Card.Type.tractor:
+            # choice of using ES with tractor cardType is complex...so dont
             return False
 
-        # player can move: determine use of ES
+        # distance to closest ship (sign equals direction)
         distance = target.getPos() - self.player.getPos()
-        if distance < 0:
+        
+        if distance < 0 and self._playedCard.getType() == Card.Type.normal:
+            # going  in normal direction with closest ship just behind you: use ES
+            return True
+        
+        if distance > 0 and self._playedCard.getType() == Card.Type.repulsor:
+            # getting repulsed with closest ship just behind you: use ES
             return True
 
+        # return default
+        return False
 
     def isHuman(self):
         """The board need to be able to find the human player, which this function eill help with"""
@@ -58,5 +80,5 @@ class SymbolicAI_PC(IPlayerController):
         """The definitive set of played cards in a round are shown to the player"""
         self.log.info("Random ai informed about %s" % cards)
         self._reveal = cards
-        self._playedCard = [c for c in cards if c[1] == self._player.getName()][0]
+        self._playedCard = [c for c in cards if cards[c] == self.player.getName()][0] # find unique card owned by player
 
