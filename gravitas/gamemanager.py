@@ -278,6 +278,7 @@ class GameManager:
             self.log.info("Got winner at round %i, turn %i: %s",
                           self._state.round, self._state.turn,
                           self._state.winner)
+            self._announceWinnerToPCs()
             return True # return truth to end the game
         self.log.debug("No known winner")
 
@@ -287,6 +288,7 @@ class GameManager:
             if self._state.winner is None:
                 self._sortPlayers()
                 self._state.winner = self._state.playerOrder[-1]
+
             return False # next update winner is announced
 
         self.log.info("Game is not over. In round %i",
@@ -656,3 +658,9 @@ class GameManager:
                 self.log.info("%s collided with %s. Continuing movement to "+
                               "tile %i", player, t, pt.ship.getPos())
                 self._resolveCollision(player, direction)
+
+    @callog
+    def _announceWinnerToPCs(self):
+        """Hands over the state to each player after the game has ended"""
+        for p in self.players:
+            p.pc.announceWinner(self.copyState())
