@@ -470,11 +470,10 @@ class GameManager:
         """Turn reveal. Sends revealed cards to all player controllers. Also
         prepares resolution."""
         # Informs all PCs
-        cards = list(self._plays.keys())
         for p in self._state.players:
             pt = self._state.getPlayer(p)
             self.log.debug("Informing %s of plays", pt.ship)
-            pt.pc.informReveal(cards)
+            pt.pc.informReveal(copy.copy(self._plays))
 
         # Write plays to event log
         self.log.debug("Writing plays to event log")
