@@ -237,35 +237,32 @@ class GameManager:
     @callog
     def copyState(self):
         """Returns a copy of the state"""
-        # self.log.debug("Creating semi-shallow state copy")
-        # state = copy.copy(self._state)
+        self.log.debug("Creating semi-shallow state copy")
+        state = copy.copy(self._state)
+
+        self.log.debug("Re-setting the remaining players list")
+        state.playerOrder = []
         
-        # self.log.debug("Creating censored player list")
-        # state.players = []
-        # mappings = {}
-        # for (player, pc) in self._state.players:
-        #     self.log.debug("Censoring %s", player)
-        #     playerCopy = player.makeCensoredCopy()
-        #     state.addPlayer((playerCopy, None))
-        #     mappings[player] = playerCopy
+        self.log.debug("Creating censored player list")
+        state.players = {}
+        for key in self._state.players:
+            # This function is doing direct access to the player
+            # dictionary. This is not how it is supposed to be done. Don't do
+            # like this.
+            pt = self._state.players[key]
+            playerCopy = pt.ship.makeCensoredCopy()
+            state.addPlayer(playerCopy, None)
 
-        # # self.log.debug("Writing new state event log")
-        # # state.eventlog = []
-        # # for event in self._state.eventlog:
-        # #     self.log.debug("Rewriting %s", event)
-        # #     state.addEventLogItem({'player': mappings[event['player']],
-        # #                            'event': event['event'],
-        # #                            'info': event['info']})
+        self.log.debug("Shallow-copying event log")
+        state.eventlog = copy.copy(self._state.eventlog)
 
-        # self.log.debug("Deepcopying hulks")
-        # hulks = copy.deepcopy(self._state.hulks)
-        # state.hulks = hulks
+        self.log.debug("Deepcopying hulks")
+        state.hulks = copy.deepcopy(self._state.hulks)
 
-        # self.log.debug("Deepcopying deck")
-        # state.deck = copy.deepcopy(self._state.deck)
+        self.log.debug("Deepcopying deck")
+        state.deck = copy.deepcopy(self._state.deck)
 
-        self.log.warning("Due to ongoing development, state copying is disabled")
-        return self._state
+        return state
 
     def getHuman(self):
         return self._human
