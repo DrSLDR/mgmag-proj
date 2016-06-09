@@ -662,5 +662,5 @@ class GameManager:
     @callog
     def _announceWinnerToPCs(self):
         """Hands over the state to each player after the game has ended"""
-        for p in self.players:
-            p.pc.announceWinner(self.copyState())
+        for p in self._state.players:
+            self._state.getPlayer(p).pc.announceWinner(self.copyState())
