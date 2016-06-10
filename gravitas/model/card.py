@@ -1,5 +1,7 @@
 """Module containing the code pertaining to cards"""
 import random
+from collections import namedtuple
+
 
 class Card:
     """Contains card instance data, type class and comparison functionality"""
@@ -43,6 +45,10 @@ class Deck:
 
     def __init__(self):
         """Creates a full deck of cards, sorted, as a list"""
+
+        # field stack tuple
+        self.makeFST = namedtuple('FieldStackTuple', 'index card')
+
         # Master deck configuration list
         DECKCONF = [
             ("Argon", "Ar", 1, Card.Type.normal),
@@ -109,7 +115,7 @@ class Deck:
             # return for each card set (that has not been taken yet) the index
             # and the shown card
             if f is not None:
-                perception.append( ( i, f[0]) )
+                perception.append( self.makeFST( i, f[0]) )
             i += 1
         return perception
 
