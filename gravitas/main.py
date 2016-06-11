@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This file starts the game by creating a GUI with pygame"""
+"""This file starts a game"""
 
 import argparse
 
@@ -14,7 +14,7 @@ parser.add_argument("-c", "--config", default="config.json",
                     "If configuration file is not found or cannot be\n"+
                     "parsed, an exception is thrown.")
 parser.add_argument("-l", "--log-level", type=int, dest="loglevel",
-                    choices=range(6), default=5,
+                    choices=range(6), default=0,
                     help="Desired log level. The levels are:\n"+
                     "1 : CRITICAL - Exceptions and crashes\n"+
                     "2 : ERROR    - Serious, recoverable problems\n"+
@@ -29,15 +29,27 @@ parser.add_argument("-f", "--log-file", default="gravitas.log",
                     "Log level must be set for this argument to have\n"+
                     "effect. Also note that existing logfile will be\n"+
                     "truncated without asking.")
-parser.add_argument("--headless", type=bool, default=False,
+parser.add_argument("--headless", action="store_true",
                     help="Run without a GUI, useful for statistical analyses")
 
-# Do the parsering
-args = parser.parse_args()
-from factory import Factory
-factory = Factory(args)
 
-if args.headless:
-    factory.createHeadless()[0].run()
-else: # guess I use else afterall
-    factory.createGUIEngine().run()
+# executing the script like this allows for injection of a factory
+# in case you want to have many games that are configured in the same way
+def run(factory):
+    (engine, manager) = factory.createHeadless() if factory.args.headless else factory.createGUIEngine()
+    engine.run()
+    state = manager.copyState()
+    return [(p, state.getPlayer(p).ship.getPos()) for p in state.players]
+
+# only execute this if we want to execute this script explicitly
+# this is handy for using this code base as a library (which statistical
+# analyses does)
+if __name__ == "__main__":
+    # Do the parsering
+    args = parser.parse_args()
+    from factory import Factory
+    factory = Factory(args)
+    # output the information we need for statistics
+    import json
+    print(json.dumps(run(factory)))
+    

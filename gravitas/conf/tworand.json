@@ -1,24 +1,24 @@
 [
   {
-    "name": "Darwin",
-    "type": "neuroticAI",
-    "arguments": {
-    }
-  },
-  {
-    "name": "Randy",
+    "name": "Turing",
     "type": "randAI",
     "arguments": {
     }
   },
   {
-    "name": "Squirtle",
-    "type": "symbolic",
+    "name": "Babbage",
+    "type": "randAI",
     "arguments": {
     }
   },
   {
-    "name": "Rachel",
+    "name": "Claus",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Einstein",
     "type": "randAI",
     "arguments": {
     }

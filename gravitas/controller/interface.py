@@ -37,6 +37,10 @@ class IPlayerController():
         """Function that returns the choice of using the emergency stop as a boolean"""
         self._NotImplementError()
 
+    def announceWinner(self, state):
+        """Function that updates the PC after the last turn"""
+        self._NotImplementError()
+
     def informReveal(self, cards):
         """Informs the PlayerController of the cards which have been played"""
         self._NotImplementError()

@@ -49,10 +49,14 @@ class Human_PC(IPlayerController):
             # returns None as long as no choice is made
             return None
     
-    def isHuman(self):
-        """The board need to be able to find the human player, which this function will help with"""
-        return True
+    def announceWinner(self, state):
+        """Function that updates the PC after the last turn"""
+        return None
 
     def informReveal(self, cards):
         """Informs the PlayerController of the cards which have been played"""
         self.log.info("Human informed about %s" % cards)
+
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function will help with"""
+        return True

@@ -1,23 +1,20 @@
 #!/usr/bin/env python
-"""This file starts the game, it also contains the engine (ticking
-at a certain pase) and it starts everything else"""
+"""Contains the engine that keeps updating everything"""
 
 import pygame, argparse
 from pgu import gui, timer
 from collections import namedtuple
 from strings import Logo
+from functools import wraps
 import logging
 
 class GameEngine(object):
-    """In our main drawing are we don't want to use pgu because
-    its event driven, so you can't do any movement (since you need
-    events to move, so you'll get stupid stuff like only movement
-    on mouse move). The game engine punches a hole in the pgu
-    interface and keeps updating that hole."""
+    """Keeps up calling update on some updatables until one of the updatables
+    returns some truth (so not none or false)
+    also allows throttling of game update speed with framerateThrottle
+    """
     def __init__(self):
         self.updateables = []
-        self._standardFPS = 30
-        self._reducedFPS = 2
         self.framerateThrottle = 0 # 0 for no throttle
 
         # Get logger
@@ -32,7 +29,11 @@ class GameEngine(object):
         self.log.debug("Inside %s", self.update.__name__)
         for updatable in self.updateables:
             self.log.debug("updating %s", type(updatable).__name__)
-            updatable.update()
+            # by default a python method returns none, which is false
+            # but if a method returns truth, we know the game is over
+            if updatable.update():
+                return True # winner
+        return False
 
     def run(self):
         """blocking call for the game"""
@@ -40,5 +41,16 @@ class GameEngine(object):
         self.log.info("Entering game loop")
         while True:
             # update logic
-            self.update()
+            if self.update():
+                return
             self.clock.tick(self.framerateThrottle)
+
+def callog(f):
+    """Wraps a function to log called arguments and returned data"""
+    @wraps(f)
+    def wrapper(ref, *args, **kwargs):
+        ref.log.debug("%s called with arguments %s, %s", f.__name__, args, kwargs)
+        ret = f(ref, *args, **kwargs)
+        ref.log.debug("%s returning %s", f.__name__, ret)
+        return ret
+    return wrapper

@@ -8,10 +8,11 @@ from model.player import Player
 from model.ship import Ship
 from model.card import Card, Deck
 from gamemanager import State, GameManager
-from controller.random import RandomAI_PC
+from controller.random import RandomAI_PC, RandomIgnoreEmergency
 from controller.human import Human_PC
 from controller.neural import Neurotic_PC
-from engine import GameEngine
+from controller.symbolic import SymbolicAI_PC
+from engine import GameEngine, callog
 from human_player import MainGui, FrameRateThrottler, ScreenRenderer
 
 class Factory():
@@ -25,12 +26,15 @@ class Factory():
             "human": Human_PC,
             "randAI": RandomAI_PC,
             "neuroticAI": Neurotic_PC
+            "symbolic": SymbolicAI_PC,
+            "randIgnoreEmergency": RandomIgnoreEmergency
         }
         self.guiContainer = None
+        self._configureLogger() # cause you know, need it to operate
 
+    @callog
     def _parseConfig(self, config):
         """Helper function that reads the configuration file"""
-        self.log.debug("Inside %s", self._parseConfig.__name__)
         f = open(config, 'r')
         conflist = json.load(f)
         f.close()
@@ -40,18 +44,15 @@ class Factory():
             if not c['type'] in self._controllerTypes:
                 self.log.error("Unknown agent type %s in %s", c['type'],
                                c['name'])
-        self.log.debug("%s returning", self._parseConfig.__name__)
         return conflist
 
+    @callog
     def _createPlayerController(self, player, config):
         """return list of player controllers, whose properties depend on the
         config file"""
-        self.log.debug("Inside %s", self._createPlayerController.__name__)
         if config['type'] not in self._controllerTypes:
             self.log.error("No player controller definition exists for %s",
                            config['type'])
-            self.log.debug("%s returning",
-                           self._createPlayerController.__name__)
             return None
 
         self.log.debug("Player controller definition exists for type %s",
@@ -59,24 +60,21 @@ class Factory():
         if self._controllerTypes[config['type']] is None:
             self.log.warning("Player controller type %s is not implemented",
                                 config['type'])
-            self.log.debug("%s returning",
-                            self._createPlayerController.__name__)
             return None
         self.log.debug("Constructing player controller")
         # Bind the arguments
         args = config['arguments']
         # Invoke the constructor
-        self.log.debug("%s returning",
-                        self._createPlayerController.__name__)
         return self._controllerTypes[config['type']](player, args,
                                                 self.guiContainer)
-
-    def _createState(self, config):
+    
+    @callog
+    def createState(self):
         """create a game state and put the player controllers in there"""
-        self.log.debug("Inside %s", self._createState.__name__)
         # create empty state
         state = State()
 
+        config = self._parseConfig(self.args.config)
         # Create the player objects
         availColors = [1,2,3,4]
         for p in config:
@@ -90,26 +88,26 @@ class Factory():
             pc = self._createPlayerController(player, p)
             if pc is not None:
                 self.log.info("Adding %s's player tuple to state", p['name'])
-                state.addPlayer((player, pc))
+                state.addPlayer(player, pc)
             else:
                 self.log.error("No player controller created for %s. Skipping.",
                                p['name'])
 
         # Create NPC ships ("hulks")
+        # Angry Marines all up in this
+        # See https://1d4chan.org/wiki/Angry_Marines for ship name references
         self.log.info("Adding tile 36 hulk to state")
-        state.addHulk(36)
+        state.addHulk("Litany of Litany's Litany", 36)
         if len(config) > 2:
             self.log.info("More than two players. Adding tile 26 hulk to state")
-            state.addHulk(26)
+            state.addHulk("Belligerent Engine", 26)
 
-        self.log.debug("%s returning", self._createState.__name__)
         return state
 
-    def _createGameManager(self, config):
+    @callog
+    def _createGameManager(self):
         """Given the game manager configuration, create the game manager"""
-        self.log.debug("Inside %s", self._createGameManager.__name__)
-        state = self._createState(config)
-        self.log.debug("%s returning", self._createGameManager.__name__)
+        state = self.createState()
         return GameManager(state)
 
     def _configureLogger(self):
@@ -137,34 +135,28 @@ class Factory():
         self.log = logging.getLogger(__name__)
         self.log.info("Log initiated")
 
-
+    @callog
     def createGameManager(self):
         """Create game function. Main function of the class. Sets handles the
         command line arguments, if any, and returns the game manager."""
-        self._configureLogger()
         # Configuration file
         self.log.info("Attempting to parse configuration file %s",
                       self.args.config)
-        try:
-            config = self._parseConfig(self.args.config)
-        except Exception as e:
-            self.log.critical("Failed to parse config file!")
-            self.log.critical(e)
-            raise e
-        
         # Create and return the game manager
         self.log.info("Starting creation of Game Manager")
-        gm = self._createGameManager(config)
-        self.log.debug("%s returning", self.createGameManager.__name__)
-        return gm
+        return self._createGameManager()
 
+    @callog
     def createHeadless(self):
+        """Create a headless game."""
         gamemanager = self.createGameManager()
         engine = GameEngine()
         engine.updateables.append(gamemanager)
         return (engine, gamemanager)
 
+    @callog
     def createGUIEngine(self):
+        """Create a headed game."""
         display = pygame.display.set_mode((1366, 768))
         gui = MainGui(display)
         self.guiContainer = gui.menuArea
@@ -174,6 +166,7 @@ class Factory():
         pygame.display.flip()
         engine.updateables.append(ScreenRenderer(gui))
 
-        throthle = FrameRateThrottler(engine, manager)
-        return engine
+        throtle = FrameRateThrottler(manager, engine)
+        engine.updateables.append(throtle)
+        return (engine, manager)
 
