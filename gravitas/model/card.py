@@ -145,3 +145,8 @@ class Deck:
         """Sorts a given list by resolution order (alphabetic). 
         Returns sorted list."""
         return sorted(cardList, key=lambda c: c.getName())
+
+    def updateCopyFields(self, clone):
+        """Updates the field data of a clone so that it matches the
+        authoritative copy."""
+        clone._field = copy.copy(self._field)
