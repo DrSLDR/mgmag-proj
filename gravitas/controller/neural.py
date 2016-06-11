@@ -7,18 +7,22 @@ class Neurotic_PC(RandomAI_PC):
     """We extend the random AI so that we don't have to implement everything"""
     def __init__(self, player, args,container):
         super().__init__(player,args, container)
-        self.playNetwork = Factory.createPlay()
+        self.playNetwork = None
 
     def pollPlay(self, state):
+        if self.playNetwork is None:
+            raise ValueError("Please initialize the playnetwork "+
+                             "(use neurotic factory)")
         hand = self.player.getHand()
-        enemies = [x for x in state.players if x[0] != self.player]
+        enemies = [x for x in state.players.values() if x.ship != self.player]
+        hulks = list(state.hulks.values())
         feed_dict = {
             "player_position:0": self.player.getPos(),
-            "enemy_position_0:0":enemies[0][0].getPos(),
-            "enemy_position_1:0":enemies[1][0].getPos(),
-            "enemy_position_2:0":enemies[2][0].getPos(),
-            "hulk_position_0:0":state.hulks[0][0].getPos(),
-            "hulk_position_1:0":state.hulks[1][0].getPos(),
+            "enemy_position_0:0":enemies[0].ship.getPos(),
+            "enemy_position_1:0":enemies[1].ship.getPos(),
+            "enemy_position_2:0":enemies[2].ship.getPos(),
+            "hulk_position_0:0":hulks[0].ship.getPos(),
+            "hulk_position_1:0":hulks[1].ship.getPos(),
         }
         for (i,card) in enumerate(hand):
             feed_dict["card_%i_value:0" % i] = card.getValue()
@@ -160,23 +164,20 @@ class Builder:
 
     def createOutputTensor(self):
         """Creates the output tensor which is a preference list,
-
-        Goes trough the input nodes first to create tensors from them,
-        then defines the resolve function which can resolve the input tupple
-        (ie another tensor), from there the operations are build one by one.
-
-        after that the output nodes are build and finally put into a pack
-        tensor. Using a pack tensor allows us to execute just this tensor
-        rather than calling the neural network multiple times
         """
         # to create we just go back over the network
         return tf.pack(
             [self.nodes[x].createTensor(self.nodes) for x in self.outputs]
         )
 
-class Factory:
-    def createPlay():
-        """Creates a sparsely connected play network"""
+class NeuroticFactory:
+    """We want to make a configruable PC, to do this we create a functor
+    that receives the builder with the network configuration"""
+    def __init__(self, builder):
+        self.builder = builder
+
+    def createFSNeatFactory():
+        """Creates a sparsely connected neurotic factory"""
         builder = Builder()
         for i in range(0,8):
             builder.addInput("card_%i_value" % i, 1)
@@ -190,8 +191,18 @@ class Factory:
         import random
         inputs = list(range(0, builder.getNodeCountFor(Builder.inputlayer)))
         for i in range(0,8):
-            builder.outputs.append(Position(Builder.inputlayer, inputs.pop(random.randrange(len(inputs)))))
-        pos = Position(1, builder.getNodeCountFor(builder.layerDepth))
-        builder.addOpperation(tf.add, pos, [Position(Builder.inputlayer, 1), Position(Builder.inputlayer, 3)])
-        builder.outputs[3] = pos
-        return builder.createOutputTensor()
+            builder.outputs.append(
+                Position(
+                    Builder.inputlayer,
+                    inputs.pop(
+                        random.randrange(len(inputs))
+                    )
+                )
+            )
+        return NeuroticFactory(builder)
+
+    def createNeuroticPC(self, player, args, container):
+        """Attach this instead of the default init"""
+        result = Neurotic_PC(player, args, container)
+        result.playNetwork = self.builder.createOutputTensor()
+        return result
