@@ -640,7 +640,7 @@ class GameManager:
         # turn _plays into a dict of cardNames and player-colours
         cardOwnerColorNr = {}
         for cardKey in self._plays:
-            cardOwnerColorNr[cardKey.getName()] = self._state.players[self._plays[cardKey]][0].getColor()
+            cardOwnerColorNr[cardKey.getName()] = 0
 
         if self._toResolve is None:
             return (self._orderedPlays.copy(),cardOwnerColorNr)
