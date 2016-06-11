@@ -17,40 +17,112 @@ class SymbolicAI_PC(IPlayerController):
         # Bind in the percieved fields
         percievedField = state.deck.percieveCardField()
 
-        #code from random
+        # just return if there are no fields left
+        if len(percievedField) == 0:
+            return None
+
+        # if only one stack left, return that one
+        if len(percievedField) == 1:
+            return percievedField[0].index 
+
+        # if more than one choice left:
+
+        # order options on card type
+        tractors = [f for f in percievedField if f.card.getType() == Card.Type.tractor]
+        normals = [f for f in percievedField if f.card.getType() == Card.Type.normal]
+        repulsors = [f for f in percievedField if f.card.getType() == Card.Type.repulsor]
+
+        #code from random, will be removed later
         # if there are cards left on the field, choose a stack
         if not len(percievedField) == 0:
             fieldOfChoice = random.choice(percievedField)
             # returns the index of the choosen stack
-            return fieldOfChoice[0]
+            return fieldOfChoice.index
         # end code
         return None
 
     def pollPlay(self, state):
         """Function that returns which card the PC want to play"""
-        """RANDOM choice"""
+        """chooses mainly on player-direction and cardtype. It does not take into account
+            the cardNames (and thus playing-timing) or more complex ship-configurations
+            or one-step-ahead-strategies"""
 
-        # get closest ship
-        target = state.getShip(state.getTarget(self.player.getName())).ship
+        # get player hand
         hand = self.player.getHand()
 
-        # code from random
-        if not len(hand) == 0:
-            cardOfChoice = random.choice(hand)
-            # returns the choosen card here
-            return cardOfChoice
-        # end code
+        # on empty hand
+        if len(hand) == 0:
+            return None
 
-        return None
+        # on 1 card in hand, play only card left
+        if len(hand) == 1:
+            return hand[0]
+
+        # on more cards, make a choice between them
+
+        # order options on card type
+        tractors = [c for c in hand if c.getType() == Card.Type.tractor]
+        normals = [c for c in hand if c.getType() == Card.Type.normal]
+        repulsors = [c for c in hand if c.getType() == Card.Type.repulsor]
+
+        # find closest ship
+        targetName = state.getTarget(self.player.getName())
+
+        # if no closest ship, the player is Stuck
+        if targetName is None:
+            # if available, try to play a tractor
+            if len(tractors) > 0:
+                return tractors[0]
+            # otherwise, just play some card
+            else:
+                return random.choice(hand)
+
+        # there is a closest ship: find moving direction  
+        target = state.getShip(targetName).ship
+        distance = target.getPos() - self.player.getPos()
+
+        # moving forward...
+        if distance > 0:
+            # so choose highest-value normal card
+            if len(normals) > 0:
+                orderedNormals = sorted(normals, key = lambda x: x.getValue() )
+                return orderedNormals[0]
+            # if there are no normal cards, use tractor or lowest repulsor
+            else:
+                if len(tractors) > 0:
+                    # use a tractor (does not mather which one since they are similar)
+                    return tractors[0]
+                # since then hand is not empty, there are only repulsors left
+                else:
+                    # chooce lowest repulsor
+                    orderedRepulsors = sorted(repulsors, key = lambda x: -x.getValue() )
+                    return orderedRepulsors[0]
+
+        # moving backward...
+        else: # if distance < 0:
+            # so choose highest-value repulsor card
+            if len(repulsors) > 0:
+                orderedRepulsors = sorted(repulsors, key = lambda x: x.getValue() )
+                return orderedRepulsors[0]
+            # if there are no repulsor cards, use tractor or lowest normal
+            else:
+                if len(tractors) > 0:
+                    # use a tractor (does not mather which one since they are similar)
+                    return tractors[0]
+                # since then hand is not empty, there are only normals left
+                else:
+                    # chooce lowest normal
+                    orderedNormals = sorted(normals, key = lambda x: -x.getValue() )
+                    return orderedNormals[0]
 
     def pollEmergencyStop(self, state):
         """Function that returns the choice of using the emergency stop as a boolean.
         Right now the choice is rather egocentric; no other-player-bullying is done."""
 
         # get closest ship
-        target = state.getShip(state.getTarget(self.player.getName())).ship
+        targetName = state.getTarget(self.player.getName())
 
-        if target is None:
+        if targetName is None:
             # player is stuck, don't waste ES!
             return False
 
@@ -59,6 +131,7 @@ class SymbolicAI_PC(IPlayerController):
             return False
 
         # distance to closest ship (sign equals direction)
+        target = state.getShip(targetName).ship
         distance = target.getPos() - self.player.getPos()
         
         if distance < 0 and self._playedCard.getType() == Card.Type.normal:
