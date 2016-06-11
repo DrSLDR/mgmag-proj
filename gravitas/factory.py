@@ -25,7 +25,7 @@ class Factory():
         self._controllerTypes = {
             "human": Human_PC,
             "randAI": RandomAI_PC,
-            "neuroticAI": Neurotic_PC
+            "neuroticAI": Neurotic_PC,
             "symbolic": SymbolicAI_PC,
             "randIgnoreEmergency": RandomIgnoreEmergency
         }
