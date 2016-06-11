@@ -22,7 +22,7 @@ class Factory():
         self.args = args
         #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
-        self._controllerTypes = {
+        self.controllerTypes = {
             "human": Human_PC,
             "randAI": RandomAI_PC,
             "neuroticAI": Neurotic_PC,
@@ -41,7 +41,7 @@ class Factory():
         self.log.debug("Got config file contents as: %s", conflist)
         for c in conflist:
             self.log.debug("Handling object %s", c)
-            if not c['type'] in self._controllerTypes:
+            if not c['type'] in self.controllerTypes:
                 self.log.error("Unknown agent type %s in %s", c['type'],
                                c['name'])
         return conflist
@@ -50,14 +50,14 @@ class Factory():
     def _createPlayerController(self, player, config):
         """return list of player controllers, whose properties depend on the
         config file"""
-        if config['type'] not in self._controllerTypes:
+        if config['type'] not in self.controllerTypes:
             self.log.error("No player controller definition exists for %s",
                            config['type'])
             return None
 
         self.log.debug("Player controller definition exists for type %s",
                         config['type'])
-        if self._controllerTypes[config['type']] is None:
+        if self.controllerTypes[config['type']] is None:
             self.log.warning("Player controller type %s is not implemented",
                                 config['type'])
             return None
@@ -65,7 +65,7 @@ class Factory():
         # Bind the arguments
         args = config['arguments']
         # Invoke the constructor
-        return self._controllerTypes[config['type']](player, args,
+        return self.controllerTypes[config['type']](player, args,
                                                 self.guiContainer)
     
     @callog
@@ -97,7 +97,7 @@ class Factory():
         # Angry Marines all up in this
         # See https://1d4chan.org/wiki/Angry_Marines for ship name references
         self.log.info("Adding tile 36 hulk to state")
-        state.addHulk("Litany of Litany's Litany", 36)
+        state.addHulk("The ends of invention", 36)
         if len(config) > 2:
             self.log.info("More than two players. Adding tile 26 hulk to state")
             state.addHulk("Belligerent Engine", 26)
