@@ -216,6 +216,7 @@ class Builder:
         TFlow=namedtuple('TFlow', ['graph', 'tensor'])
         return TFlow(graph, tensor)
 
+import random
 class Strain:
     """
     A strain in the neuro evolution stack.
@@ -273,18 +274,16 @@ class Strain:
         Operation(tf.add, 2),
         Operation(tf.sub, 2),
         Operation(tf.mul, 2),
-        Operation(tf.floordiv, 2),
-        Operation(tf.mod, 2),
         Operation(tf.neg, 1),
     ]
     def mutate(self):
-        import random
         # select layer to modify
         layer = random.randrange(self.builder.inputlayer+1, self.builder.layerDepth+1)
         # the position for the new node
         position = Position(layer, self.builder.getNodeCountFor(layer))
         # select an operation
         operation = random.choice(self.operations)
+        print("adding %s, at %s" % (operation.function.__name__, position))
         # select the inputs
         inputs = []
         # prefer replacing an existing output as input

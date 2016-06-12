@@ -50,7 +50,6 @@ for generation in range(0,config.generations):
     children = [Strain(Builder().use(pa.builder)) for pa in population]
     for child in children:
         child.mutate()
-        child.builder.clearTensors()
         print(json.dumps(child.builder.outputs))
 
     evaluateGeneration(children)
@@ -67,6 +66,9 @@ class DictEncoder(JSONEncoder):
             return obj.__dict__
         if isinstance(obj, set):
             return list(obj)
+        import tensorflow as tf
+        if tf.add == obj or tf.neg == obj or tf.sub == obj or tf.mul == obj:
+            return obj.__name__
         return super().default(obj)
 
 for member in population:
