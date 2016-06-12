@@ -116,7 +116,14 @@ class Builder:
     def __init__(self):
         self.nodes = dict() # graph dict
         self.outputs = [] # list of positions in the nodes
-        self.layerDepth = Builder.inputlayer
+        self.layerDepth = Builder.inputlayer + 1
+
+    def clearTensors(self):
+        """Usefull for exporting, tensors are lazily loaded anyway"""
+        for key, value in self.nodes.items():
+            if not isinstance(value, int):
+                value.tensor = None
+        return self
 
     def use(self, other):
         """Tell this builder to use this existing structure"""
@@ -259,5 +266,41 @@ class Strain:
             self.lazyPC.playNetwork = nw
         return self.lazyPC 
 
+    # classes are more like functions in python anyway
+    Operation=namedtuple('Operation', ['function', 'argcount'])
+    operations = [
+        # functions are more like arguments in python anyway
+        Operation(tf.add, 2),
+        Operation(tf.sub, 2),
+        Operation(tf.mul, 2),
+        Operation(tf.floordiv, 2),
+        Operation(tf.mod, 2),
+        Operation(tf.neg, 1),
+    ]
     def mutate(self):
-        pass
+        import random
+        # select layer to modify
+        layer = random.randrange(self.builder.inputlayer+1, self.builder.layerDepth+1)
+        # the position for the new node
+        position = Position(layer, self.builder.getNodeCountFor(layer))
+        # select an operation
+        operation = random.choice(self.operations)
+        # select the inputs
+        inputs = []
+        # prefer replacing an existing output as input
+        availableOutputs = [o for o in self.builder.outputs if o.layer < layer]
+        print("available %i, layer: %i" % (len(availableOutputs), layer))
+        if len(availableOutputs) > 0:
+            index = random.randrange(len(availableOutputs))
+            inputs.append(availableOutputs[index])
+            self.builder.outputs[index] = position
+
+        while len(inputs) < operation.argcount:
+            layer = random.randrange(self.builder.layerDepth)
+            inputs.append(Position(
+                layer,
+                random.randrange(self.builder.getNodeCountFor(layer))
+            ))
+        # add the operation
+        self.builder.addOpperation(operation.function, position, inputs)
+        return self

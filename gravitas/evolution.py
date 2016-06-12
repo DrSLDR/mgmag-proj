@@ -5,7 +5,7 @@ peform neuro-evolution
 import main
 import json
 from factory import Factory
-from controller.neural import Neurotic_PC, Strain, Builder
+from controller.neural import Neurotic_PC, Strain, Builder, Node
 class config:
     controller = "neuroticAI"
     player = "Darwin"
@@ -28,7 +28,6 @@ def compete(strain, config):
 
 def evaluateGeneration(members):
     for member in members:
-        member.mutate()
         scores = compete(member, config)
         member.score = sum(scores)/len(scores)
 
@@ -43,12 +42,39 @@ evaluateGeneration(population)
 
 def printpop(population):
     print("current pop: [%s]" % ', '.join(['%.2f' % pop.score for pop in population]))
+
 for generation in range(0,config.generations):
     print("generation %i" % generation)
     printpop(population)
+
     children = [Strain(Builder().use(pa.builder)) for pa in population]
+    for child in children:
+        child.mutate()
+        child.builder.clearTensors()
+        print(json.dumps(child.builder.outputs))
+
     evaluateGeneration(children)
     population = selection(population, children)
 
 
 printpop(population)
+
+import json
+from json import JSONEncoder
+class DictEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Builder) or isinstance(obj, Node):
+            return obj.__dict__
+        if isinstance(obj, set):
+            return list(obj)
+        return super().default(obj)
+
+for member in population:
+    builder = member.builder
+    builder.clearTensors()
+    for key in dict(builder.nodes).keys():
+        builder.nodes[str(key)] =builder.nodes[key]
+        del builder.nodes[key]
+
+    import pprint
+    print(json.dumps(builder, cls=DictEncoder))
