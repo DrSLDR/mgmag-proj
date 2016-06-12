@@ -47,6 +47,7 @@ def isBalanced(gameCount):
     print("balanced %s" % json.dumps(scoreboard))
     return True
 
+
 while True:
     balcount = 0
     for _ in range(0,acceptedMinimum):

@@ -28,17 +28,14 @@ class Neurotic_PC(RandomAI_PC):
             feed_dict["card_%i_value:0" % i] = card.getValue()
             feed_dict["card_%i_effect:0" % i] = card.getType()
             feed_dict["card_%i_play_order:0" % i] = ord(card.getName()[0])
-        import pprint
-        self.log.debug(pprint.PrettyPrinter(indent=4).pformat(feed_dict))
         with tf.Session() as sess:
             prefrences = enumerate(sess.run(self.playNetwork, feed_dict=feed_dict))
             from operator import itemgetter
-            prefrences = list(sorted(prefrences, key=itemgetter(1), reverse=True))
+            prefrences = sorted(prefrences, key=itemgetter(1), reverse=True)
             for (prefIndex, prefScore)in prefrences:
                 if prefIndex < len(hand):
                     self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
                     return hand[prefIndex]
-            print(prefrences)
         raise RuntimeError("Neural network failed, we shouldn't reach here")
 
 from collections import namedtuple
@@ -175,6 +172,7 @@ class NeuroticFactory:
     that receives the builder with the network configuration"""
     def __init__(self, builder):
         self.builder = builder
+        self.lazyPC = None
 
     def createFSNeatFactory():
         """Creates a sparsely connected neurotic factory"""
@@ -201,8 +199,15 @@ class NeuroticFactory:
             )
         return NeuroticFactory(builder)
 
+
     def createNeuroticPC(self, player, args, container):
         """Attach this instead of the default init"""
-        result = Neurotic_PC(player, args, container)
-        result.playNetwork = self.builder.createOutputTensor()
-        return result
+        if not self.lazyPC:
+            self.lazyPC = Neurotic_PC(player, args, container)
+            self.lazyPC.playNetwork = self.builder.createOutputTensor()
+        else:
+            # bypass creation if we already have the lazy value
+            nw = self.lazyPC.playNetwork
+            self.lazyPC.__init__(player,args,container)
+            self.lazyPC.playNetwork = nw
+        return self.lazyPC 
