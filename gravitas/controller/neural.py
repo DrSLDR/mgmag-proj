@@ -28,14 +28,15 @@ class Neurotic_PC(RandomAI_PC):
             feed_dict["card_%i_value:0" % i] = card.getValue()
             feed_dict["card_%i_effect:0" % i] = card.getType()
             feed_dict["card_%i_play_order:0" % i] = ord(card.getName()[0])
-        with tf.Session() as sess:
-            prefrences = enumerate(sess.run(self.playNetwork, feed_dict=feed_dict))
-            from operator import itemgetter
-            prefrences = sorted(prefrences, key=itemgetter(1), reverse=True)
-            for (prefIndex, prefScore)in prefrences:
-                if prefIndex < len(hand):
-                    self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
-                    return hand[prefIndex]
+        with self.playNetwork.graph.as_default():
+            with tf.Session() as sess:
+                prefrences = enumerate(sess.run(self.playNetwork.tensor, feed_dict=feed_dict))
+                from operator import itemgetter
+                prefrences = sorted(prefrences, key=itemgetter(1), reverse=True)
+                for (prefIndex, prefScore)in prefrences:
+                    if prefIndex < len(hand):
+                        self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
+                        return hand[prefIndex]
         raise RuntimeError("Neural network failed, we shouldn't reach here")
 
 from collections import namedtuple
@@ -45,7 +46,7 @@ from collections import namedtuple
 Position=namedtuple('Position', ['layer', 'index'])
 
 class Node:
-    """Mutable strcuture for creating the neural network
+    """Mutable structure for creating the neural network
     Each node represents an operation. The first nodes are placeholders
     """
     def __init__(self):
@@ -67,8 +68,33 @@ class Node:
         """Creates the tensor or returns the current one"""
         if self.tensor is not None:
             return self.tensor
+        return self.createEagerly(nodeDict)
+
+    def createEagerly(self,nodeDict):
+        """Allows the actual constrution to be overwritten"""
         inputTensors = [nodeDict[p].createTensor(nodeDict) for p in self.inputs]
         self.tensor = self.operation(*inputTensors)
+        return self.tensor
+
+class InputNode(Node):
+    """An input node requires a little more information than a regular node
+    A name is required for example, also the tensor construction is quite
+    different
+    """
+    def __init__(self, name):
+        self.value = None
+        self.name = name
+        super().__init__()
+    def createEagerly(self,nodeDict):
+        self.tensor = tf.placeholder(
+            tf.int32,
+            shape=[],
+            name=self.name
+        ) if self.value is None else tf.placeholder_with_default(
+            tf.constant(self.value),
+            shape=[],
+            name=self.name
+        )
         return self.tensor
 
 class Builder:
@@ -92,20 +118,25 @@ class Builder:
         self.outputs = [] # list of positions in the nodes
         self.layerDepth = Builder.inputlayer
 
+    def use(self, other):
+        """Tell this builder to use this existing structure"""
+        import copy
+        for key, value in other.nodes.items():
+            if isinstance(value, int):
+                self.nodes[key] = value
+            else:
+                value.tensor = None
+                self.nodes[key] =copy.deepcopy(value)
+        # can be shallow because tupples are immutable
+        self.outputs = copy.copy(other.outputs) 
+        self.layerDepth = other.layerDepth
+        return self
+
     def addInput(self, name, value=None):
         """Add an placeholder tensor to the inputlayer"""
-        result = Node()
-        result.tensor = tf.placeholder(
-            tf.int32,
-            shape=[],
-            name=name
-        ) if value is None else tf.placeholder_with_default(
-            tf.constant(value),
-            shape=[],
-            name=name
-        )
+        result = InputNode(name)
+        result.value = value
         inputCount = self.getNodeCountFor(Builder.inputlayer)
-        result.inputs = None
         # inputs are always layer 0
         result.position = Position(Builder.inputlayer,inputCount)
         self.nodes[result.position] = result
@@ -159,22 +190,39 @@ class Builder:
             tf.constant(tupple.default_value), shape=[], name=tupple.name
         )
 
-    def createOutputTensor(self):
+    def createGraph(self):
         """Creates the output tensor which is a preference list,
         """
-        # to create we just go back over the network
-        return tf.pack(
-            [self.nodes[x].createTensor(self.nodes) for x in self.outputs]
-        )
+        graph = tf.Graph()
+        tensor = None
+        with graph.as_default():
+            # first make sure all input exists (otherwise tf will complain)
+            for i in range(0,self.getNodeCountFor(self.inputlayer)):
+                self.nodes[Position(layer=self.inputlayer, index=i)].createTensor(
+                    self.nodes
+                )
+            # to create we just go back over the network
+            tensor = tf.pack(
+                [self.nodes[x].createTensor(self.nodes) for x in self.outputs]
+            )
+        graph.finalize()
+        TFlow=namedtuple('TFlow', ['graph', 'tensor'])
+        return TFlow(graph, tensor)
 
-class NeuroticFactory:
-    """We want to make a configruable PC, to do this we create a functor
-    that receives the builder with the network configuration"""
+class Strain:
+    """
+    A strain in the neuro evolution stack.
+
+    We want to do extra PC configuration, to do this we create a functor
+    that receives the builder with the network configuration
+    But if the PC hasn't changed since last run we can just reuse it.
+    """
     def __init__(self, builder):
         self.builder = builder
         self.lazyPC = None
+        self.score = -1
 
-    def createFSNeatFactory():
+    def createFSNeat():
         """Creates a sparsely connected neurotic factory"""
         builder = Builder()
         for i in range(0,8):
@@ -197,17 +245,19 @@ class NeuroticFactory:
                     )
                 )
             )
-        return NeuroticFactory(builder)
-
+        return Strain(builder)
 
     def createNeuroticPC(self, player, args, container):
         """Attach this instead of the default init"""
         if not self.lazyPC:
             self.lazyPC = Neurotic_PC(player, args, container)
-            self.lazyPC.playNetwork = self.builder.createOutputTensor()
+            self.lazyPC.playNetwork = self.builder.createGraph()
         else:
             # bypass creation if we already have the lazy value
             nw = self.lazyPC.playNetwork
             self.lazyPC.__init__(player,args,container)
             self.lazyPC.playNetwork = nw
         return self.lazyPC 
+
+    def mutate(self):
+        pass
