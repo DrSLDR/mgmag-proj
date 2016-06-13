@@ -21,10 +21,8 @@ def run(cycles, fact):
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
         
-        # Set run parameters
+        # play the game once
         done = False
-        cdata = []
-        i = 0
         while not done:
             # Prepare data-gathering
             while manager.copyState().GMState < manager.GMStates['resolve']:
@@ -42,7 +40,7 @@ def run(cycles, fact):
         state = manager.copyState()
         winner = state.winner
             
-        # Append most recent data
+        # increase count of the most recent winner
         if winner in data:
             data[winner] += 1
         else:
