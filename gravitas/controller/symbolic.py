@@ -25,21 +25,41 @@ class SymbolicAI_PC(IPlayerController):
         if len(percievedField) == 1:
             return percievedField[0].index 
 
-        # if more than one choice left:
+        ###### if more than one choice left:
 
-        # order options on card type
+        # get cards that you already have (your hand)
+        hand = self.player.getHand()
+        handTrac = [c for c in hand if c.getType() == Card.Type.tractor]
+        handNormLow = [c for c in hand if c.getType() == Card.Type.normal and c.getValue() < 7]
+        handNormHigh = [c for c in hand if c.getType() == Card.Type.normal and c.getValue() >= 3]
+        handRep = [c for c in hand if c.getType() == Card.Type.repulsor]
+
+        # order field options on card type
         tractors = [f for f in percievedField if f.card.getType() == Card.Type.tractor]
-        normals = [f for f in percievedField if f.card.getType() == Card.Type.normal]
+        normalHighs = [f for f in percievedField if f.card.getType() == Card.Type.normal and f.card.getValue() < 7]
+        normalLows = [f for f in percievedField if f.card.getType() == Card.Type.normal and f.card.getValue() >= 3]
         repulsors = [f for f in percievedField if f.card.getType() == Card.Type.repulsor]
 
-        #code from random, will be removed later
-        # if there are cards left on the field, choose a stack
-        if not len(percievedField) == 0:
-            fieldOfChoice = random.choice(percievedField)
-            # returns the index of the choosen stack
-            return fieldOfChoice.index
-        # end code
-        return None
+        # if there are tractors available, and you don't have one in your hand
+        if len(tractors) > 0 and len(handTrac) == 0:
+            return tractors[0].index
+        # if there are repulsors, but you dont have them in your hand
+        if len(repulsors) > 0 and len(handRep) == 0: 
+            return repulsors[0].index
+
+        # get lowest normal that plays first
+        if len(normalLows) > 0 and len(handNormLow) == 0:
+            lowFirstSorted = sorted(normalLows, key = lambda x:x.card.getName()[0])# sort on first letter
+            return lowFirstSorted[0].index 
+
+        # get highest normal that plays first
+        if len(normalHighs) > 0 and len(handNormHigh) == 0:
+            highFirstSorted = sorted(normalHighs, key = lambda x:x.card.getName()[0])# sort on first letter
+            return highFirstSorted[0].index 
+
+        # if nothin else works, just take a random field
+        randomField = random.choice(percievedField)
+        return randomField.index
 
     def pollPlay(self, state):
         """Function that returns which card the PC want to play"""
@@ -58,7 +78,7 @@ class SymbolicAI_PC(IPlayerController):
         if len(hand) == 1:
             return hand[0]
 
-        # on more cards, make a choice between them
+        ##### on more cards, make a choice between them
 
         # order options on card type
         tractors = [c for c in hand if c.getType() == Card.Type.tractor]
