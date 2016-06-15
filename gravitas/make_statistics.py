@@ -35,22 +35,22 @@ parser.add_argument("-n", "--cycles", type=int, default=200,
                     help="Specifies how many games should be run for analysis.")
 
 def run(cycles, fact):
-    # Prepare data containers
+    # Prepare the master data list
     data = []
-    variances = []
-    for i in range(cycles):
-        cyc = [-1]*36
-        variances.append(cyc)
     
     # Run the loop
     for cycle in range(cycles):
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
         
-        # Set run parameters
+        # Prepare game dataset
+        state = manager.copyState()
+        gameData = {'turn' : 0, 'players' : {}}
+        for key in state.players:
+            gameData['players'][key] = []
+
+        # Do the game
         done = False
-        cdata = []
-        i = 0
         while not done:
             # Prepare data-gathering
             while manager.copyState().GMState < manager.GMStates['resolve']:
@@ -66,28 +66,17 @@ def run(cycles, fact):
                     
             # Collect data for the turn
             state = manager.copyState()
-            rdata = [state.getPlayer(key).ship.getPos() for key in
-                     state.players]
-            cdata.append(rdata)
-            variances[cycle][i] = statistics.variance(rdata)
-            i += 1
+            for key in state.players:
+                gameData['players'][key].append(
+                    state.getPlayer(key).ship.getPos())
+            if not done:
+                gameData['turn'] += 1
 
         # Append most recent data
-        data.append(cdata)
-        
-    # Throw out averages
-    varavgs = [-1]*36
-    for i in range(36):
-        valid = 0
-        sum = 0
-        for game in variances:
-            if game[i] >= 0:
-                valid += 1
-                sum += game[i]
-        if valid > 0:
-            varavgs[i] = sum / valid
-    print(varavgs)
+        data.append(gameData)
 
+    print(data)
+        
 # Runtime bit
 if __name__ == "__main__":
     # Do the parsering
