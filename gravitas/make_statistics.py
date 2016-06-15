@@ -17,22 +17,12 @@ program, different statistical functions will be run on the data set. The
 functions do not modify the core data set, so several statistical functions can
 be run in series.
 
-TODO: separation of powers, win-count tracking, data export/import
+TODO: win-count tracking, position mean and standard variation: global, per
+      turn, per player, per player per turn
 
 """
 
-import engine, factory, main, argparse, statistics
-# Prep the parser
-parser = argparse.ArgumentParser(
-    description="Runs statistical analysis on Gravitas")
-parser.add_argument("-c", "--config", default="config.json",
-                    required=True,
-                    help="Name of configuration file.\n"+
-                    "Checks for \"config.json\" if not given.\n"+
-                    "If configuration file is not found or cannot be\n"+
-                    "parsed, an exception is thrown.")
-parser.add_argument("-n", "--cycles", type=int, default=200,
-                    help="Specifies how many games should be run for analysis.")
+import engine, factory, main, argparse, statistics, json
 
 def run(cycles, fact):
     # Prepare the master data list
@@ -75,15 +65,68 @@ def run(cycles, fact):
         # Append most recent data
         data.append(gameData)
 
+    return data
+
+def process(data, args):
+    # Main switchboard between statistics functions
+
     print(data)
         
 # Runtime bit
 if __name__ == "__main__":
+    # Prep the parser
+    parser = argparse.ArgumentParser(
+        description="Runs statistical analysis on Gravitas")
+    parser.add_argument("-n", "--cycles", type=int, default=200,
+                        help="""Specifies how many games should be run for
+                        analysis. Defaults to 200 if not specified. Ignored if a
+                        data file (--data) is provided.""")
+
+    iogroup = parser.add_argument_group("I/O", description="""Options governing
+    the input and output of data from the statistics script. Either --data or
+    --config must be given.""")
+    iomutex = iogroup.add_mutually_exclusive_group(required=True)
+    iomutex.add_argument("-c", "--config", help="""Name of configuration
+                         file. If configuration file is not found or cannot be
+                         parsed, an exception is thrown.""")
+    iomutex.add_argument("-d", "--data", help="""Name of the data file. Allows
+                         re-using previously dumped data. If the data file is
+                         not found or cannot be parsed, an exception is
+                         thrown.""")
+    iogroup.add_argument("--dump", help="""Name of the data file in which this
+                         run's data should be dumped. Ignored if a data file
+                         (--data) is provided.""")
+
+    statsgroup = parser.add_argument_group("Statistics", description="""Switches
+    to turn statistical operations on.""")
+    statsgroup.add_argument("--all", action="store_true", help="""The kitchen
+                            sink. Runs every implemented statistical
+                            function.""")
+
     # Do the parsering
     args = parser.parse_args()
-    # Do the other parsering
-    margs = main.parser.parse_args(['-c', args.config, '--headless', '-l', '0'])
-    # Factorize the factory
-    fact = factory.Factory(margs)
-    # Launch the run
-    run(args.cycles, fact)
+
+    # Figure out if we are doing a run or an import
+    if args.data is not None:
+        # Looks an awful lot like an import
+        datafile = open(args.data, 'r')
+        data = json.load(datafile)
+        datafile.close()
+
+    elif args.config is not None:
+        # Looks like a run
+        # Do the other parsering
+        margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
+                                        '0'])
+        # Factorize the factory
+        fact = factory.Factory(margs)
+        # Launch the run
+        data = run(args.cycles, fact)
+        # Dump, if that was necessary
+        if args.dump is not None:
+            dumpfile = open(args.dump, 'w')
+            json.dump(data, dumpfile)
+            dumpfile.close()
+        
+    # Process the recieved data
+    process(data, args)
