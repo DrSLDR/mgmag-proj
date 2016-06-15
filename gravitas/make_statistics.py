@@ -21,8 +21,8 @@ Note that the algorithm is not optimized: each statistical function is given the
 full dataset to work over alone. Consecutive by-line operations could be
 implemented but aren't because time constraint.
 
-TODO: win-count tracking, position mean and standard variation: global, per
-      turn, per player, per player per turn
+TODO: position mean and standard variation: global, per turn, per player, per
+      player per turn
 
 """
 
@@ -88,6 +88,8 @@ def process(data, args):
     Returns nothing. Sub-functions may print.
 
     """
+
+    # Some nifty code to call functions by name :D
     argsdict = vars(args)
     glob = globals().copy()
     glob.update(locals())
@@ -96,28 +98,56 @@ def process(data, args):
             if args.all or argsdict[key]:
                 method = glob.get(key)
                 method(data)
-                
+
+# Helper functions. They exist because writing the same code more than once is
+# tedious
+def helper_prepPerPlayerResults(data):
+    """Takes dataset, returns dictionary of player names."""
+    result = {}
+    for key in data[0]['players']:
+        result[key] = 0
+    return result
+
+def helper_getWinnerOfGame(game):
+    """Takes a game structure, returns the key of the winning player."""
+    winner = None
+    dist = 0
+    for key in game['players']:
+        if game['players'][key][-1] > dist:
+            dist = game['players'][key][-1]
+            winner = key
+    return winner
+
+def helper_print(head, data):
+    """A uniform printing format makes everyone happy."""
+    print(head + ":")
+    print(json.dumps(data, sort_keys=True, indent=4))
+    print()
+
 def stats_winCount(data):
     """Counts and prints the per-player win count in the dataset."""
 
     # Prepare the result data
-    result = {}
-    for key in data[0]['players']:
-        result[key] = 0
-
+    result = helper_prepPerPlayerResults(data)
     # Crunch
     for game in data:
-        winner = None
-        dist = 0
-        for key in game['players']:
-            if game['players'][key][-1] > dist:
-                dist = game['players'][key][-1]
-                winner = key
+        winner = helper_getWinnerOfGame(game)
         result[winner] += 1
-
     # Print
-    print("Win counts:")
-    print(str(result) + "\n")
+    helper_print("Win counts", result)
+
+def stats_earlyWinCount(data):
+    """Counts the number of games which ended before turn 36."""
+
+    # Prepare the result data
+    result = helper_prepPerPlayerResults(data)
+    # Crunch
+    for game in data:
+        if game['turn'] < 36:
+            winner = helper_getWinnerOfGame(game)
+            result[winner] += 1
+    # Print
+    helper_print("Early win counts", result)
 
 # Runtime bit
 if __name__ == "__main__":
@@ -152,6 +182,10 @@ if __name__ == "__main__":
     statsgroup.add_argument("--win-count", action="store_true",
                             dest="stats_winCount", help="""Counts the number of
                             wins for each player.""")
+    statsgroup.add_argument("--early-win-count", action="store_true",
+                            dest="stats_earlyWinCount", help="""Counts the
+                            number of early (pre-turn 36) wins for each
+                            player.""")
 
     # Do the parsering
     args = parser.parse_args()
