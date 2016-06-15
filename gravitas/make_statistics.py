@@ -4,13 +4,29 @@ extract more-or-less useful statistics about the game. This file is not intended
 to be used as a component of something else and works as a combination of
 main.py and engine.py.
 
+The file works in two stages. The first is data harvesting, during which it runs
+a game with the specified configuration CYCLES number of times. The data is
+stored in JSON-like structures (dictionaries) which contains the game turn
+count (which is useful for determining game length) and a sub-object, mapping
+players to lists of positions. Thus, a player's performance can be tracked
+across games. These structures are then maintained sequentially in the main data
+list.
+
+The second stage is data crunching. Based on the command-line flags given to the
+program, different statistical functions will be run on the data set. The
+functions do not modify the core data set, so several statistical functions can
+be run in series.
+
+TODO: separation of powers, win-count tracking, data export/import
+
 """
 
 import engine, factory, main, argparse, statistics
 # Prep the parser
 parser = argparse.ArgumentParser(
     description="Runs statistical analysis on Gravitas")
-parser.add_argument("-c", "--config", default="config.json", 
+parser.add_argument("-c", "--config", default="config.json",
+                    required=True,
                     help="Name of configuration file.\n"+
                     "Checks for \"config.json\" if not given.\n"+
                     "If configuration file is not found or cannot be\n"+
