@@ -15,7 +15,11 @@ list.
 The second stage is data crunching. Based on the command-line flags given to the
 program, different statistical functions will be run on the data set. The
 functions do not modify the core data set, so several statistical functions can
-be run in series.
+be run in series. 
+
+Note that the algorithm is not optimized: each statistical function is given the
+full dataset to work over alone. Consecutive by-line operations could be
+implemented but aren't because time constraint.
 
 TODO: win-count tracking, position mean and standard variation: global, per
       turn, per player, per player per turn
@@ -25,6 +29,15 @@ TODO: win-count tracking, position mean and standard variation: global, per
 import engine, factory, main, argparse, statistics, json
 
 def run(cycles, fact):
+    """Runs the game to gather data.
+
+    Takes the number of cycles (games) to run and the game factory as
+    arguments.
+
+    Returns the data list.
+
+    """
+
     # Prepare the master data list
     data = []
     
@@ -68,10 +81,44 @@ def run(cycles, fact):
     return data
 
 def process(data, args):
-    # Main switchboard between statistics functions
+    """Main switchboard between statistics functions.
 
-    print(data)
-        
+    Takes the main data and the parser arguments.
+
+    Returns nothing. Sub-functions may print.
+
+    """
+    argsdict = vars(args)
+    glob = globals().copy()
+    glob.update(locals())
+    for key in argsdict:
+        if "stats_" in key:
+            if args.all or argsdict[key]:
+                method = glob.get(key)
+                method(data)
+                
+def stats_winCount(data):
+    """Counts and prints the per-player win count in the dataset."""
+
+    # Prepare the result data
+    result = {}
+    for key in data[0]['players']:
+        result[key] = 0
+
+    # Crunch
+    for game in data:
+        winner = None
+        dist = 0
+        for key in game['players']:
+            if game['players'][key][-1] > dist:
+                dist = game['players'][key][-1]
+                winner = key
+        result[winner] += 1
+
+    # Print
+    print("Win counts:")
+    print(str(result) + "\n")
+
 # Runtime bit
 if __name__ == "__main__":
     # Prep the parser
@@ -102,6 +149,9 @@ if __name__ == "__main__":
     statsgroup.add_argument("--all", action="store_true", help="""The kitchen
                             sink. Runs every implemented statistical
                             function.""")
+    statsgroup.add_argument("--win-count", action="store_true",
+                            dest="stats_winCount", help="""Counts the number of
+                            wins for each player.""")
 
     # Do the parsering
     args = parser.parse_args()
