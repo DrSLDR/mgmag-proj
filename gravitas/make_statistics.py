@@ -279,6 +279,27 @@ def stats_relPos(data):
     # Print
     helper_print("Relative position", result)
 
+def stats_mobility(data):
+    """Works out the mobility metric for all players."""
+
+    # Prepare the result set
+    result = helper_prepPerPlayerResults(
+        data, default={'mean' : 0, 'stdev' : 0})
+    # Crunch
+    for key in result:
+        masterlist = []
+        for game in data:
+            mobility = 0
+            lastVal = 0
+            for move in game['players'][key]:
+                mobility += abs(move - lastVal)
+                lastVal = move
+            masterlist.append(mobility)
+        result[key]['mean'] = statistics.mean(masterlist)
+        result[key]['stdev'] = statistics.stdev(masterlist)
+    # Print
+    helper_print("Mobility", result)
+
 # Runtime bit
 if __name__ == "__main__":
     # Prep the parser
@@ -341,6 +362,11 @@ if __name__ == "__main__":
                             dest="stats_position_pppt", help="""Like --position,
                             but does calculation per player, per turn. This
                             function prints even more.""")
+    statsgroup.add_argument("--mobility", action="store_true",
+                            dest="stats_mobility", help="""Calculates the
+                            mobility metric - the total distance moved in a
+                            game. This metric is of questionable statistical
+                            value and should be considered experimental.""")
 
     # Do the parsering
     args = parser.parse_args()
