@@ -49,7 +49,7 @@ def createStopButton(face_sta):
     return gui.Button(
         "ES Card" if face_sta == params.FACE_UP else " ",
         width = 75,
-        height = 95,
+        height = 90,
         name = 'EsButton'
     )
 
@@ -79,7 +79,7 @@ class DraftingDialog(ADialog):
     def __init__(self,player):
         super().__init__(
             'Drafing Window for %s' % player.name,
-            Size(800,150),
+            Size(800,120),
         )
         # create a group of stacks for selection
         self._stacksGroup = gui.Group(name = 'stacksGroup',value=None)
@@ -144,7 +144,7 @@ class PlayingDialog(ADialog):
     def __init__(self,player):
         super().__init__(
             'Playing Window for %s' % player.name,
-            Size(700,150),
+            Size(700,120),
         )
         self._cards = [] 
         self._EsUsed = []
@@ -397,7 +397,7 @@ class DrawingArea(gui.Widget):
 class MainGui(gui.Desktop):
     """It describes all the buttons and stuff like that. This is
     where pgu comes in,"""
-    gameAreaHeight = 500
+    gameAreaHeight = 575
     gameArea = None
     menuArea = None
 
