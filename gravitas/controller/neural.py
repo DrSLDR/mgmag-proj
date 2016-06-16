@@ -277,25 +277,21 @@ class Strain:
         Operation(tf.neg, 1),
     ]
     def mutate(self):
-        # select layer to modify
-        layer = random.randrange(self.builder.inputlayer+1, self.builder.layerDepth+1)
-        # the position for the new node
-        position = Position(layer, self.builder.getNodeCountFor(layer))
+        # select an output to modify
+        index = random.randrange(len(self.builder.outputs))
+        target = self.builder.outputs[index]
+        # position of new operation
+        position = Position(target.layer+1, self.builder.getNodeCountFor(target.layer+1))
+        # the new output will be the new position
+        self.builder.outputs[index] = position
         # select an operation
         operation = random.choice(self.operations)
         print("adding %s, at %s" % (operation.function.__name__, position))
         # select the inputs
-        inputs = []
-        # prefer replacing an existing output as input
-        availableOutputs = [o for o in self.builder.outputs if o.layer < layer]
-        print("available %i, layer: %i" % (len(availableOutputs), layer))
-        if len(availableOutputs) > 0:
-            index = random.randrange(len(availableOutputs))
-            inputs.append(availableOutputs[index])
-            self.builder.outputs[index] = position
+        inputs = [target]
 
         while len(inputs) < operation.argcount:
-            layer = random.randrange(self.builder.layerDepth)
+            layer = random.randrange(position.layer)
             inputs.append(Position(
                 layer,
                 random.randrange(self.builder.getNodeCountFor(layer))

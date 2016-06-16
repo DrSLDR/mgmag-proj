@@ -9,11 +9,10 @@ from controller.neural import Neurotic_PC, Strain, Builder, Node
 class config:
     controller = "neuroticAI"
     player = "Darwin"
-    runs = 3 # scoring runs, result of findnum.py
-    generations = 5 # evolution cycles
+    runs = 10 # scoring runs, result of findnum.py
+    generations = 10 # evolution cycles
     significantDifference = 0.05
     popsize = 2
-
 
 def compete(strain, config):
     args = main.parser.parse_args(['-c', 'conf/neurotic.json', '--headless', '-l', '0'])
