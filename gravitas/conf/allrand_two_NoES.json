@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Turing",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Hopper",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Gagarin",
+    "type": "randIgnoreEmergency",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Aldrin",
+    "type": "randIgnoreEmergency",
+    "arguments": {
+    }
+  }
+]
