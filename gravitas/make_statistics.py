@@ -258,6 +258,26 @@ def stats_position_pppt(data):
     # Print
     helper_print("Per player per turn position data", result)
 
+def stats_relPos(data):
+    """Works out the relative position of all players; number of steps behind
+    the winner, on average.
+
+    """
+
+    # Prepare the result set
+    result = helper_prepPerPlayerResults(
+        data, default={'mean' : 0, 'stdev' : 0})
+    # Crunch
+    for key in result:
+        masterlist = []
+        for game in data:
+            winner = helper_getWinnerOfGame(game)
+            relpos = game['players'][winner][-1] - game['players'][key][-1]
+            masterlist.append(relpos)
+        result[key]['mean'] = statistics.mean(masterlist)
+        result[key]['stdev'] = statistics.stdev(masterlist)
+    # Print
+    helper_print("Relative position", result)
 
 # Runtime bit
 if __name__ == "__main__":
@@ -293,9 +313,8 @@ if __name__ == "__main__":
                             dest="stats_winCount", help="""Counts the number of
                             wins for each player.""")
     statsgroup.add_argument("--early-win-count", action="store_true",
-                            dest="stats_earlyWinCount", help="""Counts the
-                            number of early (pre-turn 36) wins for each
-                            player.""")
+                            dest="stats_earlyWinCount", help="""Like
+                            --win-count, but only counts pre-turn 36 wins.""")
     statsgroup.add_argument("--position", action="store_true",
                             dest="stats_position_g", help="""Calculates means and
                             standard deviation of player positions across the
@@ -310,6 +329,10 @@ if __name__ == "__main__":
     statsgroup.add_argument("--position-pp-e", action="store_true",
                             dest="stats_position_pp_e", help="""Like
                             --position-e, but does calculation per player.""")
+    statsgroup.add_argument("--position-relative", action="store_true",
+                            dest="stats_relPos", help="""Like --position-pp-e
+                            but uses relative position (tiles behind the
+                            winner).""")
     statsgroup.add_argument("--position-pt", action="store_true",
                             dest="stats_position_pt", help="""Like --position,
                             but does calculation per turn. This function prints
