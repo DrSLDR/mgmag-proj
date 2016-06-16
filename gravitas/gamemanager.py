@@ -636,11 +636,12 @@ class GameManager:
     def getPlayedCards(self):
         """Function that gets the ordered card-keys, and the playsDictionary, 
         so that the board can display them"""
+        authState = self._cluster.getAuth()
 
         # turn _plays into a dict of cardNames and player-colours
         cardOwnerColorNr = {}
         for cardKey in self._plays:
-            cardOwnerColorNr[cardKey.getName()] = 0
+            cardOwnerColorNr[cardKey.getName()] = authState.players[self._plays[cardKey]].ship.getColor()
 
         if self._toResolve is None:
             return (self._orderedPlays.copy(),cardOwnerColorNr)

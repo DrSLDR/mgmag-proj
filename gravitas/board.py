@@ -10,6 +10,26 @@ def _calcPosition(tileNumber):
     """
     In a number
     Out some coordinates (non scaled, just as a grid)
+    archemedian spiral; x=(a+b*angle)*cos(angle), y=(a+b*angle)*sin(angle)
+
+    """
+    a = 0.15
+    b = 0.12
+
+    angleAcc = 0.75 # in radians
+    if tileNumber > 30:
+        tau = 1 + 10 *1.25* angleAcc + 20*0.75*angleAcc + (tileNumber-30)*0.5*angleAcc
+
+    elif tileNumber > 10:
+        tau = 1 + 10 *1.25* angleAcc + (tileNumber-10)*0.75*angleAcc
+    else:
+        tau = 1 + 1.25*angleAcc * tileNumber
+
+    xTile = -1*(a+b*tau)*math.cos(tau)
+    yTile = -1*(a+b*tau)*math.sin(tau)
+    return Point(x=xTile,y=yTile)
+
+
     """
     tileNumber = tileNumber + 1 # to start at 0
     # thanks: https://math.stackexchange.com/questions/163080/on-a-two-dimensional-grid-is-there-a-formula-i-can-use-to-spiral-coordinates-in
@@ -30,6 +50,7 @@ def _calcPosition(tileNumber):
     if tileNumber>=m-t:
         return Point(x=-k+(m-tileNumber),y=k)
     return Point(x=k,y=k-(m-tileNumber-t))
+    """
 
 from model.player import Ship
 class Renderer:
@@ -133,13 +154,13 @@ class Renderer:
             # display human player's name in color of their ship
             color = Renderer.colors[human.getColor()]  
             darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
-            pos = Point(x=620,y=490)
+            pos = Point(x=620,y=545)
             size = Point(x=80, y=30) 
             pygame.draw.rect(disp, 
                 color, 
                 (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             pygame.draw.rect(disp, darkerColor,                
-                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
+                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-4))
             font(human.getName(), Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
@@ -150,7 +171,7 @@ class Renderer:
 
             # draw (lack of) ES 
             size = Point(x=80, y=60) # size of card
-            pos = Point(x=720+spacing,y=470)
+            pos = Point(x=720+spacing,y=545)
 
             if human.canEmergencyStop():
                 # draws ER-rect with a white border (in same color as human ship)
@@ -165,11 +186,11 @@ class Renderer:
                 font("ES played" , Point(x=pos.x-28,y=pos.y) )
 
             # draw revealed cards
-            spacing = (len(gamestate.players)-len(revealedCards) )*100
+            spacing = 0
             for card in revealedCards[0]:
                 colorNr = revealedCards[1][card.getName()]
                 cardBorder = Renderer.colors[colorNr]
-                drawCard(card, font, disp, Point(x=100+spacing,y=470),cardBorder)
+                drawCard(card, font, disp, Point(x=100+spacing,y=545),cardBorder)
                 spacing += 100
 
 
