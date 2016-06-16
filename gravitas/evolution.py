@@ -7,27 +7,36 @@ import json
 from factory import Factory
 from controller.neural import Neurotic_PC, Strain, Builder, Node
 class config:
+    workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = "neuroticAI"
     player = "Darwin"
     runs = 10 # scoring runs, result of findnum.py
     generations = 10 # evolution cycles
     significantDifference = 0.05
-    popsize = 2
+    popsize = 8
 
-def compete(strain, config):
+def compete(arg):
+    (strain, config) = arg
     args = main.parser.parse_args(['-c', 'conf/neurotic.json', '--headless', '-l', '0'])
     factory = Factory(args)
     factory.controllerTypes[config.controller] = strain.createNeuroticPC
     result = []
-    for run in range(0, config.runs):
-        print("run %i" %  run)
+    for _ in range(0, config.runs):
         runsult = main.run(factory)
         result.append([pl[1] for pl in runsult if pl[0] == config.player][0])
     return result
 
+from multiprocessing import Pool
+pool = Pool(config.workerProcesses)
 def evaluateGeneration(members):
-    for member in members:
-        scores = compete(member, config)
+    results = pool.map( # use the pool
+        compete, # function to be used
+        zip( # dirty ack to pass multiple arguments
+            members,
+            [config for _ in range(0,len(members))]
+        )
+    )
+    for (member,scores) in zip(members,results):
         member.score = sum(scores)/len(scores)
 
 import random
