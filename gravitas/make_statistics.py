@@ -97,7 +97,11 @@ def process(data, args):
         if "stats_" in key:
             if args.all or argsdict[key]:
                 method = glob.get(key)
-                method(data)
+                if method is None:
+                    raise NotImplementedError("The method " + key + " is not"+
+                                              " implemented!")
+                else:
+                    method(data)
 
 # Helper functions. They exist because writing the same code more than once is
 # tedious
@@ -121,7 +125,7 @@ def helper_getWinnerOfGame(game):
 def helper_print(head, data):
     """A uniform printing format makes everyone happy."""
     print(head + ":")
-    print(json.dumps(data, sort_keys=True, indent=4))
+    print(json.dumps(data, sort_keys=True, indent=2))
     print()
 
 def stats_winCount(data):
