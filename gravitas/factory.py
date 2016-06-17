@@ -42,6 +42,7 @@ class Factory():
         for c in conflist:
             self.log.debug("Handling object %s", c)
             if not c['type'] in self.controllerTypes:
+                raise ValueError("UNKONW AGENT TYPE %s" % c['type'])
                 self.log.error("Unknown agent type %s in %s", c['type'],
                                c['name'])
         return conflist

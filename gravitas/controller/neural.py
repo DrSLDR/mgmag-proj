@@ -1,9 +1,9 @@
 """A player controller that uses a neural network to determine the next move"""
 
-from .random import RandomAI_PC
+from .random import RandomIgnoreEmergency
 
 import tensorflow as tf
-class Neurotic_PC(RandomAI_PC):
+class Neurotic_PC(RandomIgnoreEmergency):
     """We extend the random AI so that we don't have to implement everything"""
     def __init__(self, player, args,container):
         super().__init__(player,args, container)
@@ -227,7 +227,6 @@ class Strain:
     def __init__(self, builder):
         self.builder = builder
         self.lazyPC = None
-        self.score = -1
 
     def createFSNeat(enemyCount, hulkCount):
         """Creates a sparsely connected neurotic factory"""

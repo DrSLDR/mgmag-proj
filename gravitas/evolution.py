@@ -8,42 +8,70 @@ from factory import Factory
 from controller.neural import Neurotic_PC, Strain, Builder, Node
 class config:
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
-    controller = "neuroticAI"
-    player = "Darwin"
+    controller = ["neuroticAI", "neuroticAI2"]
+    player = ["Darwin", "Randy"]
     runs = 4 # scoring runs, result of findnum.py
-    generations = 2 # evolution cycles
+    generations = 4 # evolution cycles
     significantDifference = 0.05
     popsize = 8
     jsonfile = 'conf/neurotic2p.json'
     enemyCount = 1
     hulkCount = 1
     filename = "evolution.pikl"
+    readfile=False
 
 def compete(arg):
-    (strain, config) = arg
+    (strains, config) = arg
     args = main.parser.parse_args(['-c', config.jsonfile, '--headless', '-l', '0'])
     factory = Factory(args)
-    factory.controllerTypes[config.controller] = strain.createNeuroticPC
+    for (i, strain) in enumerate(strains):
+        factory.controllerTypes[config.controller[i]] = strain.createNeuroticPC
     result = []
     for _ in range(0, config.runs):
         runsult = main.run(factory)
-        result.append([pl[1] for pl in runsult if pl[0] == config.player][0])
+        def getPlayerScore(player):
+            # extract the score...
+            return [pl[1] for pl in runsult if pl[0] == player][0]
+        result.append([getPlayerScore(player) for player in config.player])
     return result
 
 from multiprocessing import Pool
 pool = Pool(config.workerProcesses) # sub interpreters to use
-def evaluateGeneration(members):
+
+def evaluateGeneration(parents, children):
+    random.shuffle(children) # not always children vs parents, so that strong genes spread
+    members = zip(parents, children)
     # calculating the results is a lot of work, lets not do it ourselves,
     # but use a process worker pool instead
-    results = pool.map( # use the pool
+    compitionResults = pool.map( # use the pool
         compete, # function to be used
         zip( # dirty ack to pass multiple arguments
             members,
-            [config for _ in range(0,len(members))]
+            [config for _ in range(0,len(parents))]
         )
     )
-    for (member,scores) in zip(members,results):
-        member.score = sum(scores)/len(scores)
+    from collections import namedtuple
+    Score = namedtuple('Score', ['member', 'score'])
+    results = []
+    for (i,scorestruct) in enumerate(compitionResults):
+        print("competition results: %s" % json.dumps(list(zip(*scorestruct))))
+        print("competition results: %s" % json.dumps(scorestruct))
+        # zip zop zap!
+        # Don't worry, I stack overflowed it, this totally should work they say
+        candidates = []
+        for (y,scores) in enumerate(list(zip(*scorestruct))):
+            competitor = members[i][y]
+            print("competitor %s with scores-" % json.dumps(competitor.builder.outputs))
+            print(scores)
+            candidates.append(Score(competitor, sum(scores)/len(scores)))
+        
+        scores = [x.score for x in candidates]
+        average = sum(scores)/len(scores)
+        best = max(scores)
+        fraction = average * config.significantDifference
+        candidates = [cand for cand in candidates if abs(cand.score - best) < fraction]
+        results.append(random.choice(candidates).competitor)
+    return results
 
 import random
 def selection(parents, children):
@@ -69,30 +97,21 @@ def loadEvolution():
         result = pickle.load(pickleFile)
         print("loaded population at generation %i" % result['generation'])
         return result['population']
-population = loadEvolution() if isfile(config.filename) else [
+population = loadEvolution() if config.readfile and isfile(config.filename) else [
     Strain.createFSNeat(config.enemyCount, config.hulkCount) for _ in range(0,config.popsize)
 ]
 
-evaluateGeneration(population)
-
-def printpop(population):
-    print("current pop: [%s]" % ', '.join(['%.2f' % pop.score for pop in population]))
-
 for generation in range(0,config.generations):
     print("generation %i" % generation)
-    printpop(population)
 
     children = [Strain(Builder().use(pa.builder)) for pa in population]
     for child in children:
         child.mutate()
 
-    evaluateGeneration(children)
+    population = evaluateGeneration(population, children)
 
-    for child in children:
-        print(json.dumps({"s":child.score, "outs":child.builder.outputs}))
-    population = selection(population, children)
-
-printpop(population)
+    for member in population:
+        print(json.dumps({"s":member.score, "outs":member.builder.outputs}))
 
 with open(config.filename, 'wb') as pickleFile:
     pickle.dump({'population': population, 'generation':generation+1}, pickleFile)

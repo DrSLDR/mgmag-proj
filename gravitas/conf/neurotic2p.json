@@ -7,7 +7,7 @@
   },
   {
     "name": "Randy",
-    "type": "randAI",
+    "type": "neuroticAI2",
     "arguments": {
     }
   }
