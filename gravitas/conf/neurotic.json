@@ -7,19 +7,19 @@
   },
   {
     "name": "Randy",
-    "type": "randAI",
+    "type": "neuroticAI2",
     "arguments": {
     }
   },
   {
     "name": "Squirtle",
-    "type": "randAI",
+    "type": "neuroticAI3",
     "arguments": {
     }
   },
   {
     "name": "Rachel",
-    "type": "randAI",
+    "type": "neuroticAI4",
     "arguments": {
     }
   }
