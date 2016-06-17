@@ -59,7 +59,7 @@ def cycle(margs):
         
     # Prepare game dataset
     state = manager.copyState()
-    gameData = {'turn' : 0, 'players' : {}}
+    gameData = {'turn' : 0, 'winner' : None, 'players' : {}}
     for key in state.players:
         gameData['players'][key] = []
 
@@ -72,6 +72,7 @@ def cycle(margs):
                 done = True
                 break # Break the loop if someone has already won
         if done:
+            gameData['winner'] = state.winner
             break # No more collections
         while manager.copyState().GMState == manager.GMStates['resolve']:
             if engine.update(): # Finish the resolution step
@@ -83,6 +84,7 @@ def cycle(margs):
         for key in state.players:
             gameData['players'][key].append(
                 state.getPlayer(key).ship.getPos())
+        gameData['winner'] = state.winner
         if not done:
             gameData['turn'] += 1
 
@@ -123,13 +125,7 @@ def helper_prepPerPlayerResults(data, default=0):
 
 def helper_getWinnerOfGame(game):
     """Takes a game structure, returns the key of the winning player."""
-    winner = None
-    dist = 0
-    for key in game['players']:
-        if game['players'][key][-1] > dist:
-            dist = game['players'][key][-1]
-            winner = key
-    return winner
+    return game['winner']
 
 def helper_print(head, data):
     """A uniform printing format makes everyone happy."""
