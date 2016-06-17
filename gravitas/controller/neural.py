@@ -14,16 +14,15 @@ class Neurotic_PC(RandomAI_PC):
             raise ValueError("Please initialize the playnetwork "+
                              "(use neurotic factory)")
         hand = self.player.getHand()
-        enemies = [x for x in state.players.values() if x.ship != self.player]
+        enemies = [x for x in state.players.values() if x.ship.name != self.player.name]
         hulks = list(state.hulks.values())
         feed_dict = {
-            "player_position:0": self.player.getPos(),
-            "enemy_position_0:0":enemies[0].ship.getPos(),
-            "enemy_position_1:0":enemies[1].ship.getPos(),
-            "enemy_position_2:0":enemies[2].ship.getPos(),
-            "hulk_position_0:0":hulks[0].ship.getPos(),
-            "hulk_position_1:0":hulks[1].ship.getPos(),
+            "player_position:0": self.player.getPos()
         }
+        for (i, enemy) in enumerate(enemies):
+            feed_dict["enemy_position_%i:0"%i] = enemy.ship.getPos()
+        for (i, hulk) in enumerate(hulks):
+            feed_dict["hulk_position_%i:0"%i] = hulk.ship.getPos()
         for (i,card) in enumerate(hand):
             feed_dict["card_%i_value:0" % i] = card.getValue()
             feed_dict["card_%i_effect:0" % i] = card.getType()
@@ -230,7 +229,7 @@ class Strain:
         self.lazyPC = None
         self.score = -1
 
-    def createFSNeat():
+    def createFSNeat(enemyCount, hulkCount):
         """Creates a sparsely connected neurotic factory"""
         builder = Builder()
         for i in range(0,8):
@@ -238,9 +237,9 @@ class Strain:
             builder.addInput("card_%i_effect" % i, 0)
             builder.addInput("card_%i_play_order" % i, 0)
         builder.addInput("player_position")
-        for i in range(0,3):
+        for i in range(0,enemyCount):
             builder.addInput("enemy_position_%i" % i)
-        for i in range(0,2):
+        for i in range(0,hulkCount):
             builder.addInput("hulk_position_%i" % i)
         import random
         inputs = list(range(0, builder.getNodeCountFor(Builder.inputlayer)))
@@ -286,7 +285,6 @@ class Strain:
         self.builder.outputs[index] = position
         # select an operation
         operation = random.choice(self.operations)
-        print("adding %s, at %s" % (operation.function.__name__, position))
         # select the inputs
         inputs = [target]
 
@@ -296,6 +294,7 @@ class Strain:
                 layer,
                 random.randrange(self.builder.getNodeCountFor(layer))
             ))
+        print("%s at %s with %s" % (operation.function.__name__, position, inputs))
         # add the operation
         self.builder.addOpperation(operation.function, position, inputs)
         return self

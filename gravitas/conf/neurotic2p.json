@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Darwin",
+    "type": "neuroticAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Randy",
+    "type": "randAI",
+    "arguments": {
+    }
+  }
+]
