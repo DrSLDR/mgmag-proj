@@ -64,7 +64,7 @@ class State:
     @callog
     def getHumanPlayer(self):
         # finds the first (and assumed to be the only) human in between the players
-        humans = [p for p in self.players if self.getPlayer(p)[1] 
+        humans = [p for p in self.players if self.getPlayer(p).pc 
                   and self.getPlayer(p).pc.isHuman()]
         if len(humans) == 0 :
             return None
@@ -370,7 +370,7 @@ class GameManager:
         self._toResolve = None
         self._orderedPlays = []
         self._plays = []
-        self._human = self._cluster.getAuth().getHumanPlayer()
+        self._humanName = self._cluster.getAuth().getHumanPlayer()
 
     @callog
     def copyState(self, key=None):
@@ -378,7 +378,17 @@ class GameManager:
         return self._cluster.getState(key)
 
     def getHuman(self):
-        return self._human
+        if self._humanName:
+            authState = self._cluster.getAuth()
+            humanPlayer = authState.getPlayer(self._humanName)
+            human = {}
+            human['name'] = self._humanName
+            human['color'] = humanPlayer.ship.getColor()
+            human['hand'] = humanPlayer.ship.getHand().copy()
+            human['canES'] = humanPlayer.ship.canEmergencyStop()
+            return human
+        else:
+            return None
 
     @callog
     def update(self):
