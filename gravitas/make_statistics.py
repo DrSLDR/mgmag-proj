@@ -26,59 +26,68 @@ TODO: position mean and standard variation: global, per turn, per player, per
 
 """
 
-import engine, factory, main, argparse, statistics, json, copy
+import argparse, statistics, json, copy, multiprocessing
+import engine, factory, main
 
-def run(cycles, fact):
+def run(cycles, margs):
     """Runs the game to gather data.
 
-    Takes the number of cycles (games) to run and the game factory as
-    arguments.
+    Takes the number of cycles (games) to run and the main process (factory)
+    arguments as arguments.
 
     Returns the data list.
 
     """
-
-    # Prepare the master data list
-    data = []
-    
     # Run the loop
-    for cycle in range(cycles):
-        # Retrieve the important bits
-        (engine, manager) = fact.createHeadless()
-        
-        # Prepare game dataset
-        state = manager.copyState()
-        gameData = {'turn' : 0, 'players' : {}}
-        for key in state.players:
-            gameData['players'][key] = []
-
-        # Do the game
-        done = False
-        while not done:
-            # Prepare data-gathering
-            while manager.copyState().GMState < manager.GMStates['resolve']:
-                if engine.update(): # Run the game up to resolution
-                    done = True
-                    break # Break the loop if someone has already won
-            if done:
-                break # No more collections
-            while manager.copyState().GMState == manager.GMStates['resolve']:
-                if engine.update(): # Finish the resolution step
-                    done = True
-                    break # Game is over, time to collect data
-                    
-            # Collect data for the turn
-            state = manager.copyState()
-            for key in state.players:
-                gameData['players'][key].append(
-                    state.getPlayer(key).ship.getPos())
-            if not done:
-                gameData['turn'] += 1
-
-        # Append most recent data
-        data.append(gameData)
+    with multiprocessing.Pool(8) as pool:
+        data = pool.map(cycle, [margs for _ in range(cycles)])
 
     return data
+
+def cycle(margs):
+    """Runs a single game cycle. Broken out of the run function to allow
+    multiprocessing support.
+
+    Takes the factory as an argument.
+
+    Returns the dataset from the cycle.
+
+    """
+    # Retrieve the important bits, now with bake your own factory
+    fact = factory.Factory(margs)
+    (engine, manager) = fact.createHeadless()
+        
+    # Prepare game dataset
+    state = manager.copyState()
+    gameData = {'turn' : 0, 'players' : {}}
+    for key in state.players:
+        gameData['players'][key] = []
+
+    # Do the game
+    done = False
+    while not done:
+        # Prepare data-gathering
+        while manager.copyState().GMState < manager.GMStates['resolve']:
+            if engine.update(): # Run the game up to resolution
+                done = True
+                break # Break the loop if someone has already won
+        if done:
+            break # No more collections
+        while manager.copyState().GMState == manager.GMStates['resolve']:
+            if engine.update(): # Finish the resolution step
+                done = True
+                break # Game is over, time to collect data
+                    
+        # Collect data for the turn
+        state = manager.copyState()
+        for key in state.players:
+            gameData['players'][key].append(
+                state.getPlayer(key).ship.getPos())
+        if not done:
+            gameData['turn'] += 1
+
+    # End
+    return gameData
 
 def process(data, args):
     """Main switchboard between statistics functions.
@@ -383,10 +392,8 @@ if __name__ == "__main__":
         # Do the other parsering
         margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
                                         '0'])
-        # Factorize the factory
-        fact = factory.Factory(margs)
         # Launch the run
-        data = run(args.cycles, fact)
+        data = run(args.cycles, margs)
         # Dump, if that was necessary
         if args.dump is not None:
             dumpfile = open(args.dump, 'w')
