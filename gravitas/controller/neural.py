@@ -8,11 +8,15 @@ class Neurotic_PC(RandomIgnoreEmergency):
     def __init__(self, player, args,container):
         super().__init__(player,args, container)
         self.playNetwork = None
+        self.session = None
 
     def pollPlay(self, state):
         if self.playNetwork is None:
             raise ValueError("Please initialize the playnetwork "+
                              "(use neurotic factory)")
+        if self.session is None:
+            with self.playNetwork.graph.as_default():
+                self.session = tf.Session()
         hand = self.player.getHand()
         enemies = [x for x in state.players.values() if x.ship.name != self.player.name]
         hulks = list(state.hulks.values())
@@ -27,16 +31,17 @@ class Neurotic_PC(RandomIgnoreEmergency):
             feed_dict["card_%i_value:0" % i] = card.getValue()
             feed_dict["card_%i_effect:0" % i] = card.getType()
             feed_dict["card_%i_play_order:0" % i] = ord(card.getName()[0])
-        with self.playNetwork.graph.as_default():
-            with tf.Session() as sess:
-                prefrences = enumerate(sess.run(self.playNetwork.tensor, feed_dict=feed_dict))
-                from operator import itemgetter
-                prefrences = sorted(prefrences, key=itemgetter(1), reverse=True)
-                for (prefIndex, prefScore)in prefrences:
-                    if prefIndex < len(hand):
-                        self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
-                        return hand[prefIndex]
+        prefrences = enumerate(self.session.run(self.playNetwork.tensor, feed_dict=feed_dict))
+        from operator import itemgetter
+        prefrences = sorted(prefrences, key=itemgetter(1), reverse=True)
+        for (prefIndex, prefScore)in prefrences:
+            if prefIndex < len(hand):
+                self.log.debug("neurotic played %i with score %.2f" % (prefIndex, prefScore))
+                return hand[prefIndex]
         raise RuntimeError("Neural network failed, we shouldn't reach here")
+    def announceWinner(self, state):
+        self.session.close()
+        return None
 
 from collections import namedtuple
 
