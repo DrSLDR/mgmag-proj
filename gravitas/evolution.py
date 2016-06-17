@@ -10,15 +10,15 @@ class config:
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = ["neuroticAI", "neuroticAI2"]
     player = ["Darwin", "Randy"]
-    runs = 4 # scoring runs, result of findnum.py
-    generations = 4 # evolution cycles
+    runs = 60 # scoring runs, result of findnum.py
+    generations = 50 # evolution cycles
     significantDifference = 0.05
     popsize = 8
     jsonfile = 'conf/neurotic2p.json'
     enemyCount = 1
     hulkCount = 1
     filename = "evolution.pikl"
-    readfile=False
+    readfile= False
 
 def compete(arg):
     (strains, config) = arg
@@ -40,7 +40,7 @@ pool = Pool(config.workerProcesses) # sub interpreters to use
 
 def evaluateGeneration(parents, children):
     random.shuffle(children) # not always children vs parents, so that strong genes spread
-    members = zip(parents, children)
+    members = list(zip(parents, children))
     # calculating the results is a lot of work, lets not do it ourselves,
     # but use a process worker pool instead
     compitionResults = pool.map( # use the pool
@@ -54,23 +54,22 @@ def evaluateGeneration(parents, children):
     Score = namedtuple('Score', ['member', 'score'])
     results = []
     for (i,scorestruct) in enumerate(compitionResults):
-        print("competition results: %s" % json.dumps(list(zip(*scorestruct))))
-        print("competition results: %s" % json.dumps(scorestruct))
         # zip zop zap!
         # Don't worry, I stack overflowed it, this totally should work they say
         candidates = []
-        for (y,scores) in enumerate(list(zip(*scorestruct))):
-            competitor = members[i][y]
-            print("competitor %s with scores-" % json.dumps(competitor.builder.outputs))
-            print(scores)
+        for (competitor, scores) in zip(members[i], list(zip(*scorestruct))):
             candidates.append(Score(competitor, sum(scores)/len(scores)))
         
         scores = [x.score for x in candidates]
         average = sum(scores)/len(scores)
         best = max(scores)
         fraction = average * config.significantDifference
-        candidates = [cand for cand in candidates if abs(cand.score - best) < fraction]
-        results.append(random.choice(candidates).competitor)
+
+        # you can be selected if your score diff is smaller than the significant fraction
+        # this always includes the best
+        candidates = [cand for cand in candidates if (cand.score - best) < fraction]
+        print("candidates scores %s with best %.4f" % (json.dumps([c.score for c in candidates]), best))
+        results.append(random.choice(candidates).member)
     return results
 
 import random
@@ -111,7 +110,7 @@ for generation in range(0,config.generations):
     population = evaluateGeneration(population, children)
 
     for member in population:
-        print(json.dumps({"s":member.score, "outs":member.builder.outputs}))
+        print(json.dumps(member.builder.outputs))
 
 with open(config.filename, 'wb') as pickleFile:
     pickle.dump({'population': population, 'generation':generation+1}, pickleFile)
