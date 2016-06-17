@@ -10,18 +10,5 @@
     "type": "randAI",
     "arguments": {
     }
-  },
-  {
-    "name": "Claus",
-    "type": "randAI",
-    "arguments": {
-    }
-  },
-  {
-    "name": "Einstein",
-    "type": "randAI",
-    "arguments": {
-    }
   }
-
 ]

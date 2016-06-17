@@ -19,7 +19,7 @@ from factory import Factory
 # "ballenced"
 acceptedMinimum = 30 
 
-currentGameCount = 360 # the amount of games we test
+currentGameCount = 60 # the amount of games we test
 change = 4 # how much to increase currentGameCount next time
 leeway = 0.05 # fraction of deviation allowed
 
@@ -35,14 +35,12 @@ def isBalanced(gameCount):
     avgDistance = 0
     for _ in range(0,gameCount):
         scores = main.run(factory)
-        best = max([x[1] for x in scores])
         for score in scores:
-            myscore = (score[1]-best)
-            scoreboard[score[0]] += myscore/gameCount
-            avgDistance += (myscore/playerCount)/gameCount
+            scoreboard[score[0]] += score[1]/gameCount
+            avgDistance += (score[1]/playerCount)/gameCount
 
     for value in scoreboard.values():
-        fraction = abs(abs(value - avgDistance)/avgDistance)
+        fraction = (abs(value - avgDistance)/avgDistance)
         if fraction > leeway :
             print("imbalanced %s fraction: %.4f" % (json.dumps(scoreboard), fraction))
             return False
