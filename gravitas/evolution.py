@@ -16,9 +16,9 @@ class config:
     controller = ["neuroticAI", "neuroticAI2", "neuroticAI3", "neuroticAI4"]
     player = ["Darwin", "Randy", "Squirtle", "Rachel"]
     tournamentSize = 4
-    runs = 280 # scoring runs, result of findnum.py
+    runs = 1180 # scoring runs, result of findnum.py
     generations = 50 # evolution cycles
-    significantDifference = 0.05
+    significantDifference = 0.025
     popsize = 8
     jsonfile = 'conf/neurotic.json'
     enemyCount = 3

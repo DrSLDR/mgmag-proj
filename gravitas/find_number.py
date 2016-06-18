@@ -19,11 +19,11 @@ from factory import Factory
 # "ballenced"
 acceptedMinimum = 30 
 
-currentGameCount = 60 # the amount of games we test
-change = 4 # how much to increase currentGameCount next time
-leeway = 0.05 # fraction of deviation allowed
+currentGameCount = 300 # the amount of games we test
+change = 20 # how much to increase currentGameCount next time
+leeway = 0.025 # fraction of deviation allowed
 
-args = main.parser.parse_args(['-c', 'conf/tworand.json', '--headless', '-l', '0'])
+args = main.parser.parse_args(['-c', 'conf/allrand.json', '--headless', '-l', '0'])
 factory = Factory(args)
 
 playerCount = len(factory.createState().players)
