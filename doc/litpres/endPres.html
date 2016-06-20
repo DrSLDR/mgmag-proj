@@ -46,11 +46,11 @@
 
         <section data-markdown>
           <script type="text/template">
-            ## Requirements
+            ## Requirements <this slide will go later!>
             
             #### Prepare a 25 minute presentation on your project for June 21 and/or June 23th. The presentation should include: 
             - Description of the overall project 
-            - The game environment (conceptually: what are the characteristics of the virtual environment?; tachnically: what game engine?)
+            - The game environment (conceptually: what are the characteristics of the virtual environment?; technically: what game engine?)
             - The AI-aspect you study in the game, and the reason for adding it to the game
             - The problems you encountered applying your AI-technique
             - A demonstration, or a very good explanation why you do not have one
@@ -63,48 +63,94 @@
           <script type="text/template">
             # Projects Description
             - Create virtual players for the boardgame Gravwell
-              - Random
+              - Random 
               - Reinforcement learning AI
               - Neural Evolution AI
               - Decision tree
-            - Goal is to at least beat let the learning AIs beat randomAI
+            - Goal is to have them beat at least the randomAI
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            # GRAVWELL!!!
+
+            Do I need to explain it again? Its implications on AI design?
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            # Virtual Environment
+              - (does he mean the software architecture or the game state design?)
+
+              - engine class, (connects render, gamemanager and gameloop)
+              - renderer class, (in contact with human_players GUI (for the card menus) to render the board based on a copy of the state)
+              - factory class, (creates inital game state, and makes playertupples based on configurations)  
+              - gamemanager class, (holds state, and updates it based on gravwell gameplay and players choices, informs each player of the state)
+              - playertupple (player class (ship+hand of cards) and object of IPlayerController (interface) type)
+              - state (holds playertupples, information about gravwell game phase, eventlog and deck-information)
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Environment
-              - Concept: virtual environment
-              - Technical: engine
+            # Technical Environment
+            - Pygame (started in 2000, latest version in 2009, but theyre still somewhat active)
+              Used as Game engine and board rendering
+
+            - PGU (Phils pyGame Utilities) 
+              Used for gui
+
+            - Tensorflow (only on ...linux? I only know its not Windows)
+              Used to implement the Neural evolution (it can do math on the GPU and is thus fast)
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # AI 
-            - AI-aspect
-            - Motivation
+            # AI-Aspect 
+            - Learning
+            - <Motivation here>
+
+            - Implemented through:
+              - Reinforcement Learning
+              - Neural Evolution
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Problems
+            # A slide with implementation details maybe?
+          </script>
+        </section>
 
-            - Even WITH a headless version, the program was too slow to let the Neural Network Evolution grow enough
-            - fixed that by implementing clusters and multiprocessing
-            - it could probably be optimised more
+        <section data-markdown>
+          <script type="text/template">
+            # Problems we ran into
 
-            - 
+            - Even WITH a headless version, the program was too slow to let the two AIs learn and grow enough
+            - Fixed that by implementing clusters and multiprocessing
+            - Could probably be optimized more
+
+            - <problems with Reinforcement learning?>
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
             # Project Demo
+            - (demo: short, because it is not that interesting to see)
+            - (Explain that we made the GUI mostly so it was playable/testable by a human, and to have something to show now. The combination of GPU and rendering limited us, and not priority, so it is not majorly pretty)
+            - (Note: start human-demo from console because the game closes immediatly if there is a winner)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Statistics of learned AIs
             - (show statistic results of winnings)
-            - (start human-demo from console because the game closes immediatly if there is a winner)
-            - (pretty graphs)
+            - (pretty graphs)(can you guys arrange me some graphs for your learning AIs?)
           </script>
         </section>
 
@@ -113,7 +159,9 @@
             # Future Work
             - let learn More
             - optimize speed
-            - try other types of AIs
+            - Change UI, possibly by removing PGU entirely
+            - Try other types of AIs
+            - Pit them against each other?
           </script>
         </section>
 
@@ -121,8 +169,8 @@
           <script type="text/template">
             # Conclusion
             - playable game, though not too pretty
-            - 2 offline learning AIs and one symbolic AI
-            - against 3 randomAIs, someone always wins
+            - 2 offline learning AIs, two non-learning agents
+            - in x amount of games against 3 random AIs, <one of our AIs> wins the most often
           </script>
         </section>
       </div>
