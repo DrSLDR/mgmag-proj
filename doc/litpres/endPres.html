@@ -46,131 +46,136 @@
 
         <section data-markdown>
           <script type="text/template">
-            ## Requirements <this slide will go later!>
-            
-            #### Prepare a 25 minute presentation on your project for June 21 and/or June 23th. The presentation should include: 
-            - Description of the overall project 
-            - The game environment (conceptually: what are the characteristics of the virtual environment?; technically: what game engine?)
-            - The AI-aspect you study in the game, and the reason for adding it to the game
-            - The problems you encountered applying your AI-technique
-            - A demonstration, or a very good explanation why you do not have one
-            - Future work
-            - Conclusion
+            ## Projects Description
+            - Create AI driven opponents for the boardgame Gravwell
+            - Goal: have them beat at least the random AI
           </script>
         </section>
-
-        <section data-markdown>
-          <script type="text/template">
-            # Projects Description
-            - Create virtual players for the boardgame Gravwell
-              - Random 
-              - Reinforcement learning AI
-              - Neural Evolution AI
-              - Decision tree
-            - Goal is to have them beat at least the randomAI
-          </script>
+        
+        <section>
+            <h2>Gravwell</h2>
+            <table>
+              <tr>
+                <td>
+                  <img height="350px" data-src="http://www.alltpaettkort.se/wp-content/uploads/2014/01/Gravwell-spelplan.jpg" alt="Gravwell board">
+                </td>
+                <td>
+                  <ul>
+                    <li>Boardgame 2-4 players</li>
+                    <li>Playing Cards to move forward</li>
+                    <ul>
+                      <li>Type</li>
+                      <li>Value</li>
+                      <li>Name</li>
+                    </ul>                    
+                    <li>Important phases:</li>
+                    <ul>
+                      <li>Draft</li>
+                      <li>Play</li>
+                      <li>Resolve </li>
+                      <ul><li>Emergency stop</li></ul>
+                    </ul>
+                </td>
+              </tr>
+            </table>
+          
         </section>
         
         <section data-markdown>
           <script type="text/template">
-            # GRAVWELL!!!
-
-            Do I need to explain it again? Its implications on AI design?
-          </script>
-        </section>
-        
-        <section data-markdown>
-          <script type="text/template">
-            # Virtual Environment
-              - (does he mean the software architecture or the game state design?)
-
-              - engine class, (connects render, gamemanager and gameloop)
-              - renderer class, (in contact with human_players GUI (for the card menus) to render the board based on a copy of the state)
-              - factory class, (creates inital game state, and makes playertupples based on configurations)  
-              - gamemanager class, (holds state, and updates it based on gravwell gameplay and players choices, informs each player of the state)
-              - playertupple (player class (ship+hand of cards) and object of IPlayerController (interface) type)
-              - state (holds playertupples, information about gravwell game phase, eventlog and deck-information)
-          </script>
-        </section>
-
-        <section data-markdown>
-          <script type="text/template">
-            # Technical Environment
-            - Pygame (started in 2000, latest version in 2009, but theyre still somewhat active)
-              Used as Game engine and board rendering
-
-            - PGU (Phils pyGame Utilities) 
-              Used for gui
-
-            - Tensorflow (only on ...linux? I only know its not Windows)
-              Used to implement the Neural evolution (it can do math on the GPU and is thus fast)
-          </script>
-        </section>
-
-        <section data-markdown>
-          <script type="text/template">
-            # AI-Aspect 
+            ## AI-Aspect 
+            -  Decision making
             - Learning
-            - <Motivation here>
 
             - Implemented through:
               - Reinforcement Learning
               - Neural Evolution
+              - Decision Tree
+              - Random AI
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # A slide with implementation details maybe?
+            ## Virtual Environment
+              State holds:
+              - playertupples
+              - information about gravwell game phase
+              - eventlog 
+              - deck-information
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Problems we ran into
+            ## Technical Environment
+            - Python
 
-            - Even WITH a headless version, the program was too slow to let the two AIs learn and grow enough
-            - Fixed that by implementing clusters and multiprocessing
-            - Could probably be optimized more
+            - Pygame :
+              - Game engine and board rendering
 
-            - <problems with Reinforcement learning?>
+            - PGU :
+              - GUI
+
+            - Tensorflow (only on Unix) :
+              - To implement the Neural evolution with
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # (A slide with implementation details maybe?)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ### Problems
+            - Even WITH a headless version, too slow to properly learn
+              - Fixed (mostly) by implementing clusters and multiprocessing
+
+            - Problem specific to Neural Evolution:
+              - How do you compare strategies?
+
+            - Problem specific to RL:
+              - No reward for draft -> no RL implemented for that phase
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
             # Project Demo
-            - (demo: short, because it is not that interesting to see)
-            - (Explain that we made the GUI mostly so it was playable/testable by a human, and to have something to show now. The combination of GPU and rendering limited us, and not priority, so it is not majorly pretty)
-            - (Note: start human-demo from console because the game closes immediatly if there is a winner)
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Statistics of learned AIs
-            - (show statistic results of winnings)
-            - (pretty graphs)(can you guys arrange me some graphs for your learning AIs?)
+            ## AI statistics
+            - Goal: win from random AI
+            - < here three graphs from win-rate against RAI >
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Future Work
-            - let learn More
-            - optimize speed
-            - Change UI, possibly by removing PGU entirely
+            ## Future Work
+            - Let learn More
+            - Optimize speed
+            - Change UI
             - Try other types of AIs
-            - Pit them against each other?
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Conclusion
-            - playable game, though not too pretty
-            - 2 offline learning AIs, two non-learning agents
-            - in x amount of games against 3 random AIs, <one of our AIs> wins the most often
+            ## Conclusion
+            - We made:
+                - 2 types of non-learning AIs
+                - 2 types of offline learning AIs
+            - Decision Tree AI works really well
+
+            - Learning AIs: learned long enough to beat random AI            
+            - but for the learning AIs to actually compete, they need to learning longer
           </script>
         </section>
       </div>
