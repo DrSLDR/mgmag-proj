@@ -46,83 +46,136 @@
 
         <section data-markdown>
           <script type="text/template">
-            ## Requirements
-            
-            #### Prepare a 25 minute presentation on your project for June 21 and/or June 23th. The presentation should include: 
-            - Description of the overall project 
-            - The game environment (conceptually: what are the characteristics of the virtual environment?; tachnically: what game engine?)
-            - The AI-aspect you study in the game, and the reason for adding it to the game
-            - The problems you encountered applying your AI-technique
-            - A demonstration, or a very good explanation why you do not have one
-            - Future work
-            - Conclusion
+            ## Projects Description
+            - Create AI driven opponents for the boardgame Gravwell
+            - Goal: have them beat at least the random AI
+          </script>
+        </section>
+        
+        <section>
+            <h2>Gravwell</h2>
+            <table>
+              <tr>
+                <td>
+                  <img height="350px" data-src="http://www.alltpaettkort.se/wp-content/uploads/2014/01/Gravwell-spelplan.jpg" alt="Gravwell board">
+                </td>
+                <td>
+                  <ul>
+                    <li>Boardgame 2-4 players</li>
+                    <li>Playing Cards to move forward</li>
+                    <ul>
+                      <li>Type</li>
+                      <li>Value</li>
+                      <li>Name</li>
+                    </ul>                    
+                    <li>Important phases:</li>
+                    <ul>
+                      <li>Draft</li>
+                      <li>Play</li>
+                      <li>Resolve </li>
+                      <ul><li>Emergency stop</li></ul>
+                    </ul>
+                </td>
+              </tr>
+            </table>
+          
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            ## AI-Aspect 
+            -  Decision making
+            - Learning
+
+            - Implemented through:
+              - Reinforcement Learning
+              - Neural Evolution
+              - Decision Tree
+              - Random AI
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Projects Description
-            - Create virtual players for the boardgame Gravwell
-              - Random
-              - Reinforcement learning AI
-              - Neural Evolution AI
-              - Decision tree
-            - Goal is to at least beat let the learning AIs beat randomAI
+            ## Virtual Environment
+              State holds:
+              - playertupples
+              - information about gravwell game phase
+              - eventlog 
+              - deck-information
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Environment
-              - Concept: virtual environment
-              - Technical: engine
+            ## Technical Environment
+            - Python
+
+            - Pygame :
+              - Game engine and board rendering
+
+            - PGU :
+              - GUI
+
+            - Tensorflow (only on Unix) :
+              - To implement the Neural evolution with
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # AI 
-            - AI-aspect
-            - Motivation
+            # (A slide with implementation details maybe?)
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Problems
+            ### Problems
+            - Even WITH a headless version, too slow to properly learn
+              - Fixed (mostly) by implementing clusters and multiprocessing
 
-            - Even WITH a headless version, the program was too slow to let the Neural Network Evolution grow enough
-            - fixed that by implementing clusters and multiprocessing
-            - it could probably be optimised more
+            - Problem specific to Neural Evolution:
+              - How do you compare strategies?
 
-            - 
+            - Problem specific to RL:
+              - No reward for draft -> no RL implemented for that phase
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
             # Project Demo
-            - (show statistic results of winnings)
-            - (start human-demo from console because the game closes immediatly if there is a winner)
-            - (pretty graphs)
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Future Work
-            - let learn More
-            - optimize speed
-            - try other types of AIs
+            ## AI statistics
+            - Goal: win from random AI
+            - < here three graphs from win-rate against RAI >
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Conclusion
-            - playable game, though not too pretty
-            - 2 offline learning AIs and one symbolic AI
-            - against 3 randomAIs, someone always wins
+            ## Future Work
+            - Let learn More
+            - Optimize speed
+            - Change UI
+            - Try other types of AIs
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Conclusion
+            - We made:
+                - 2 types of non-learning AIs
+                - 2 types of offline learning AIs
+            - Decision Tree AI works really well
+
+            - Learning AIs: learned long enough to beat random AI            
+            - but for the learning AIs to actually compete, they need to learning longer
           </script>
         </section>
       </div>
