@@ -46,29 +46,45 @@
 
         <section data-markdown>
           <script type="text/template">
-            # Projects Description
+            ## Projects Description
             - Create AI driven opponents for the boardgame Gravwell
             - Goal: have them beat at least the random AI
           </script>
         </section>
         
-        <section data-markdown>
-          <script type="text/template">
-            # Gravwell
-            Boardgame 2-4 players
-
-            Important phases:
-            - Draft
-            - Play
-            - Resolve 
-              - Emergency stop
-          </script>
+        <section>
+            <h2>Gravwell</h2>
+            <table>
+              <tr>
+                <td>
+                  <img height="350px" data-src="http://www.alltpaettkort.se/wp-content/uploads/2014/01/Gravwell-spelplan.jpg" alt="Gravwell board">
+                </td>
+                <td>
+                  <ul>
+                    <li>Boardgame 2-4 players</li>
+                    <li>Playing Cards to move forward</li>
+                    <ul>
+                      <li>Type</li>
+                      <li>Value</li>
+                      <li>Name</li>
+                    </ul>                    
+                    <li>Important phases:</li>
+                    <ul>
+                      <li>Draft</li>
+                      <li>Play</li>
+                      <li>Resolve </li>
+                      <ul><li>Emergency stop</li></ul>
+                    </ul>
+                </td>
+              </tr>
+            </table>
+          
         </section>
         
         <section data-markdown>
           <script type="text/template">
-            # AI-Aspect 
-            - Decision making
+            ## AI-Aspect 
+            -  Decision making
             - Learning
 
             - Implemented through:
@@ -81,7 +97,7 @@
 
         <section data-markdown>
           <script type="text/template">
-            # Virtual Environment
+            ## Virtual Environment
               State holds:
               - playertupples
               - information about gravwell game phase
@@ -92,15 +108,17 @@
 
         <section data-markdown>
           <script type="text/template">
-            # Technical Environment
-            - Pygame 
-              Used as Game engine and board rendering
+            ## Technical Environment
+            - Python
 
-            - PGU 
-              Used for gui
+            - Pygame :
+              - Game engine and board rendering
 
-            - Tensorflow (only on Unix)
-              Used to implement the Neural evolution 
+            - PGU :
+              - GUI
+
+            - Tensorflow (only on Unix) :
+              - To implement the Neural evolution with
           </script>
         </section>
 
@@ -112,16 +130,15 @@
 
         <section data-markdown>
           <script type="text/template">
-            # Problems
-
+            ### Problems
             - Even WITH a headless version, too slow to properly learn
-            - Fixed (mostly) by implementing clusters and multiprocessing
+              - Fixed (mostly) by implementing clusters and multiprocessing
 
-            - problem specific to Neural Evolution
-              How do you compare strategies?
+            - Problem specific to Neural Evolution:
+              - How do you compare strategies?
 
             - Problem specific to RL:
-              No reward for draft -> no RL implemented for that phase
+              - No reward for draft -> no RL implemented for that phase
           </script>
         </section>
 
@@ -133,7 +150,7 @@
 
         <section data-markdown>
           <script type="text/template">
-            # AI statistics
+            ## AI statistics
             - Goal: win from random AI
             - < here three graphs from win-rate against RAI >
           </script>
@@ -141,23 +158,24 @@
 
         <section data-markdown>
           <script type="text/template">
-            # Future Work
-            - let learn More
-            - optimize speed
-            - Change UI, possibly by removing PGU entirely
+            ## Future Work
+            - Let learn More
+            - Optimize speed
+            - Change UI
             - Try other types of AIs
-            - Pit them against each other?
-
-              <D will do future for RL>
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # Conclusion
-            - 2 offline learning AIs, 2 (or 3) non-learning agents
-            - Decision Tree AI works really well in comparison to the learning AIs
-            - For the learning AIs to actually compete, they need more learning
+            ## Conclusion
+            - We made:
+                - 2 types of non-learning AIs
+                - 2 types of offline learning AIs
+            - Decision Tree AI works really well
+
+            - Learning AIs: learned long enough to beat random AI            
+            - but for the learning AIs to actually compete, they need to learning longer
           </script>
         </section>
       </div>
