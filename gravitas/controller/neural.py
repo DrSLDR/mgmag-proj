@@ -3,6 +3,8 @@
 from .random import RandomIgnoreEmergency
 
 import tensorflow as tf
+import pickle
+
 class Neurotic_PC(RandomIgnoreEmergency):
     """We extend the random AI so that we don't have to implement everything"""
     def __init__(self, player, args,container):
@@ -257,6 +259,14 @@ class Strain:
                 )
             )
         return Strain(builder)
+
+    def loadFromPickle(filename, popNumber):
+        with open(filename, 'rb') as pickleFile:
+            print("loading %s" % filename)
+            result = pickle.load(pickleFile)
+            print("loaded population at generation %i" % result['generation'])
+            return result['population'][popNumber]
+        raise ValueError("not here")
 
     def createNeuroticPC(self, player, args, container):
         """Attach this instead of the default init"""

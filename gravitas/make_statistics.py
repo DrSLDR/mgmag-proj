@@ -37,7 +37,6 @@ def run(cycles, fact):
     Returns the data list.
 
     """
-
     # Prepare the master data list
     data = []
     

@@ -6,6 +6,7 @@ import main
 import json
 import random
 import pickle
+from sys import maxsize
 from os.path import isfile
 
 from factory import Factory
@@ -17,7 +18,7 @@ class config:
     controller = ["neuroticAI"]
     player = ["Darwin"]
     tournamentSize = 4
-    runs = 10 # scoring runs, result of findnum.py
+    runs = 100 # scoring runs, result of findnum.py
     generations = 50 # evolution cycles
     significantDifference = 0.025
     popsize = 8
@@ -30,15 +31,19 @@ class config:
 def compete(arg):
     (strains, config, seed) = arg
     print("seed: %s", seed)
-    random.seed(seed)
+    rng = random.Random()
+    rng.seed(seed)
     args = main.parser.parse_args(['-c', config.jsonfile, '--headless', '-l', '0'])
     factory = Factory(args)
+    factory.rng.seed(rng.randrange(maxsize))
     for (i, strain) in enumerate(strains):
         print("nr: %i, strain: %s" % (i,type(strain).__name__))
         factory.controllerTypes[config.controller[i]] = strain.createNeuroticPC
     result = []
     for run in range(0, config.runs):
+        randone = factory.rng.randrange(500)
         runsult = main.run(factory)
+        print("run %i, game id %i, and %i" % (run, randone, factory.rng.randrange(500)))
         def getPlayerScore(player):
             # extract the score...
             return [pl[1] for pl in runsult if pl[0] == player][0]
@@ -53,7 +58,6 @@ def evaluateGeneration(parents, *children):
     for mutations in children:
         members.extend(mutations)
     members = [[x] for x in members]
-    from sys import maxsize
     generationSeed = random.randrange(maxsize)
     # calculating the results is a lot of work, lets not do it ourselves,
     # but use a process worker pool instead

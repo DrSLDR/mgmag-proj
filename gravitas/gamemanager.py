@@ -357,6 +357,7 @@ class GameManager:
         """Constructs the game manager. Takes an already-constructed
         game-state."""
         self._cluster = StateCluster(state)
+        self.rng = random.Random()
         self.log = logging.getLogger(__name__)
         self.GMStates = {
             "init" : 0,

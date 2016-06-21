@@ -15,17 +15,24 @@ from controller.symbolic import SymbolicAI_PC
 from controller.rl import RLAI_PC
 from engine import GameEngine, callog
 from human_player import MainGui, FrameRateThrottler, ScreenRenderer
+from sys import maxsize
 
 class Factory():
     """ A factory which can create playerControllers, states and the Gamemanager"""
 
+    def createRandom(self, player, args,container):
+        result = RandomAI_PC(player,args,container)
+        result.seed(self._seed())
+        return result
+
     def __init__(self, args):
         self.args = args
+        self.rng = random.Random()
         #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
         self.controllerTypes = {
             "human": Human_PC,
-            "randAI": RandomAI_PC,
+            "randAI": self.createRandom,
             "neuroticAI": Neurotic_PC,
             "symbolic": SymbolicAI_PC,
             "randIgnoreEmergency": RandomIgnoreEmergency,
@@ -111,8 +118,12 @@ class Factory():
     def _createGameManager(self):
         """Given the game manager configuration, create the game manager"""
         state = self.createState()
-        return GameManager(state)
+        result = GameManager(state)
+        result.rng.seed(self._seed())
+        return result
 
+    def _seed(self):
+        return self.rng.randrange(maxsize)
     def _configureLogger(self):
         import logging
         if(self.args.loglevel == 0):
