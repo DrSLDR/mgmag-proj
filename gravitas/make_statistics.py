@@ -27,7 +27,6 @@ TODO: position mean and standard variation: global, per turn, per player, per
 """
 
 import engine, factory, main, argparse, statistics, json, copy
-from controller.neural import Strain
 
 def run(cycles, fact):
     """Runs the game to gather data.
@@ -38,17 +37,12 @@ def run(cycles, fact):
     Returns the data list.
 
     """
+
     # Prepare the master data list
     data = []
     
-    import random
-    rng = random.Random()
-    rng.seed(42)
     # Run the loop
     for cycle in range(cycles):
-        from sys import maxsize
-        fact.rng.seed(rng.randrange(maxsize))
-
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
         
@@ -380,28 +374,7 @@ if __name__ == "__main__":
     # Do the parsering
     args = parser.parse_args()
 
-<<<<<<< HEAD
-    # Figure out if we are doing a run or an import
-    if args.data is not None:
-        # Looks an awful lot like an import
-        datafile = open(args.data, 'r')
-        data = json.load(datafile)
-        datafile.close()
-
-    elif args.config is not None:
-        # Looks like a run
-        # Do the other parsering
-        margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
-                                        '0'])
-        # Factorize the factory
-        fact = factory.Factory(margs)
-        # Launch the run
-        data = run(args.cycles, fact)
-        # Dump, if that was necessary
-        if args.dump is not None:
-            dumpfile = open(args.dump, 'w')
-            json.dump(data, dumpfile)
-            dumpfile.close()
+    for _ in range(0,args.rounds):
 
         # Figure out if we are doing a run or an import
         if args.data is not None:
