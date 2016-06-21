@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Gravitas</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/night.css">
+
+    <style>
+     p.source{
+         font-size: 60%;
+     }
+    </style>
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <style type="text/css">
+      .source {
+        font-size: 60%;
+      }
+    </style>
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown>
+          <script type="text/template">
+            ![](img/gravitas_logo_w.png) <!-- .element: style="border: 0; background: inherit;"  -->
+
+            ---
+            Jonas A. Hultén, Jappie Klooster, Eva Linssen, Deliang Wu
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Requirements <this slide will go later!>
+            
+            #### Prepare a 25 minute presentation on your project for June 21 and/or June 23th. The presentation should include: 
+            - Description of the overall project 
+            - The game environment (conceptually: what are the characteristics of the virtual environment?; technically: what game engine?)
+            - The AI-aspect you study in the game, and the reason for adding it to the game
+            - The problems you encountered applying your AI-technique
+            - A demonstration, or a very good explanation why you do not have one
+            - Future work
+            - Conclusion
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Projects Description
+            - Create virtual players for the boardgame Gravwell
+              - Random 
+              - Reinforcement learning AI
+              - Neural Evolution AI
+              - Decision tree
+            - Goal is to have them beat at least the randomAI
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            # GRAVWELL!!!
+
+            Do I need to explain it again? Its implications on AI design?
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            # Virtual Environment
+              - (does he mean the software architecture or the game state design?)
+
+              - engine class, (connects render, gamemanager and gameloop)
+              - renderer class, (in contact with human_players GUI (for the card menus) to render the board based on a copy of the state)
+              - factory class, (creates inital game state, and makes playertupples based on configurations)  
+              - gamemanager class, (holds state, and updates it based on gravwell gameplay and players choices, informs each player of the state)
+              - playertupple (player class (ship+hand of cards) and object of IPlayerController (interface) type)
+              - state (holds playertupples, information about gravwell game phase, eventlog and deck-information)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Technical Environment
+            - Pygame (started in 2000, latest version in 2009, but theyre still somewhat active)
+              Used as Game engine and board rendering
+
+            - PGU (Phils pyGame Utilities) 
+              Used for gui
+
+            - Tensorflow (only on ...linux? I only know its not Windows)
+              Used to implement the Neural evolution (it can do math on the GPU and is thus fast)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # AI-Aspect 
+            - Learning
+            - <Motivation here>
+
+            - Implemented through:
+              - Reinforcement Learning
+              - Neural Evolution
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # A slide with implementation details maybe?
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Problems we ran into
+
+            - Even WITH a headless version, the program was too slow to let the two AIs learn and grow enough
+            - Fixed that by implementing clusters and multiprocessing
+            - Could probably be optimized more
+
+            - <problems with Reinforcement learning?>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Project Demo
+            - (demo: short, because it is not that interesting to see)
+            - (Explain that we made the GUI mostly so it was playable/testable by a human, and to have something to show now. The combination of GPU and rendering limited us, and not priority, so it is not majorly pretty)
+            - (Note: start human-demo from console because the game closes immediatly if there is a winner)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Statistics of learned AIs
+            - (show statistic results of winnings)
+            - (pretty graphs)(can you guys arrange me some graphs for your learning AIs?)
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Future Work
+            - let learn More
+            - optimize speed
+            - Change UI, possibly by removing PGU entirely
+            - Try other types of AIs
+            - Pit them against each other?
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Conclusion
+            - playable game, though not too pretty
+            - 2 offline learning AIs, two non-learning agents
+            - in x amount of games against 3 random AIs, <one of our AIs> wins the most often
+          </script>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        history: true,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+            { src: 'plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+  </body>
+</html>
