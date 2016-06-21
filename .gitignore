@@ -1,4 +1,5 @@
-*.pkl # ignoring binary files
+# ignoring binary files
+*.pkl
 
 .gradle
 
