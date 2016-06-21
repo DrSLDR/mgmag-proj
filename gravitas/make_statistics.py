@@ -40,9 +40,13 @@ def run(cycles, fact):
     # Prepare the master data list
     data = []
     
-    fact.rng.seed(42)
+    import random
+    rng = random.Random()
+    rng.seed(42)
     # Run the loop
     for cycle in range(cycles):
+        from sys import maxsize
+        fact.rng.seed(rng.randrange(maxsize))
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
         
