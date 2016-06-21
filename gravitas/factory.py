@@ -12,6 +12,7 @@ from controller.random import RandomAI_PC, RandomIgnoreEmergency
 from controller.human import Human_PC
 from controller.neural import Neurotic_PC
 from controller.symbolic import SymbolicAI_PC
+from controller.rl import RLAI_PC
 from engine import GameEngine, callog
 from human_player import MainGui, FrameRateThrottler, ScreenRenderer
 
@@ -28,6 +29,7 @@ class Factory():
             "neuroticAI": Neurotic_PC,
             "symbolic": SymbolicAI_PC,
             "randIgnoreEmergency": RandomIgnoreEmergency
+            "RLAI": RLAI_PC
         }
         self.guiContainer = None
         self._configureLogger() # cause you know, need it to operate

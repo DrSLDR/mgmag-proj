@@ -84,7 +84,7 @@ class Renderer:
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
         return pos
 
-    def render(self, font, disp, gamestate, humanPlayer, revealedCards):
+    def render(self, font, disp, gamestate, humanData, revealedCards):
         """function that renders the board"""
         import pygame
         # connections between tiles
@@ -147,12 +147,10 @@ class Renderer:
             else: cardTypeStr = ' Tractor  '
             font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
-        # gets the first human from the state
-        if humanPlayer in playerPCDict:
-            human = playerPCDict[humanPlayer][0]
-
+        # if there is a human, draw its name and hand
+        if humanData:
             # display human player's name in color of their ship
-            color = Renderer.colors[human.getColor()]  
+            color = Renderer.colors[humanData['color']]  
             darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
             pos = Point(x=620,y=545)
             size = Point(x=80, y=30) 
@@ -161,19 +159,19 @@ class Renderer:
                 (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             pygame.draw.rect(disp, darkerColor,                
                 (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-4))
-            font(human.getName(), Point(x=pos.x-20,y=pos.y-5))
+            font(humanData['name'], Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
             spacing = 0
-            for card in human.getHand():
-                drawCard(card, font, disp, Point(x=720+spacing,y=470))
+            for card in humanData['hand']:
+                drawCard(card, font, disp, Point(x=720+spacing,y=545))
                 spacing += 100
 
             # draw (lack of) ES 
             size = Point(x=80, y=60) # size of card
             pos = Point(x=720+spacing,y=545)
 
-            if human.canEmergencyStop():
+            if humanData['canES']:
                 # draws ER-rect with a white border (in same color as human ship)
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
