@@ -262,9 +262,7 @@ class Strain:
 
     def loadFromPickle(filename, popNumber):
         with open(filename, 'rb') as pickleFile:
-            print("loading %s" % filename)
             result = pickle.load(pickleFile)
-            print("loaded population at generation %i" % result['generation'])
             return result['population'][popNumber]
         raise ValueError("not here")
 

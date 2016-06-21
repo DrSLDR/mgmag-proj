@@ -16,12 +16,12 @@ class config:
     """static config"""
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = ["neuroticAI"]
-    player = ["Darwin"]
-    tournamentSize = 4
-    runs = 100 # scoring runs, result of findnum.py
-    generations = 50 # evolution cycles
-    significantDifference = 0.025
-    popsize = 8
+    player = "Darwin" # the AI slot to train, should match the config file
+    offspringCount = 1
+    runs = 20 # scoring runs, result of findnum.py
+    countIncrease = 4 # if an AI beats 50% of the time, how much to increase
+    generations = 400 # evolution cycles
+    popsize = 16
     jsonfile = 'conf/neurotic.json'
     enemyCount = 3
     hulkCount = 2
@@ -30,24 +30,18 @@ class config:
 
 def compete(arg):
     (strains, config, seed) = arg
-    print("seed: %s", seed)
     rng = random.Random()
     rng.seed(seed)
     args = main.parser.parse_args(['-c', config.jsonfile, '--headless', '-l', '0'])
     factory = Factory(args)
     factory.rng.seed(rng.randrange(maxsize))
     for (i, strain) in enumerate(strains):
-        print("nr: %i, strain: %s" % (i,type(strain).__name__))
         factory.controllerTypes[config.controller[i]] = strain.createNeuroticPC
     result = []
     for run in range(0, config.runs):
         randone = factory.rng.randrange(500)
         runsult = main.run(factory)
-        print("run %i, game id %i, and %i" % (run, randone, factory.rng.randrange(500)))
-        def getPlayerScore(player):
-            # extract the score...
-            return [pl[1] for pl in runsult if pl[0] == player][0]
-        result.append([getPlayerScore(player) for player in config.player])
+        result.append(runsult)
     return result
 
 from multiprocessing import Pool
@@ -73,36 +67,20 @@ def evaluateGeneration(parents, *children):
     )
     from collections import namedtuple
     Score = namedtuple('Score', ['member', 'score'])
-    results = []
-    for (i,scorestruct) in enumerate(zip(members, compitionResults)):
-        candidates = []
 
-        # we have 2 lists [member1, member2] with the members
-        # and another [[score1, score2], [score3, score4]]
-        # now we want to all scores in index 1 to member1 and so on...
-        # so the result is [(member1, [score1, score3]), (member2, [score2, score4])]
-        # turns out you can do this with zip and zip*.
-        labeledScores = zip(members[i], list(zip(*scorestruct)))
-        for (competitor, scores) in labeledScores:
-            candidates.append(Score(competitor, sum(scores)/len(scores)))
-        
-        scores = [x.score for x in candidates]
-        average = sum(scores)/len(scores)
-        best = max(scores)
-        fraction = average * config.significantDifference
-
-        # you can be selected if your score diff is smaller than the significant fraction
-        # this always includes the best
-        filtered = [cand.score for cand in candidates if (cand.score - average) < fraction]
-        selected = [cand.score for cand in candidates if (cand.score - average) >= fraction]
-        print("selected (count: %i, scores %s), best %.4f, fraction %.4f, un-significant (%s)" % (
-            len(selected), json.dumps(selected), best, fraction, json.dumps(filtered)
-        ))
-        # if we have to select randomly from the candidates, why not just select
-        # the best? True he may be just lucky, but we have to choose at this point
-        candidates = [cand for cand in candidates if best == cand.score]
-        results.append(random.choice(candidates).member)
-    return results
+    def countWins(scores):
+        wins = 0
+        for score in scores:
+            if sorted(score, key = lambda x: x[1])[-1][0] == config.player:
+                wins += 1
+        return wins
+    results = [Score(member[0], countWins(scores)) for (member,scores) in zip(members, compitionResults)]
+    sortedResutls = sorted(results, key=lambda x: x.score)
+    bestScore = sortedResutls[-1].score
+    if bestScore > config.runs * 0.5:
+        config.runs += 4
+        print("increasing runcount to %i an AI beat half of the runs with score: %i" % (config.runs, bestScore))
+    return [element.member for element in sortedResutls][-config.popsize:]
 
 def loadEvolution():
     with open(config.filename, 'rb') as pickleFile:
@@ -115,8 +93,7 @@ population = loadEvolution() if config.readfile and isfile(config.filename) else
 ]
 
 for generation in range(0,config.generations):
-    print("generation %i" % generation)
-
+    print("generation %i, runcount: %i" % (generation, config.runs))
 
     def createChildren():
         children = [Strain(Builder().use(pa.builder)) for pa in population]
@@ -124,7 +101,7 @@ for generation in range(0,config.generations):
             child.mutate()
         return children
 
-    population = evaluateGeneration(population, *[createChildren() for _ in range(1,config.tournamentSize)])
+    population = evaluateGeneration(population, *[createChildren() for _ in range(0,config.offspringCount)])
 
     for member in population:
         print(json.dumps(member.builder.outputs))
