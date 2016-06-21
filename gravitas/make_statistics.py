@@ -305,6 +305,23 @@ def stats_mobility(data):
     # Print
     helper_print("Mobility", result)
 
+def stats_singularity(data):
+    """Works out the number of dead games (all players in the singularity)."""
+    
+    # Prepare the result set
+    result = {'total' : 0}
+    # Crunch
+    for game in data:
+        if game['turn'] == 36:
+            dead = True
+            for key in game['players']:
+                if dead:
+                    dead = game['players'][key][-1] == 0
+            if dead:
+                result['total'] += 1
+    # Print
+    helper_print("Dead games", result)
+
 # Runtime bit
 if __name__ == "__main__":
     # Prep the parser
@@ -341,6 +358,10 @@ if __name__ == "__main__":
     statsgroup.add_argument("--early-win-count", action="store_true",
                             dest="stats_earlyWinCount", help="""Like
                             --win-count, but only counts pre-turn 36 wins.""")
+    statsgroup.add_argument("--dead-count", action="store_true",
+                            dest="stats_singularity", help="""Counts the number
+                            of dead games (where all players end the game in the
+                            Singularity).""")
     statsgroup.add_argument("--position", action="store_true",
                             dest="stats_position_g", help="""Calculates means and
                             standard deviation of player positions across the
