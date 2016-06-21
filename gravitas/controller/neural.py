@@ -82,6 +82,17 @@ class Node:
         self.tensor = self.operation(*inputTensors)
         return self.tensor
 
+    def getInputs(self, nodeDict):
+        result = [x for x in self.inputs]
+        for put in self.inputs:
+            result.extend(nodeDict[put].getInputs(nodeDict))
+        return result
+
+    def addInput(self, nodeDict, node):
+        """to enusre the bookeeping is done, please consider using this function"""
+        self.inputs.append(node)
+        nodeDict[node].usedBy.add(self.position)
+
 class InputNode(Node):
     """An input node requires a little more information than a regular node
     A name is required for example, also the tensor construction is quite
@@ -167,30 +178,58 @@ class Builder:
         self.nodes[position] = self.getNodeCountFor(layer) + 1
 
     def removeOpperation(self, position):
-        inputs = self.nodes[position].inputs
-        if not inputs:
-            raise ValueError("Trying to remove inputnode")
-        for user in self.nodes[position].usedBy:
+        node = self.nodes[position]
+
+        for userindex in node.usedBy:
+
+            user = self.nodes[userindex]
             # remove from the graph by saying it no longer exists
-            user.inputs -= position
-            # the paper sais we should try and link trough the arguments
-            # because removing completly is to destructive
-            user.inputs += inputs[0]
+            user.inputs.remove(position)
+            if not node.inputs:
+                # trying to remove input node, instead, we reconnect to random
+                # other inputs
+                user.addInput(
+                    self.nodes,
+                    Position(
+                        layer=Builder.inputlayer,
+                        index=random.randrange(self.getNodeCountFor(Builder.inputlayer))
+                    )
+                )
+            else:
+                # the paper sais we should try and link trough the arguments
+                # because removing completly is to destructive
+                user.addInput(
+                    self.nodes,
+                    node.inputs[random.randrange(len(node.inputs))]
+                )
+
+        for put in node.inputs:
+            self.nodes[put].usedBy.remove(position)
+
+        if not node.inputs:
+            return
+
+        if position in self.outputs:
+            index = self.outputs.index(position)
+            self.outputs[index] = random.choice(node.inputs)
+
         del self.nodes[position]
         
+
     def addOpperation(self, function, position, arguments):
         if position in self.nodes:
             raise ValueError("Do what? replace it?")
+        result = Node()
+        result.position = position
+        result.operation = function
+
         for argument in arguments:
             if argument.layer >= position.layer:
                 raise ValueError(("To prevent cycles, arguments should always "+
                                  "come from earlier layers. Argument: %s, "+
                                  "Operation position %s") % (argument, position))
-            self.nodes[argument].usedBy.add(position)
-        result = Node()
-        result.operation = function
-        result.position = position
-        result.inputs = arguments
+            result.addInput(self.nodes, argument)
+
         self.nodes[position] = result
         self._increaseNodeCountFor(position.layer)
         if position.layer > self.layerDepth:
@@ -286,9 +325,7 @@ class Strain:
         Operation(tf.sub, 2),
         Operation(tf.mul, 2),
     ]
-    def mutate(self):
-        # select an output to modify
-        index = random.randrange(len(self.builder.outputs))
+    def addOperation(self, index):
         target = self.builder.outputs[index]
         # position of new operation
         position = Position(target.layer+1, self.builder.getNodeCountFor(target.layer+1))
@@ -302,7 +339,35 @@ class Strain:
         inputsChoice = [x for x in self.builder.nodes.keys() if x.index > Builder.nodeCountindex and x.layer < position.layer]
         while len(inputs) < operation.argcount:
             inputs.append(random.choice(inputsChoice))
-        print("%s at %s with %s" % (operation.function.__name__, position, inputs))
+        print("add %s at %s with %s" % (operation.function.__name__, position, inputs))
         # add the operation
         self.builder.addOpperation(operation.function, position, inputs)
+
+    def deleteOpperation(self, index):
+        target = self.builder.outputs[index]
+        print("deleting %s" % str(target))
+        if target.layer == Builder.inputlayer:
+            # can't delete input node
+            # so just update the output pointer to a different node
+            newposition = Position(
+                layer=Builder.inputlayer,
+                index=random.randrange(self.builder.getNodeCountFor(Builder.inputlayer))
+            )
+            print("newpostion %s" % str(newposition))
+            self.builder.outputs[index] = newposition 
+            return
+        nodes = self.builder.nodes
+        inputs = nodes[target].getInputs(nodes)
+        inputs.append(target)
+
+        todelete = random.choice(inputs)
+
+        self.builder.removeOpperation(todelete)
+
+    def mutate(self):
+        posibilities = [self.addOperation, self.deleteOpperation]
+        # select an output to modify
+        index = random.randrange(len(self.builder.outputs))
+
+        random.choice(posibilities)(index)
         return self
