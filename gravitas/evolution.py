@@ -62,10 +62,15 @@ def evaluateGeneration(parents, *children):
     Score = namedtuple('Score', ['member', 'score'])
     results = []
     for (i,scorestruct) in enumerate(compitionResults):
-        # zip zop zap!
-        # Don't worry, I stack overflowed it, this totally should work they say
         candidates = []
-        for (competitor, scores) in zip(members[i], list(zip(*scorestruct))):
+
+        # we have 2 lists [member1, member2] with the members
+        # and another [[score1, score2], [score3, score4]]
+        # now we want to all scores in index 1 to member1 and so on...
+        # so the result is [(member1, [score1, score3]), (member2, [score2, score4])]
+        # turns out you can do this with zip and zip*.
+        labeledScores = zip(members[i], list(zip(*scorestruct)))
+        for (competitor, scores) in labeledScores:
             candidates.append(Score(competitor, sum(scores)/len(scores)))
         
         scores = [x.score for x in candidates]
