@@ -40,6 +40,7 @@ def run(cycles, fact):
     # Prepare the master data list
     data = []
     
+    fact.rng.seed(42)
     # Run the loop
     for cycle in range(cycles):
         # Retrieve the important bits

@@ -6,6 +6,7 @@ from controller.human import Human_PC
 from engine import callog
 import random, logging, copy
 from collections import namedtuple
+from sys import maxsize
 
 class State:
     """The game state class. Beyond counters relating to the point in play, it
@@ -358,6 +359,7 @@ class GameManager:
         game-state."""
         self._cluster = StateCluster(state)
         self.rng = random.Random()
+        self.rng.seed(42) # requires seeding from the outside
         self.log = logging.getLogger(__name__)
         self.GMStates = {
             "init" : 0,
@@ -496,7 +498,7 @@ class GameManager:
             self.log.debug("Removing %s from the player list", p)
             playerOrder.remove(p)
         # Shuffle the players in the singularity
-        random.shuffle(inS)
+        self.rng.shuffle(inS)
         # Sort the remaining players
         playerOrder = sorted( playerOrder, key=lambda p:
             authState.getPlayer(p).ship.distanceToFinish())
@@ -602,7 +604,7 @@ class GameManager:
         """Selects a random player to poll for play. Uses randomization since
         playing does not have to be in order."""
         self.log.debug("Remaining players are %s", self._playersRemaining)
-        return random.choice(self._playersRemaining)
+        return self.rng.choice(self._playersRemaining)
 
     @callog
     def _reveal(self):

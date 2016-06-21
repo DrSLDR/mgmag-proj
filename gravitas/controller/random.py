@@ -8,6 +8,7 @@ class RandomAI_PC(IPlayerController):
     def __init__(self, player, args,container):
         super().__init__(player,args)
         self.rng = random.Random()
+        self.rng.seed(42) # requires seeding from the outside
 
     def seed(self, withvar):
         self.rng.seed(withvar)

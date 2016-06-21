@@ -21,6 +21,11 @@ class Factory():
     """ A factory which can create playerControllers, states and the Gamemanager"""
 
     def createRandom(self, player, args,container):
+        result = RandomIgnoreEmergency(player,args,container)
+        result.seed(self._seed())
+        return result
+
+    def createRandomIgnore(self, player, args,container):
         result = RandomAI_PC(player,args,container)
         result.seed(self._seed())
         return result
@@ -28,6 +33,7 @@ class Factory():
     def __init__(self, args):
         self.args = args
         self.rng = random.Random()
+        self.rng.seed(42) # rquires seeding from the outside
         #The player type dictionary mapping of known player types to
         #the constructor for their respective player controller. 
         self.controllerTypes = {
@@ -35,7 +41,7 @@ class Factory():
             "randAI": self.createRandom,
             "neuroticAI": Neurotic_PC,
             "symbolic": SymbolicAI_PC,
-            "randIgnoreEmergency": RandomIgnoreEmergency,
+            "randIgnoreEmergency": self.createRandomIgnore,
             "RLAI": RLAI_PC
         }
         self.guiContainer = None
@@ -82,14 +88,17 @@ class Factory():
     def createState(self):
         """create a game state and put the player controllers in there"""
         # create empty state
+
         state = State()
+        state.deck.rng.seed(self._seed())
 
         config = self._parseConfig(self.args.config)
         # Create the player objects
         availColors = [1,2,3,4]
+
         for p in config:
             self.log.debug("Handling player %s", p)
-            c = random.choice(availColors)
+            c = self.rng.choice(availColors)
             availColors.remove(c)
             self.log.debug("Selected %i as color", c)
             self.log.debug("Creating player model")
@@ -124,6 +133,7 @@ class Factory():
 
     def _seed(self):
         return self.rng.randrange(maxsize)
+
     def _configureLogger(self):
         import logging
         if(self.args.loglevel == 0):

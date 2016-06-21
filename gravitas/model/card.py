@@ -46,6 +46,8 @@ class Deck:
     def __init__(self):
         """Creates a full deck of cards, sorted, as a list"""
 
+        self.rng = random.Random()
+        self.rng.seed(42) # needs to be seed from the outside
         # field stack tuple
         self.makeFST = namedtuple('FieldStackTuple', 'index card')
 
@@ -97,7 +99,7 @@ class Deck:
         """
         # draw the right amount of (unique) cards
         # 2x, because of the double cards
-        cardDraws = random.sample(self._deck,2*3*playerAmount)
+        cardDraws = self.rng.sample(self._deck,2*3*playerAmount)
 
         # put them in sets of 2
         self._field = [None]*(3*playerAmount)
