@@ -14,10 +14,10 @@ from controller.neural import Neurotic_PC, Strain, Builder, Node
 class config:
     """static config"""
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
-    controller = ["neuroticAI", "neuroticAI2", "neuroticAI3", "neuroticAI4"]
-    player = ["Darwin", "Randy", "Squirtle", "Rachel"]
+    controller = ["neuroticAI"]
+    player = ["Darwin"]
     tournamentSize = 4
-    runs = 1180 # scoring runs, result of findnum.py
+    runs = 10 # scoring runs, result of findnum.py
     generations = 50 # evolution cycles
     significantDifference = 0.025
     popsize = 8
@@ -28,10 +28,13 @@ class config:
     readfile= False
 
 def compete(arg):
-    (strains, config) = arg
+    (strains, config, seed) = arg
+    print("seed: %s", seed)
+    random.seed(seed)
     args = main.parser.parse_args(['-c', config.jsonfile, '--headless', '-l', '0'])
     factory = Factory(args)
     for (i, strain) in enumerate(strains):
+        print("nr: %i, strain: %s" % (i,type(strain).__name__))
         factory.controllerTypes[config.controller[i]] = strain.createNeuroticPC
     result = []
     for run in range(0, config.runs):
@@ -46,22 +49,28 @@ from multiprocessing import Pool
 pool = Pool(config.workerProcesses) # sub interpreters to use
 
 def evaluateGeneration(parents, *children):
-    for childlists in children:
-        random.shuffle(childlists) # not always children vs parents, so that strong genes spread
-    members = list(zip(parents, *children))
+    members = list(parents)
+    for mutations in children:
+        members.extend(mutations)
+    members = [[x] for x in members]
+    from sys import maxsize
+    generationSeed = random.randrange(maxsize)
     # calculating the results is a lot of work, lets not do it ourselves,
     # but use a process worker pool instead
+    def foreachMember(value):
+        return [value for _ in range(0,len(members))]
     compitionResults = pool.map( # use the pool
         compete, # function to be used
         zip( # dirty ack to pass multiple arguments
             members,
-            [config for _ in range(0,len(parents))]
+            foreachMember(config),
+            foreachMember(generationSeed)
         )
     )
     from collections import namedtuple
     Score = namedtuple('Score', ['member', 'score'])
     results = []
-    for (i,scorestruct) in enumerate(compitionResults):
+    for (i,scorestruct) in enumerate(zip(members, compitionResults)):
         candidates = []
 
         # we have 2 lists [member1, member2] with the members
