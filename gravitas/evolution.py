@@ -12,6 +12,7 @@ from factory import Factory
 from controller.neural import Neurotic_PC, Strain, Builder, Node
 
 class config:
+    """static config"""
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = ["neuroticAI", "neuroticAI2", "neuroticAI3", "neuroticAI4"]
     player = ["Darwin", "Randy", "Squirtle", "Rachel"]
@@ -74,10 +75,14 @@ def evaluateGeneration(parents, *children):
 
         # you can be selected if your score diff is smaller than the significant fraction
         # this always includes the best
-        candidates = [cand for cand in candidates if (best - cand.score) < fraction]
-        print("candidates count: %i, scores %s, best %.4f, fraction %.4f" % (
-            len(candidates), json.dumps([c.score for c in candidates]), best, fraction
+        filtered = [cand.score for cand in candidates if (cand.score - average) < fraction]
+        selected = [cand.score for cand in candidates if (cand.score - average) >= fraction]
+        print("selected (count: %i, scores %s), best %.4f, fraction %.4f, un-significant (%s)" % (
+            len(selected), json.dumps(selected), best, fraction, json.dumps(filtered)
         ))
+        # if we have to select randomly from the candidates, why not just select
+        # the best? True he may be just lucky, but we have to choose at this point
+        candidates = [cand for cand in candidates if best == cand.score]
         results.append(random.choice(candidates).member)
     return results
 
