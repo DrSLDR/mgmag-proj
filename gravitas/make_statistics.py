@@ -310,6 +310,9 @@ if __name__ == "__main__":
                         analysis. Defaults to 200 if not specified. Ignored if a
                         data file (--data) is provided.""")
 
+    parser.add_argument("-r", "--rounds", type=int, default=1,
+                        help="""Repeated outpus or rounds""")
+
     iogroup = parser.add_argument_group("I/O", description="""Options governing
     the input and output of data from the statistics script. Either --data or
     --config must be given.""")
@@ -371,27 +374,29 @@ if __name__ == "__main__":
     # Do the parsering
     args = parser.parse_args()
 
-    # Figure out if we are doing a run or an import
-    if args.data is not None:
-        # Looks an awful lot like an import
-        datafile = open(args.data, 'r')
-        data = json.load(datafile)
-        datafile.close()
+    for _ in range(0,args.rounds):
 
-    elif args.config is not None:
-        # Looks like a run
-        # Do the other parsering
-        margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
-                                        '0'])
-        # Factorize the factory
-        fact = factory.Factory(margs)
-        # Launch the run
-        data = run(args.cycles, fact)
-        # Dump, if that was necessary
-        if args.dump is not None:
-            dumpfile = open(args.dump, 'w')
-            json.dump(data, dumpfile)
-            dumpfile.close()
-        
-    # Process the recieved data
-    process(data, args)
+        # Figure out if we are doing a run or an import
+        if args.data is not None:
+            # Looks an awful lot like an import
+            datafile = open(args.data, 'r')
+            data = json.load(datafile)
+            datafile.close()
+
+        elif args.config is not None:
+            # Looks like a run
+            # Do the other parsering
+            margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
+                                            '0'])
+            # Factorize the factory
+            fact = factory.Factory(margs)
+            # Launch the run
+            data = run(args.cycles, fact)
+            # Dump, if that was necessary
+            if args.dump is not None:
+                dumpfile = open(args.dump, 'w')
+                json.dump(data, dumpfile)
+                dumpfile.close()
+            
+        # Process the recieved data
+        process(data, args)
