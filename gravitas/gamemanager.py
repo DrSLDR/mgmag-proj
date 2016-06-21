@@ -503,9 +503,7 @@ class GameManager:
         playerOrder = sorted( playerOrder, key=lambda p:
             authState.getPlayer(p).ship.distanceToFinish())
         # Concatenate
-        playerOrder += inS
-        # Reverse
-        playerOrder.reverse()
+        playerOrder = inS + playerOrder
         self._cluster.setPlayerOrder(playerOrder)
         self.log.debug("Order of players is now %s", playerOrder)
 

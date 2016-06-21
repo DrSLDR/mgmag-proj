@@ -10,7 +10,7 @@ from model.card import Card, Deck
 from gamemanager import State, GameManager
 from controller.random import RandomAI_PC, RandomIgnoreEmergency
 from controller.human import Human_PC
-from controller.neural import Neurotic_PC
+from controller.neural import Strain
 from controller.symbolic import SymbolicAI_PC
 from controller.rl import RLAI_PC
 from engine import GameEngine, callog
@@ -39,7 +39,7 @@ class Factory():
         self.controllerTypes = {
             "human": Human_PC,
             "randAI": self.createRandom,
-            "neuroticAI": Neurotic_PC,
+            "neuroticAI": Strain.loadFromPickle("evolution.pikl", 0).createNeuroticPC,
             "symbolic": SymbolicAI_PC,
             "randIgnoreEmergency": self.createRandomIgnore,
             "RLAI": RLAI_PC

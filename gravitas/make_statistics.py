@@ -27,6 +27,7 @@ TODO: position mean and standard variation: global, per turn, per player, per
 """
 
 import engine, factory, main, argparse, statistics, json, copy
+from controller.neural import Strain
 
 def run(cycles, fact):
     """Runs the game to gather data.
@@ -47,6 +48,7 @@ def run(cycles, fact):
     for cycle in range(cycles):
         from sys import maxsize
         fact.rng.seed(rng.randrange(maxsize))
+
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
         
@@ -396,6 +398,6 @@ if __name__ == "__main__":
             dumpfile = open(args.dump, 'w')
             json.dump(data, dumpfile)
             dumpfile.close()
-        
+
     # Process the recieved data
     process(data, args)
