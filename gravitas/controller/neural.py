@@ -277,7 +277,6 @@ class Strain:
         Operation(tf.add, 2),
         Operation(tf.sub, 2),
         Operation(tf.mul, 2),
-        Operation(tf.neg, 1),
     ]
     def mutate(self):
         # select an output to modify
@@ -292,12 +291,9 @@ class Strain:
         # select the inputs
         inputs = [target]
 
+        inputsChoice = [x for x in self.builder.nodes.keys() if x.index > Builder.nodeCountindex and x.layer < position.layer]
         while len(inputs) < operation.argcount:
-            layer = random.randrange(position.layer)
-            inputs.append(Position(
-                layer,
-                random.randrange(self.builder.getNodeCountFor(layer))
-            ))
+            inputs.append(random.choice(inputsChoice))
         print("%s at %s with %s" % (operation.function.__name__, position, inputs))
         # add the operation
         self.builder.addOpperation(operation.function, position, inputs)
