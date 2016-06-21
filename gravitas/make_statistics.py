@@ -26,7 +26,7 @@ TODO: position mean and standard variation: global, per turn, per player, per
 
 """
 
-import engine, factory, main, argparse, statistics, json, copy
+import engine, factory, main, argparse, statistics, json, copy, random
 
 def run(cycles, fact):
     """Runs the game to gather data.
@@ -40,11 +40,17 @@ def run(cycles, fact):
 
     # Prepare the master data list
     data = []
-    
+    rng = random.Random()
+    rng.seed(42)
+     # Run the loop
+   
     # Run the loop
     for cycle in range(cycles):
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
+
+        from sys import maxsize
+        fact.rng.seed(rng.randrange(maxsize))
         
         # Prepare game dataset
         state = manager.copyState()
