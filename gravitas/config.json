@@ -1,24 +1,24 @@
 [
   {
-    "name": "Darwin",
+    "name": "Aristotle",
     "type": "symbolic",
     "arguments": {
     }
   },
   {
-    "name": "Randy",
+    "name": "Babbage",
     "type": "randomAI",
     "arguments": {
     }
   },
   {
-    "name": "Squirtle",
+    "name": "Leibniz",
     "type": "symbolic",
     "arguments": {
     }
   },
   {
-    "name": "Rachel",
+    "name": "Bacon",
     "type": "symbolic",
     "arguments": {
     }

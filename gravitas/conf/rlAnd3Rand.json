@@ -1,24 +1,24 @@
 [
   {
-    "name": "RLP1",
+    "name": "Alexander",
     "type": "RLAI",
     "arguments": {
     }
   },
   {
-    "name": "randP3",
+    "name": "Turing",
     "type": "randAI",
     "arguments": {
     }
   },
   {
-    "name": "randP2",
+    "name": "Lovelace",
     "type": "randAI",
     "arguments": {
     }
   },
   {
-    "name": "randP1",
+    "name": "Hopper",
     "type": "randAI",
     "arguments": {
     }
