@@ -1,0 +1,26 @@
+[
+  {
+    "name": "RLP1",
+    "type": "RLAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "randP3",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "randP2",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "randP1",
+    "type": "randAI",
+    "arguments": {
+    }
+  }
+]
