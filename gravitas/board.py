@@ -112,7 +112,9 @@ class Renderer:
 
         for key in playerPCDict:
             pos = self.calcScreenPos(playerPCDict[key][0].getPos())
-            color = Renderer.colors[playerPCDict[key][0].getColor()]
+            colNr = playerPCDict[key][0].getColor()
+            color = Renderer.colors[colNr]
+            darkerColor = (1/3*color[0],1/3*color[1],1/3*color[2])
             # draw white bordered circle filled with ship-color
             pygame.draw.ellipse(
                 disp, (250,250,250), 
@@ -122,6 +124,10 @@ class Renderer:
                 disp,color, 
                 (pos.x-size.x/2+1, pos.y-size.y/2+1, size.x-2,size.y-2)
             )
+            # if not a hulk, draw first two letters of name in the circle
+            if not colNr == 0:
+                name = playerPCDict[key][0].getName()[0:2]
+                font(name, (pos.x-7,pos.y-5), darkerColor)
         # round annotation
         pos = Point(x=20,y=20)
         font("Round %i"%(gamestate.round+1), pos)
