@@ -68,7 +68,7 @@ class Node:
         # list of positions that use this node
         # useful to know if we want to delete this node but preserve
         # connections
-        self.usedBy = set()
+        self.usedBy = []
 
     def createTensor(self, nodeDict):
         """Creates the tensor or returns the current one"""
@@ -91,7 +91,7 @@ class Node:
     def addInput(self, nodeDict, node):
         """to enusre the bookeeping is done, please consider using this function"""
         self.inputs.append(node)
-        nodeDict[node].usedBy.add(self.position)
+        nodeDict[node].usedBy.append(self.position)
 
 class InputNode(Node):
     """An input node requires a little more information than a regular node
@@ -181,32 +181,37 @@ class Builder:
         node = self.nodes[position]
 
         for userindex in node.usedBy:
-
             user = self.nodes[userindex]
+            print("user %s with inputs %s" % (str(userindex), user.inputs))
             # remove from the graph by saying it no longer exists
             user.inputs.remove(position)
             if not node.inputs:
                 # trying to remove input node, instead, we reconnect to random
                 # other inputs
-                user.addInput(
-                    self.nodes,
-                    Position(
+                otherInputNode = Position(
                         layer=Builder.inputlayer,
                         index=random.randrange(self.getNodeCountFor(Builder.inputlayer))
                     )
+                print("was an input node, recominbing by with %s" % str(otherInputNode))
+                user.addInput(
+                    self.nodes,
+                    otherInputNode
                 )
             else:
                 # the paper sais we should try and link trough the arguments
                 # because removing completly is to destructive
+                someInput = node.inputs[random.randrange(len(node.inputs))]
+                print("was a normal node, recombining with %s" % str(someInput))
                 user.addInput(
                     self.nodes,
-                    node.inputs[random.randrange(len(node.inputs))]
+                    someInput
                 )
 
         for put in node.inputs:
             self.nodes[put].usedBy.remove(position)
 
         if not node.inputs:
+            node.usedBy = []
             return
 
         if position in self.outputs:
@@ -345,7 +350,6 @@ class Strain:
 
     def deleteOpperation(self, index):
         target = self.builder.outputs[index]
-        print("deleting %s" % str(target))
         if target.layer == Builder.inputlayer:
             # can't delete input node
             # so just update the output pointer to a different node
@@ -362,6 +366,7 @@ class Strain:
 
         todelete = random.choice(inputs)
 
+        print("deleting %s" % str(todelete))
         self.builder.removeOpperation(todelete)
 
     def mutate(self):

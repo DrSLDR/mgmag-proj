@@ -21,7 +21,7 @@ class config:
     runs = 20 # scoring runs, result of findnum.py
     countIncrease = 4 # if an AI beats 50% of the time, how much to increase
     generations = 400 # evolution cycles
-    popsize = 16
+    popsize = 8
     jsonfile = 'conf/neurotic.json'
     enemyCount = 3
     hulkCount = 2
@@ -77,6 +77,9 @@ def evaluateGeneration(parents, *children):
     results = [Score(member[0], countWins(scores)) for (member,scores) in zip(members, compitionResults)]
     sortedResutls = sorted(results, key=lambda x: x.score)
     bestScore = sortedResutls[-1].score
+    print("bestscore %i, results %s" % (bestScore, json.dumps(
+        list(reversed([x.score for x in sortedResutls]))
+    )))
     if bestScore > config.runs * 0.5:
         config.runs += 4
         print("increasing runcount to %i an AI beat half of the runs with score: %i" % (config.runs, bestScore))
