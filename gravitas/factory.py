@@ -28,7 +28,7 @@ class Factory():
             "randAI": RandomAI_PC,
             "neuroticAI": Neurotic_PC,
             "symbolic": SymbolicAI_PC,
-            "randIgnoreEmergency": RandomIgnoreEmergency
+            "randIgnoreEmergency": RandomIgnoreEmergency,
             "RLAI": RLAI_PC
         }
         self.guiContainer = None
