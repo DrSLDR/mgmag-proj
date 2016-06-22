@@ -1,0 +1,38 @@
+{
+  "randomAI": [
+    "Turing",
+    "Hopper",
+    "Babbage",
+    "Lovelace"
+  ],
+  "randIgnoreEmergency": [
+    "Gagarin",
+    "Fuglesang",
+    "Ockels",
+    "Liwei"
+  ],
+  "symbolic": [
+    "Aristotle",
+    "Paramenides",
+    "Leibniz",
+    "Bacon"
+  ],
+  "RLAI": [
+    "Alexander",
+    "Khan",
+    "Napoleon",
+    "Patton"
+  ],
+  "neurotic": [
+    "Darwin",
+    "Linnaeus",
+    "da Vinci",
+    "Pasteur"
+  ],
+  "human": [
+    "Adam",
+    "Eve",
+    "Cain",
+    "Abel"
+  ]
+}
