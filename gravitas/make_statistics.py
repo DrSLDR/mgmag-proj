@@ -26,65 +26,63 @@ TODO: position mean and standard variation: global, per turn, per player, per
 
 """
 
-import engine, factory, main, argparse, statistics, json, copy, random
+import argparse, statistics, json, copy, multiprocessing
+import engine, factory, main
 
-def run(cycles, fact):
+def run(cycles, margs):
     """Runs the game to gather data.
 
-    Takes the number of cycles (games) to run and the game factory as
-    arguments.
+    Takes the number of cycles (games) to run and the main process (factory)
+    arguments as arguments.
 
     Returns the data list.
 
     """
-
-    # Prepare the master data list
-    data = []
-    rng = random.Random()
-    rng.seed(42)
-     # Run the loop
-   
     # Run the loop
     for cycle in range(cycles):
         # Retrieve the important bits
         (engine, manager) = fact.createHeadless()
 
-        from sys import maxsize
-        fact.rng.seed(rng.randrange(maxsize))
+    Returns the dataset from the cycle.
+
+    """
+    # Retrieve the important bits, now with bake your own factory
+    fact = factory.Factory(margs)
+    (engine, manager) = fact.createHeadless()
         
-        # Prepare game dataset
-        state = manager.copyState()
-        gameData = {'turn' : 0, 'players' : {}}
-        for key in state.players:
-            gameData['players'][key] = []
+    # Prepare game dataset
+    state = manager.copyState()
+    gameData = {'turn' : 0, 'winner' : None, 'players' : {}}
+    for key in state.players:
+        gameData['players'][key] = []
 
-        # Do the game
-        done = False
-        while not done:
-            # Prepare data-gathering
-            while manager.copyState().GMState < manager.GMStates['resolve']:
-                if engine.update(): # Run the game up to resolution
-                    done = True
-                    break # Break the loop if someone has already won
-            if done:
-                break # No more collections
-            while manager.copyState().GMState == manager.GMStates['resolve']:
-                if engine.update(): # Finish the resolution step
-                    done = True
-                    break # Game is over, time to collect data
+    # Do the game
+    done = False
+    while not done:
+        # Prepare data-gathering
+        while manager.copyState().GMState < manager.GMStates['resolve']:
+            if engine.update(): # Run the game up to resolution
+                done = True
+                break # Break the loop if someone has already won
+        if done:
+            gameData['winner'] = state.winner
+            break # No more collections
+        while manager.copyState().GMState == manager.GMStates['resolve']:
+            if engine.update(): # Finish the resolution step
+                done = True
+                break # Game is over, time to collect data
                     
-            # Collect data for the turn
-            state = manager.copyState()
-            for key in state.players:
-                gameData['players'][key].append(
-                    state.getPlayer(key).ship.getPos())
-            if not done:
-                gameData['turn'] += 1
+        # Collect data for the turn
+        state = manager.copyState()
+        for key in state.players:
+            gameData['players'][key].append(
+                state.getPlayer(key).ship.getPos())
+        gameData['winner'] = state.winner
+        if not done:
+            gameData['turn'] += 1
 
-        # Append most recent data
-        data.append(gameData)
-
-    return data
+    # End
+    return gameData
 
 def process(data, args):
     """Main switchboard between statistics functions.
@@ -120,13 +118,7 @@ def helper_prepPerPlayerResults(data, default=0):
 
 def helper_getWinnerOfGame(game):
     """Takes a game structure, returns the key of the winning player."""
-    winner = None
-    dist = 0
-    for key in game['players']:
-        if game['players'][key][-1] > dist:
-            dist = game['players'][key][-1]
-            winner = key
-    return winner
+    return game['winner']
 
 def helper_print(head, data):
     """A uniform printing format makes everyone happy."""
@@ -306,6 +298,23 @@ def stats_mobility(data):
     # Print
     helper_print("Mobility", result)
 
+def stats_singularity(data):
+    """Works out the number of dead games (all players in the singularity)."""
+    
+    # Prepare the result set
+    result = {'total' : 0}
+    # Crunch
+    for game in data:
+        if game['turn'] == 36:
+            dead = True
+            for key in game['players']:
+                if dead:
+                    dead = game['players'][key][-1] == 0
+            if dead:
+                result['total'] += 1
+    # Print
+    helper_print("Dead games", result)
+
 # Runtime bit
 if __name__ == "__main__":
     # Prep the parser
@@ -345,6 +354,10 @@ if __name__ == "__main__":
     statsgroup.add_argument("--early-win-count", action="store_true",
                             dest="stats_earlyWinCount", help="""Like
                             --win-count, but only counts pre-turn 36 wins.""")
+    statsgroup.add_argument("--dead-count", action="store_true",
+                            dest="stats_singularity", help="""Counts the number
+                            of dead games (where all players end the game in the
+                            Singularity).""")
     statsgroup.add_argument("--position", action="store_true",
                             dest="stats_position_g", help="""Calculates means and
                             standard deviation of player positions across the
@@ -394,10 +407,8 @@ if __name__ == "__main__":
             # Do the other parsering
             margs = main.parser.parse_args(['-c', args.config, '--headless', '-l',
                                             '0'])
-            # Factorize the factory
-            fact = factory.Factory(margs)
             # Launch the run
-            data = run(args.cycles, fact)
+            data = run(args.cycles, margs)
             # Dump, if that was necessary
             if args.dump is not None:
                 dumpfile = open(args.dump, 'w')
