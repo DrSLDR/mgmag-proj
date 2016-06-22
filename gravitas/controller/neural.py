@@ -12,6 +12,10 @@ class Neurotic_PC(RandomIgnoreEmergency):
         self.playNetwork = None
         self.session = None
 
+    def pollDraft(self, state):
+        percievedField = state.deck.percieveCardField()
+        print(percievedField)
+        return super().pollDraft(state)
     def pollPlay(self, state):
         if self.playNetwork is None:
             raise ValueError("Please initialize the playnetwork "+
