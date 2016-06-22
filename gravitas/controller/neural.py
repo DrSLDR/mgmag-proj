@@ -182,7 +182,6 @@ class Builder:
 
         for userindex in node.usedBy:
             user = self.nodes[userindex]
-            print("user %s with inputs %s" % (str(userindex), user.inputs))
             # remove from the graph by saying it no longer exists
             user.inputs.remove(position)
             if not node.inputs:
@@ -192,7 +191,6 @@ class Builder:
                         layer=Builder.inputlayer,
                         index=random.randrange(self.getNodeCountFor(Builder.inputlayer))
                     )
-                print("was an input node, recominbing by with %s" % str(otherInputNode))
                 user.addInput(
                     self.nodes,
                     otherInputNode
@@ -201,7 +199,6 @@ class Builder:
                 # the paper sais we should try and link trough the arguments
                 # because removing completly is to destructive
                 someInput = node.inputs[random.randrange(len(node.inputs))]
-                print("was a normal node, recombining with %s" % str(someInput))
                 user.addInput(
                     self.nodes,
                     someInput
@@ -216,7 +213,8 @@ class Builder:
 
         if position in self.outputs:
             index = self.outputs.index(position)
-            self.outputs[index] = random.choice(node.inputs)
+            choice = random.choice(node.inputs)
+            self.outputs[index] = choice
 
         del self.nodes[position]
         
@@ -258,6 +256,9 @@ class Builder:
                 self.nodes[Position(layer=self.inputlayer, index=i)].createTensor(
                     self.nodes
                 )
+            # dirty hack for if an output node doesn't exist, just randomly create another
+            # should fix output consistentcy instead, but there is no time
+            self.outputs = [random.choice(list(self.nodes.keys())) if x not in self.nodes else x for x in self.outputs]
             # to create we just go back over the network
             tensor = tf.pack(
                 [self.nodes[x].createTensor(self.nodes) for x in self.outputs]
