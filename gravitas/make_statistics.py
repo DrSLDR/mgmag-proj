@@ -26,8 +26,9 @@ TODO: position mean and standard variation: global, per turn, per player, per
 
 """
 
-import argparse, statistics, json, copy, multiprocessing
+import argparse, statistics, json, copy, multiprocessing, random
 import engine, factory, main
+from sys import maxsize
 
 def run(cycles, margs):
     """Runs the game to gather data.
@@ -55,6 +56,7 @@ def cycle(margs):
     """
     # Retrieve the important bits, now with bake your own factory
     fact = factory.Factory(margs)
+    fact.rng.seed(random.randrange(maxsize))
     (engine, manager) = fact.createHeadless()
         
     # Prepare game dataset
