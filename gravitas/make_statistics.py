@@ -26,9 +26,8 @@ TODO: position mean and standard variation: global, per turn, per player, per
 
 """
 
-import argparse, statistics, json, copy, multiprocessing, random
+import argparse, statistics, json, copy, multiprocessing
 import engine, factory, main
-from sys import maxsize
 
 def run(cycles, margs):
     """Runs the game to gather data.
@@ -40,23 +39,12 @@ def run(cycles, margs):
 
     """
     # Run the loop
-    with multiprocessing.Pool(8) as pool:
-        data = pool.map(cycle, [margs for _ in range(cycles)])
+    for cycle in range(cycles):
+        # Retrieve the important bits
+        (engine, manager) = fact.createHeadless()
 
-    return data
-
-def cycle(margs):
-    """Runs a single game cycle. Broken out of the run function to allow
-    multiprocessing support.
-
-    Takes the factory as an argument.
-
-    Returns the dataset from the cycle.
-
-    """
     # Retrieve the important bits, now with bake your own factory
     fact = factory.Factory(margs)
-    fact.rng.seed(random.randrange(maxsize))
     (engine, manager) = fact.createHeadless()
         
     # Prepare game dataset
