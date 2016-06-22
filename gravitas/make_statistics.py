@@ -39,9 +39,16 @@ def run(cycles, margs):
 
     """
     # Run the loop
-    for cycle in range(cycles):
-        # Retrieve the important bits
-        (engine, manager) = fact.createHeadless()
+    with multiprocessing.Pool(8) as pool:
+        data = pool.map(cycle, [margs for _ in range(cycles)])
+
+    return data
+
+def cycle(margs):
+    """Runs a single game cycle. Broken out of the run function to allow
+    multiprocessing support.
+
+    Takes the factory as an argument.
 
     Returns the dataset from the cycle.
 
