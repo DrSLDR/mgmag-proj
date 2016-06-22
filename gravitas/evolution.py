@@ -14,11 +14,11 @@ from controller.neural import Neurotic_PC, Strain, Builder, Node
 
 class config:
     """static config"""
-    workerProcesses = 1 # match your "thread" count of your cpu for maximum performance
+    workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = ["neuroticAI"]
     player = "Darwin" # the AI slot to train, should match the config file
     offspringCount = 5
-    runs = 1 # scoring runs
+    runs = 34 # scoring runs
     countIncrease = 2 # if an AI beats 50% of the time, how much to increase
     generations = 1000 # evolution cycles
     popsize = 8
@@ -35,18 +35,13 @@ def compete(arg):
     args = main.parser.parse_args(['-c', config.jsonfile, '--headless', '-l', '0'])
     factory = Factory(args)
     factory.rng.seed(rng.randrange(maxsize))
-    def createNeurotic(player, args, container):
-        result = strain.createNeuroticPC(player, args, container)
-        result.rng.seed(rng.randrange(maxsize))
-        return result
     for (i, strain) in enumerate(strains):
-        factory.controllerTypes[config.controller[i]] = createNeurotic
+        factory.controllerTypes[config.controller[i]] = strain.createNeuroticPC
     result = []
     for run in range(0, config.runs):
         randone = factory.rng.randrange(500)
         runsult = main.run(factory)
         result.append(runsult)
-    print("run end")
     return result
 
 from multiprocessing import Pool
