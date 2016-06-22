@@ -17,16 +17,16 @@ class config:
     workerProcesses = 8 # match your "thread" count of your cpu for maximum performance
     controller = ["neuroticAI"]
     player = "Darwin" # the AI slot to train, should match the config file
-    offspringCount = 1
-    runs = 20 # scoring runs, result of findnum.py
-    countIncrease = 4 # if an AI beats 50% of the time, how much to increase
-    generations = 400 # evolution cycles
+    offspringCount = 5
+    runs = 34 # scoring runs
+    countIncrease = 2 # if an AI beats 50% of the time, how much to increase
+    generations = 1000 # evolution cycles
     popsize = 8
     jsonfile = 'conf/neurotic.json'
     enemyCount = 3
     hulkCount = 2
     filename = "evolution.pikl"
-    readfile= False
+    readfile= True
 
 def compete(arg):
     (strains, config, seed) = arg
@@ -70,18 +70,23 @@ def evaluateGeneration(parents, *children):
 
     def countWins(scores):
         wins = 0
+        distance = 0
         for score in scores:
-            if sorted(score, key = lambda x: x[1])[-1][0] == config.player:
+            winner = sorted(score, key = lambda x: x[1])[-1]
+            if winner[0] == config.player:
                 wins += 1
+                distance += winner[1]
+                
+        wins += (distance/len(scores))/54
         return wins
     results = [Score(member[0], countWins(scores)) for (member,scores) in zip(members, compitionResults)]
     sortedResutls = sorted(results, key=lambda x: x.score)
     bestScore = sortedResutls[-1].score
     print("bestscore %i, results %s" % (bestScore, json.dumps(
-        list(reversed([x.score for x in sortedResutls]))
+        list(reversed(["%.3f" % x.score for x in sortedResutls]))
     )))
-    if bestScore > config.runs * 0.5:
-        config.runs += 4
+    if bestScore >= config.runs * 0.5:
+        config.runs += config.countIncrease
         print("increasing runcount to %i an AI beat half of the runs with score: %i" % (config.runs, bestScore))
     return [element.member for element in sortedResutls][-config.popsize:]
 
