@@ -7,19 +7,19 @@
   },
   {
     "name": "Randy",
-    "type": "randAI",
+    "type": "randIgnoreEmergency",
     "arguments": {
     }
   },
   {
     "name": "Squirtle",
-    "type": "randAI",
+    "type": "randIgnoreEmergency",
     "arguments": {
     }
   },
   {
     "name": "Rachel",
-    "type": "randAI",
+    "type": "randIgnoreEmergency",
     "arguments": {
     }
   }
