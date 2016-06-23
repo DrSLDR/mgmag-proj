@@ -119,7 +119,7 @@ class SymbolicAI_PC(IPlayerController):
                     return orderedRepulsors[0]
 
         # moving backward...
-        else: # if distance < 0:
+        else: # if distance <= 0:
             # so choose highest-value repulsor card
             if len(repulsors) > 0:
                 orderedRepulsors = sorted(repulsors, key = lambda x: x.getValue() )

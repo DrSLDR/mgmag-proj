@@ -46,9 +46,10 @@
 
         <section data-markdown>
           <script type="text/template">
-            ## Projects Description
+            ## Project Description
             - Create AI driven opponents for the boardgame Gravwell
-            - Goal: have them beat at least the random AI
+
+            - Goal: win from random AI
           </script>
         </section>
         
@@ -61,19 +62,20 @@
                 </td>
                 <td>
                   <ul>
-                    <li>Boardgame 2-4 players</li>
-                    <li>Playing Cards to move forward</li>
+                    <li>Boardgame, 2-4 players</li>
+                    <li>Play Cards to move</li>
                     <ul>
                       <li>Type</li>
                       <li>Value</li>
                       <li>Name</li>
-                    </ul>                    
-                    <li>Important phases:</li>
+                    </ul>
+                    <li>Move in direction of the closest ship</li>                    
+                    <li>Important game phases:</li>
                     <ul>
                       <li>Draft</li>
                       <li>Play</li>
-                      <li>Resolve </li>
-                      <ul><li>Emergency stop</li></ul>
+                      <li>Resolve</li>
+                      <ul><li>Emergency stop (ES)</li></ul>
                     </ul>
                 </td>
               </tr>
@@ -81,64 +83,90 @@
           
         </section>
         
-        <section data-markdown>
-          <script type="text/template">
-            ## AI-Aspect 
-            -  Decision making
-            - Learning
-
-            - Implemented through:
-              - Reinforcement Learning
-              - Neural Evolution
-              - Decision Tree
-              - Random AI
-          </script>
-        </section>
-
-        <section data-markdown>
-          <script type="text/template">
-            ## Virtual Environment
-              State holds:
-              - playertupples
-              - information about gravwell game phase
-              - eventlog 
-              - deck-information
-          </script>
+        <section>
+          <h2>AI-Aspect</h2>
+            <ul>
+              <li>Decision making</li>
+              <li>Learning</li>
+              <li>            
+                <p>Implemented through:</p>
+                <ul>
+                  <li>Reinforcement Learning (RL)</li>
+                  <li>Neural Evolution (NE)</li>
+                  <li>Decision Tree</li>
+                  <li>Random AI</li>
+                  <li>No-ES Random AI</li>
+                </ul>
+              </li>
+            </ul>
         </section>
 
         <section data-markdown>
           <script type="text/template">
             ## Technical Environment
             - Python
-
-            - Pygame :
+            - Pygame
               - Game engine and board rendering
-
-            - PGU :
+            - PGU
               - GUI
-
-            - Tensorflow (only on Unix) :
-              - To implement the Neural evolution with
+            - Tensorflow
+              - Quick Math
+              - Only on Unix
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            # (A slide with implementation details maybe?)
+            ## Virtual Environment
+              The State holds:
+              - <i>Turn</i> and <i>Round</i> indicators
+              - All player positions
+              - Hand of playable cards
+              - Event log 
+                - which cards have been drafted/played by which players
+
+              Very high number of possible states!
           </script>
         </section>
 
         <section data-markdown>
           <script type="text/template">
-            ### Problems
-            - Even WITH a headless version, too slow to properly learn
-              - Fixed (mostly) by implementing clusters and multiprocessing
+            ## Implementation: Reinforcement Learning
+            - Q-learning with Simplified States
+            
+            - <i>Play</i> phase State Representation  
+              <img length="100%" data-src="img/state.png" alt="Uses relative positions as a simplified state">
+            - <i>ES</i> phase State Representation 
+              - {turn, moveDirection, cardDirection, cardValue}
 
-            - Problem specific to Neural Evolution:
-              - How do you compare strategies?
+            - Problem: no way to reward <i>Draft Phase</i>
 
-            - Problem specific to RL:
-              - No reward for draft -> no RL implemented for that phase
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            ## Implementation: Neural Evolution
+            - Starts with network randomly created from state variables
+            - Mutates and competes
+            - Keeps only best strategy
+
+            - Problem: How do you compare strategies?
+              - play multiple games 
+              - keep most frequent winner
+
+            - Problem: too slow to properly learn
+              - 'Fixed' up by clusters and multiprocessing
+          </script>
+        </section>
+        <section data-markdown>
+          <script type="text/template">
+            ## Implementation: Decision Tree
+            - Simple reasoning in if-else statement
+            - based on 
+              - move direction 
+              - card values (high/low)
+              - card types
           </script>
         </section>
 
@@ -148,18 +176,36 @@
           </script>
         </section>
 
-        <section data-markdown>
-          <script type="text/template">
-            ## AI statistics
-            - Goal: win from random AI
-            - < here three graphs from win-rate against RAI >
-          </script>
+        <section>
+            <h2>AI Statistics</h2>
+              <table>Our goal: win from random AI
+                <tr>
+                  <td><img height="200px" data-src="img/randomPie.png" alt="allrand"></td>
+                  <td><img height="200px" data-src="img/rannesPie.png" alt="allrand VS Rnes"></td>
+                </tr>
+                <tr class="fragment">
+                  <td><img height="200px" data-src="img/rlPie.png" alt="allrand VS RL"></td>
+                  <td><img height="200px" data-src="img/dectreePie.png" alt="allrand VS Sym"></td>
+                </tr>
+              </table>
+            <p class="fragment">NB: NE does not significantly improve over random AI</p>
+        </section>
+        <section>
+            <h2>AI Statistics</h2>
+            
+            <p>Interestingly:</p>
+            <img height="400px" data-src="img/nevsrlPie.png" alt="allRL VS NE">
+            <p>NE holds its own against RL</p>
         </section>
 
         <section data-markdown>
           <script type="text/template">
             ## Future Work
-            - Let learn More
+            - Better State representation
+            - Joint-action learning?
+            - Find better way to compare strategies
+
+            - Let learn more
             - Optimize speed
             - Change UI
             - Try other types of AIs
@@ -170,12 +216,15 @@
           <script type="text/template">
             ## Conclusion
             - We made:
-                - 2 types of non-learning AIs
-                - 2 types of offline learning AIs
-            - Decision Tree AI works really well
+                - 3 types of non-learning AIs
+                - 2 types of learning AIs
 
-            - Learning AIs: learned long enough to beat random AI            
-            - but for the learning AIs to actually compete, they need to learning longer
+            - Decision Tree works really well
+            - RL works fairly well
+            - NE does not         
+
+            - For the learning AIs to actually compete, they need to learning longer
+
           </script>
         </section>
       </div>
