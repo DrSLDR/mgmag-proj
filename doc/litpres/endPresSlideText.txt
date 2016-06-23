@@ -1,0 +1,62 @@
+- before presi:
+set up console
+
+python main.py --config "conf/pit.json" --headless
+python make_statistics.py --config "conf/pit.json" --win-count --position-pp-e
+
+python main.py --config "conf/pitWithHuman.json"
+
+Intro
+- Title Slide
+- project desciption
+- gravwell description
+			- boardgame 2-4players
+			- path to finish is 54 tiles
+			- playing cards to move=: card= type,value and 'element' Name
+			- in direction of closest ship, there are rules for ties
+			- important phases are
+			  - Draft (choosing cards: as the stacks you choose have one visible and one hidden card, some of the card distribution among players stays hidden information)
+			  - Play (playing a card from your hand each turn of a round. You play them face down)
+			  - Resolve (played cards are shown and put into effect in alphabetical order. Using the ES disables the card's effect)
+- AI aspects and motivation
+			- Decision making (natural addition to boardgame agent, as you decide between cards in your hand) 
+			- learning (it seemed interesting to see if a strategy could be found)
+
+			- implemented through four types (so we could later pit them against each other)
+			  Random AI makes random decisions (these are sometimes good and sometimes completely idiotic)
+			  we want to have our other AIs win from that one at least
+Implementation of game
+
+- technical environment
+			- PGU: Phils pyGame Utilities
+			- tensorflow: it can do math on the GPU and is thus fast
+- virtual environment
+			- inside of the state: turn, round, ships. Event log!
+
+Implementation RL
+			play phase: 12x12 = 144 possiblities
+			draft phase: 6x2x2x10 = 240 possibilities
+			- problems: no way to get reward for draft. Hulks still not considered. 
+Implementation NE
+			- problems: Too slow: because NE uses 300games to compare strategies, evolving it goes relitivaly slow
+			- NE: best of mutated children goes to next generation. How do you find the best?
+			(we tried: compete against 3RAI + compair scores (distance on the board), compete within children: compare scores with preseeded random per generation)
+Demo
+- demo slide
+            - (part of human interface (start from console))
+            - (headless, to show we have it, and how fast it is)
+            - GUI mostly made to have it playable/testable by a human, and for demo. Not priority, so not overly pretty
+- statistic slide
+			- Goal was: (learning to) win from the random AI
+            - <show statistic results of winnings: different types against RAI>
+            - <surprising: NE does not improve over rnes, where it inherits from, but holds its own against RL>
+Ending
+- Future work
+			- better state Representation
+			- join action learning? might be difficult since this game is both cooperative and competitive (you need the others too move forward)
+
+			- all the usual stuff if its about reinforcement learning
+- Conclusion
+			- what we made
+			- how it did
+			- 

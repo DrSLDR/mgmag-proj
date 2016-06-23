@@ -2,7 +2,7 @@
 """
 from model import board
 
-from collections import namedtuple
+from collections import namedtuple, ChainMap
 import math
 
 Point=namedtuple('Point',['x','y'])
@@ -10,6 +10,26 @@ def _calcPosition(tileNumber):
     """
     In a number
     Out some coordinates (non scaled, just as a grid)
+    archemedian spiral; x=(a+b*angle)*cos(angle), y=(a+b*angle)*sin(angle)
+
+    """
+    a = 0.15
+    b = 0.12
+
+    angleAcc = 0.75 # in radians
+    if tileNumber > 30:
+        tau = 1 + 10 *1.25* angleAcc + 20*0.75*angleAcc + (tileNumber-30)*0.5*angleAcc
+
+    elif tileNumber > 10:
+        tau = 1 + 10 *1.25* angleAcc + (tileNumber-10)*0.75*angleAcc
+    else:
+        tau = 1 + 1.25*angleAcc * tileNumber
+
+    xTile = -1*(a+b*tau)*math.cos(tau)
+    yTile = -1*(a+b*tau)*math.sin(tau)
+    return Point(x=xTile,y=yTile)
+
+
     """
     tileNumber = tileNumber + 1 # to start at 0
     # thanks: https://math.stackexchange.com/questions/163080/on-a-two-dimensional-grid-is-there-a-formula-i-can-use-to-spiral-coordinates-in
@@ -30,6 +50,7 @@ def _calcPosition(tileNumber):
     if tileNumber>=m-t:
         return Point(x=-k+(m-tileNumber),y=k)
     return Point(x=k,y=k-(m-tileNumber-t))
+    """
 
 from model.player import Ship
 class Renderer:
@@ -63,7 +84,7 @@ class Renderer:
             y=pos.y*60+self.screenSize.height*(0.5-self.borderpadding))
         return pos
 
-    def render(self, font, disp, gamestate, humanPlayer, revealedCards):
+    def render(self, font, disp, gamestate, humanData, revealedCards):
         """function that renders the board"""
         import pygame
         # connections between tiles
@@ -87,9 +108,13 @@ class Renderer:
             font("%i"%i, pos)
         # player and hulk ships
         size = Point(x=30,y=30)
-        for (player, pc) in (gamestate.players + gamestate.hulks):
-            pos = self.calcScreenPos(player.getPos())
-            color = Renderer.colors[player.getColor()]
+        playerPCDict = ChainMap({},gamestate.players,gamestate.hulks)
+
+        for key in playerPCDict:
+            pos = self.calcScreenPos(playerPCDict[key][0].getPos())
+            colNr = playerPCDict[key][0].getColor()
+            color = Renderer.colors[colNr]
+            darkerColor = (1/3*color[0],1/3*color[1],1/3*color[2])
             # draw white bordered circle filled with ship-color
             pygame.draw.ellipse(
                 disp, (250,250,250), 
@@ -99,6 +124,10 @@ class Renderer:
                 disp,color, 
                 (pos.x-size.x/2+1, pos.y-size.y/2+1, size.x-2,size.y-2)
             )
+            # if not a hulk, draw first two letters of name in the circle
+            if not colNr == 0:
+                name = playerPCDict[key][0].getName()[0:2]
+                font(name, (pos.x-7,pos.y-5), darkerColor)
         # round annotation
         pos = Point(x=20,y=20)
         font("Round %i"%(gamestate.round+1), pos)
@@ -124,32 +153,31 @@ class Renderer:
             else: cardTypeStr = ' Tractor  '
             font(cardTypeStr , Point(x=pos.x-20,y=pos.y+10) )
 
-        # gets the first human from the state
-        
-        if humanPlayer is not None:
+        # if there is a human, draw its name and hand
+        if humanData:
             # display human player's name in color of their ship
-            color = Renderer.colors[humanPlayer.getColor()]  
+            color = Renderer.colors[humanData['color']]  
             darkerColor = (2/3*color[0],2/3*color[1],2/3*color[2])
-            pos = Point(x=620,y=490)
+            pos = Point(x=620,y=545)
             size = Point(x=80, y=30) 
             pygame.draw.rect(disp, 
                 color, 
                 (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
             pygame.draw.rect(disp, darkerColor,                
-                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
-            font(humanPlayer.getName(), Point(x=pos.x-20,y=pos.y-5))
+                (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-4))
+            font(humanData['name'], Point(x=pos.x-20,y=pos.y-5))
 
             # display their cards
             spacing = 0
-            for card in humanPlayer.getHand():
-                drawCard(card, font, disp, Point(x=720+spacing,y=470))
+            for card in humanData['hand']:
+                drawCard(card, font, disp, Point(x=720+spacing,y=545))
                 spacing += 100
 
             # draw (lack of) ES 
             size = Point(x=80, y=60) # size of card
-            pos = Point(x=720+spacing,y=470)
+            pos = Point(x=720+spacing,y=545)
 
-            if humanPlayer.canEmergencyStop():
+            if humanData['canES']:
                 # draws ER-rect with a white border (in same color as human ship)
                 pygame.draw.rect(disp, color, (pos.x-size.x/2, pos.y-size.y/2, size.x,size.y))
                 pygame.draw.rect(disp, darkerColor, (pos.x-size.x/2+2, pos.y-size.y/2+2, size.x-4,size.y-2))
@@ -162,11 +190,11 @@ class Renderer:
                 font("ES played" , Point(x=pos.x-28,y=pos.y) )
 
             # draw revealed cards
-            spacing = (len(gamestate.players)-len(revealedCards) )*100
+            spacing = 0
             for card in revealedCards[0]:
-                p = revealedCards[1][card]
-                cardBorder = Renderer.colors[p[0].getColor()]
-                drawCard(card, font, disp, Point(x=100+spacing,y=470),cardBorder)
+                colorNr = revealedCards[1][card.getName()]
+                cardBorder = Renderer.colors[colorNr]
+                drawCard(card, font, disp, Point(x=100+spacing,y=545),cardBorder)
                 spacing += 100
 
 

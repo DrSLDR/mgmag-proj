@@ -36,9 +36,17 @@ class RandomAI_PC(IPlayerController):
         #return choice
         return doesPlayEmergencyStop
 
-    def isHuman(self):
-        """The board need to be able to find the human player, which this function eill help with"""
-        return False
+    def announceWinner(self, state):
+        """Function that updates the PC after the last turn"""
+        return None
         
     def informReveal(self, cards):
         self.log.info("Random ai informed about %s" % cards)
+        
+    def isHuman(self):
+        """The board need to be able to find the human player, which this function eill help with"""
+        return False
+
+class RandomIgnoreEmergency(RandomAI_PC):
+    def pollEmergencyStop(self, state):
+        return False

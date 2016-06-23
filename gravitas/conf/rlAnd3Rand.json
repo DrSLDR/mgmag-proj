@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Alexander",
+    "type": "RLAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Turing",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Lovelace",
+    "type": "randAI",
+    "arguments": {
+    }
+  },
+  {
+    "name": "Hopper",
+    "type": "randAI",
+    "arguments": {
+    }
+  }
+]

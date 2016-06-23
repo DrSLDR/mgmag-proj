@@ -1,25 +1,25 @@
 [
   {
-    "name": "Darwin",
-    "type": "neurotic",
+    "name": "Aristotle",
+    "type": "symbolic",
     "arguments": {
     }
   },
   {
-    "name": "Randy",
-    "type": "randAI",
+    "name": "Babbage",
+    "type": "randomAI",
     "arguments": {
     }
   },
   {
-    "name": "Rommel",
-    "type": "randAI",
+    "name": "Leibniz",
+    "type": "symbolic",
     "arguments": {
     }
   },
   {
-    "name": "Rachel",
-    "type": "human",
+    "name": "Bacon",
+    "type": "symbolic",
     "arguments": {
     }
   }

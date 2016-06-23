@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Gravitas</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/night.css">
+
+    <style>
+     p.source{
+         font-size: 60%;
+     }
+    </style>
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <style type="text/css">
+      .source {
+        font-size: 60%;
+      }
+    </style>
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown>
+          <script type="text/template">
+            ![](img/gravitas_logo_w.png) <!-- .element: style="border: 0; background: inherit;"  -->
+
+            ---
+            Jonas A. Hultén, Jappie Klooster, Eva Linssen, Deliang Wu
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Project Description
+            - Create AI driven opponents for the boardgame Gravwell
+
+            - Goal: win from random AI
+          </script>
+        </section>
+        
+        <section>
+            <h2>Gravwell</h2>
+            <table>
+              <tr>
+                <td>
+                  <img height="350px" data-src="http://www.alltpaettkort.se/wp-content/uploads/2014/01/Gravwell-spelplan.jpg" alt="Gravwell board">
+                </td>
+                <td>
+                  <ul>
+                    <li>Boardgame, 2-4 players</li>
+                    <li>Play Cards to move</li>
+                    <ul>
+                      <li>Type</li>
+                      <li>Value</li>
+                      <li>Name</li>
+                    </ul>
+                    <li>Move in direction of the closest ship</li>                    
+                    <li>Important game phases:</li>
+                    <ul>
+                      <li>Draft</li>
+                      <li>Play</li>
+                      <li>Resolve</li>
+                      <ul><li>Emergency stop (ES)</li></ul>
+                    </ul>
+                </td>
+              </tr>
+            </table>
+          
+        </section>
+        
+        <section>
+          <h2>AI-Aspect</h2>
+            <ul>
+              <li>Decision making</li>
+              <li>Learning</li>
+              <li>            
+                <p>Implemented through:</p>
+                <ul>
+                  <li>Reinforcement Learning (RL)</li>
+                  <li>Neural Evolution (NE)</li>
+                  <li>Decision Tree</li>
+                  <li>Random AI</li>
+                  <li>No-ES Random AI</li>
+                </ul>
+              </li>
+            </ul>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Technical Environment
+            - Python
+            - Pygame
+              - Game engine and board rendering
+            - PGU
+              - GUI
+            - Tensorflow
+              - Quick Math
+              - Only on Unix
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Virtual Environment
+              The State holds:
+              - <i>Turn</i> and <i>Round</i> indicators
+              - All player positions
+              - Hand of playable cards
+              - Event log 
+                - which cards have been drafted/played by which players
+
+              Very high number of possible states!
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Implementation: Reinforcement Learning
+            - Q-learning with Simplified States
+            
+            - <i>Play</i> phase State Representation  
+              <img length="100%" data-src="img/state.png" alt="Uses relative positions as a simplified state">
+            - <i>ES</i> phase State Representation 
+              - {turn, moveDirection, cardDirection, cardValue}
+
+            - Problem: no way to reward <i>Draft Phase</i>
+
+          </script>
+        </section>
+        
+        <section data-markdown>
+          <script type="text/template">
+            ## Implementation: Neural Evolution
+            - Starts with network randomly created from state variables
+            - Mutates and competes
+            - Keeps only best strategy
+
+            - Problem: How do you compare strategies?
+              - play multiple games 
+              - keep most frequent winner
+
+            - Problem: too slow to properly learn
+              - 'Fixed' up by clusters and multiprocessing
+          </script>
+        </section>
+        <section data-markdown>
+          <script type="text/template">
+            ## Implementation: Decision Tree
+            - Simple reasoning in if-else statement
+            - based on 
+              - move direction 
+              - card values (high/low)
+              - card types
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            # Project Demo
+          </script>
+        </section>
+
+        <section>
+            <h2>AI Statistics</h2>
+              <table>Our goal: win from random AI
+                <tr>
+                  <td><img height="200px" data-src="img/randomPie.png" alt="allrand"></td>
+                  <td><img height="200px" data-src="img/rannesPie.png" alt="allrand VS Rnes"></td>
+                </tr>
+                <tr class="fragment">
+                  <td><img height="200px" data-src="img/rlPie.png" alt="allrand VS RL"></td>
+                  <td><img height="200px" data-src="img/dectreePie.png" alt="allrand VS Sym"></td>
+                </tr>
+              </table>
+            <p class="fragment">NB: NE does not significantly improve over random AI</p>
+        </section>
+        <section>
+            <h2>AI Statistics</h2>
+            
+            <p>Interestingly:</p>
+            <img height="400px" data-src="img/nevsrlPie.png" alt="allRL VS NE">
+            <p>NE holds its own against RL</p>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Future Work
+            - Better State representation
+            - Joint-action learning?
+            - Find better way to compare strategies
+
+            - Let learn more
+            - Optimize speed
+            - Change UI
+            - Try other types of AIs
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+            ## Conclusion
+            - We made:
+                - 3 types of non-learning AIs
+                - 2 types of learning AIs
+
+            - Decision Tree works really well
+            - RL works fairly well
+            - NE does not         
+
+            - For the learning AIs to actually compete, they need to learning longer
+
+          </script>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        history: true,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+            { src: 'plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+  </body>
+</html>

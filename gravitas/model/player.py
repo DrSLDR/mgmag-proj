@@ -8,8 +8,7 @@ class Player(Ship):
 
     def __init__(self, color, name):
         """Constructs the player. Name can be any string"""
-        super().__init__(color)
-        self._name = name
+        super().__init__(color=color, name=name)
         self._hand = []
         self._canEmergencyStop = True
 
@@ -27,8 +26,6 @@ class Player(Ship):
         """Resets the Emergency Stop as usable"""
         self._canEmergencyStop = True
 
-    def getName(self):
-        return self._name
     def getHand(self):
         return self._hand
 

@@ -10,17 +10,18 @@ class Ship:
         yellow = 3
         green = 4
 
-    def __init__(self, color=0, pos=0):
+    def __init__(self, color=0, pos=0, name="Hulk"):
         """Constructs the ship. Starting position can optionally be set"""
         self._pos = pos
         self._color = color
+        self.name = name
 
     def getPos(self):
         return self._pos
     def getColor(self):
         return self._color
     def getName(self):
-        return "Hulk"
+        return self.name
 
     def distanceTo(self, ship):
         """Returns absolute-valued distance to given ship."""
