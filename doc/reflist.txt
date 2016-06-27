@@ -70,13 +70,6 @@ augmenting topologies".  Evolutionary Computation, 10(2):99–127, 2002.
 Available: http://nn.cs.utexas.edu/?stanley:ec02
 [Added by Jappie, explains NEAT in tedious detail]
 
-Kenneth O. Stanly, Bobby D. Bryant and Risto Miikulainen. "Real-Time
-Neuroevolution in the NERO Video Game". IEEE Transactions on Evolutionary
-Computation (Special Issue on Evolutionary Computation and Games), Vol.9, 
-No. 6, December 2005
-[Added by Jappie, this is the online variant, which learns every round to play
-better I think]
-
 Martın Abadi et all. "Large-Scale Machine Learning on Heterogeneous
 Distributed Systems", November 9, 2015. Google Research.
 Available: http://download.tensorflow.org/paper/whitepaper2015.pdf
