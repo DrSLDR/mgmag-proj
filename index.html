@@ -47,7 +47,8 @@
         <section data-markdown>
           <script type="text/template">
             ## Project Description
-            - Create AI driven opponents for the boardgame Gravwell
+            - The boardgame Gravwell
+            - Create AI driven opponents
 
             - Goal: win from random AI
           </script>
@@ -63,13 +64,13 @@
                 <td>
                   <ul>
                     <li>Boardgame, 2-4 players</li>
+                    <li>Move in direction of the closest ship</li> 
                     <li>Play Cards to move</li>
                     <ul>
                       <li>Type</li>
                       <li>Value</li>
                       <li>Name</li>
-                    </ul>
-                    <li>Move in direction of the closest ship</li>                    
+                    </ul>                   
                     <li>Important game phases:</li>
                     <ul>
                       <li>Draft</li>
@@ -147,13 +148,14 @@
         <section data-markdown>
           <script type="text/template">
             ## Implementation: Neural Evolution
-            - Starts with network randomly created from state variables
-            - Mutates and competes
+            - Neural Networks
+            - Mutate and compete
             - Keeps only best strategy
 
             - Problem: How do you compare strategies?
-              - play multiple games 
-              - keep most frequent winner
+              - we select most frequent winner
+              - performance cannot be properly measured
+              - results in random strategy selection
 
             - Problem: too slow to properly learn
               - 'Fixed' up by clusters and multiprocessing
@@ -221,7 +223,7 @@
 
             - Decision Tree works really well
             - RL works fairly well
-            - NE does not         
+            - NE does not
 
             - For the learning AIs to actually compete, they need to learning longer
 

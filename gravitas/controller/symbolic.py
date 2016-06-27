@@ -12,7 +12,7 @@ class SymbolicAI_PC(IPlayerController):
 
     def pollDraft(self, state):
         """Function that returns the choice of a stack from the draw field"""
-        """RANDOM choice"""
+        """Tries to pick a varied hand"""
         
         # Bind in the percieved fields
         percievedField = state.deck.percieveCardField()
@@ -30,7 +30,7 @@ class SymbolicAI_PC(IPlayerController):
         # get cards that you already have (your hand)
         hand = self.player.getHand()
         handTrac = [c for c in hand if c.getType() == Card.Type.tractor]
-        handNormLow = [c for c in hand if c.getType() == Card.Type.normal and c.getValue() < 7]
+        handNormLow = [c for c in hand if c.getType() == Card.Type.normal and c.getValue() <= 8]
         handNormHigh = [c for c in hand if c.getType() == Card.Type.normal and c.getValue() >= 3]
         handRep = [c for c in hand if c.getType() == Card.Type.repulsor]
 
